@@ -3,10 +3,256 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Junseo Blog (new)</title>
+  <title>오준서 — Data Engineer</title>
+  <link rel="stylesheet" href="/assets/css/site.css" />
 </head>
 <body>
-  <h1>New blog initialized.</h1>
-  <p>If you see this, main reset succeeded.</p>
+  <!-- Top Nav (About / Skils / Projects / Contact) -->
+  <header class="topbar">
+    <div class="container topbar__inner">
+      <nav class="nav">
+        <a href="#about">About</a>
+        <a href="#skills">Skils</a>
+        <a href="#projects">Projects</a>
+        <a href="#contact">Contact</a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="top">
+    <!-- HERO (PPT 1~3p 상단) -->
+    <section class="section hero">
+      <div class="container hero__grid">
+        <div class="hero__left">
+          <p class="hero__name">준서 입니다</p>
+          <h1 class="hero__title">
+            designing structured<br />
+            and durable data systems
+          </h1>
+        </div>
+        <div class="hero__right">
+          <p class="hero__role">Data Engineer</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ABOUT (PPT 내 내비게이션 기준, 내용은 나중에 채워도 됨) -->
+    <section id="about" class="section">
+      <div class="container">
+        <h2 class="section__title">About</h2>
+        <div class="panel">
+          <p class="muted">※ About 상세 문구는 나중에 확정 후 반영</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- SKILLS (PPT 1~3p) -->
+    <section id="skills" class="section">
+      <div class="container">
+        <h2 class="section__title">Skils</h2>
+
+        <div class="skills-tiles">
+          <!-- Strong -->
+          <div class="skillpanel">
+            <h3 class="skillpanel__title">Strong</h3>
+
+            <div class="tilegrid tilegrid--2">
+              <div class="tile">
+                <div class="tile__head">
+                  <div class="tile__name">Python</div>
+                  <!-- 아이콘은 나중에 -->
+                  <div class="tile__icon placeholder"></div>
+                </div>
+                <div class="tile__body">
+                  <div class="tile__label">주요사례)</div>
+                  <div class="tile__text">메신저 API연결을 활용한 데이터베이스 구축</div>
+                </div>
+              </div>
+
+              <div class="tile">
+                <div class="tile__head">
+                  <div class="tile__name">Kafka</div>
+                  <div class="tile__icon placeholder"></div>
+                </div>
+                <div class="tile__body">
+                  <div class="tile__label">주요사례)</div>
+                  <div class="tile__text">DB의 실시간 데이터 스트리밍 처리</div>
+                </div>
+              </div>
+
+              <!-- 빈 타일(레이아웃 맞춤용) 필요하면 사용 -->
+              <div class="tile tile--empty"></div>
+              <div class="tile tile--empty"></div>
+            </div>
+          </div>
+
+          <!-- Knowledgeable -->
+          <div class="skillpanel">
+            <h3 class="skillpanel__title">Knowledgeable</h3>
+
+            <div class="tilegrid tilegrid--2">
+              <div class="tile">
+                <div class="tile__head">
+                  <div class="tile__name">R</div>
+                  <div class="tile__icon placeholder"></div>
+                </div>
+                <div class="tile__body">
+                  <div class="tile__label">주요사례)</div>
+                  <div class="tile__text">텍스트마이닝 경험 O / 통계시각화 경험 O / 분석툴을 활용한 의사결정</div>
+                </div>
+              </div>
+
+              <div class="tile">
+                <div class="tile__head">
+                  <div class="tile__name">Excel</div>
+                  <div class="tile__icon placeholder"></div>
+                </div>
+                <div class="tile__body">
+                  <div class="tile__label">주요사례)</div>
+                  <div class="tile__text">함수별 작동원리 연구 / 엑셀 문서간 함수연동 / VBA·PP·PQ·PB 경험 X</div>
+                </div>
+              </div>
+
+              <div class="tile tile--empty"></div>
+              <div class="tile tile--empty"></div>
+            </div>
+          </div>
+
+          <!-- ETC. -->
+          <div class="skillpanel">
+            <h3 class="skillpanel__title">ETC.</h3>
+
+            <div class="tilegrid tilegrid--2">
+              <div class="tile">
+                <div class="tile__head">
+                  <div class="tile__name">Git</div>
+                  <div class="tile__icon placeholder"></div>
+                </div>
+                <div class="tile__body">
+                  <div class="tile__label">주요사례)</div>
+                  <div class="tile__text">개인PC, 노트북, 학원 등 다양한 장치에서의 연동 작업</div>
+                </div>
+              </div>
+
+              <div class="tile">
+                <div class="tile__head">
+                  <div class="tile__name">Docker</div>
+                  <div class="tile__icon placeholder"></div>
+                </div>
+                <div class="tile__body">
+                  <div class="tile__label">주요사례)</div>
+                  <div class="tile__text">컨테이너를 활용한 텔레그램 서비스 배포</div>
+                </div>
+              </div>
+
+              <div class="tile">
+                <div class="tile__head">
+                  <div class="tile__name">문서화</div>
+                  <div class="tile__icon placeholder"></div>
+                </div>
+                <div class="tile__body">
+                  <div class="tile__label">주요사례)</div>
+                  <div class="tile__text">다수의 매뉴얼 제작</div>
+                </div>
+              </div>
+
+              <div class="tile tile--empty"></div>
+            </div>
+          </div>
+        </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- PROJECTS (카드는 심플, 상세/트러블슈팅은 팝업) -->
+    <section id="projects" class="section">
+      <div class="container">
+        <h2 class="section__title">Projects</h2>
+
+        <div class="grid">
+          <button class="card projectcard" type="button" data-open-project="pipeline-bot">
+            <div class="projectcard__title">봇을 활용한 파이프라인 개편</div>
+            <div class="projectcard__desc muted">목적 : 텔레그램 봇 기능을 활용한 행정력 감소 및 통계 자동화</div>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- CONTACT (PPT 3p) -->
+    <section id="contact" class="section">
+      <div class="container">
+        <h2 class="section__title">Contact</h2>
+
+        <div class="contact">
+          <div class="contact__row">
+            <div class="contact__label">Github</div>
+            <a class="contact__value" href="https://github.com/Junsesoon" target="_blank" rel="noreferrer">
+              https://github.com/Junsesoon
+            </a>
+          </div>
+
+          <div class="contact__row">
+            <div class="contact__label">Email</div>
+            <a class="contact__value" href="mailto:junsesoon@gmail.com">junsesoon@gmail.com</a>
+          </div>
+        </div>
+
+        <footer class="footer">
+          <div class="muted">Thanks for your time -Junseo-</div>
+        </footer>
+      </div>
+    </section>
+  </main>
+
+  <!-- Backdrop -->
+  <div class="backdrop" data-close></div>
+
+  <!-- Project Popup (PPT 4~5p) -->
+  <dialog class="modal" id="project-modal" aria-label="프로젝트 상세">
+    <div class="modal__head">
+      <div class="modal__titleblock">
+        <h3 id="pm-title" class="modal__title">봇을 활용한 파이프라인 개편</h3>
+        <div id="pm-purpose" class="muted">목적 : 텔레그램 봇 기능을 활용한 행정력 감소 및 통계 자동화</div>
+      </div>
+      <button class="modal__close" type="button" data-close aria-label="닫기">×</button>
+    </div>
+
+    <div class="modal__body">
+      <!-- 개발기간/인원/환경 -->
+      <div class="pm-grid">
+        <div class="panel">
+          <h4 class="panel__title">개발기간</h4>
+          <div id="pm-period" class="mono">YYYY.MM.DD ~ YYYY.MM.DD</div>
+          <div class="spacer"></div>
+          <h4 class="panel__title">개발인원</h4>
+          <div id="pm-team" class="mono">1 명</div>
+        </div>
+
+        <div class="panel">
+          <h4 class="panel__title">개발환경</h4>
+          <ul class="kv" id="pm-env">
+            <li><span class="kv__k">Language</span><span class="kv__v mono">-</span></li>
+            <li><span class="kv__k">Library</span><span class="kv__v mono">-</span></li>
+            <li><span class="kv__k">DB</span><span class="kv__v mono">-</span></li>
+            <li><span class="kv__k">IDE</span><span class="kv__v mono">-</span></li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- 트러블슈팅 이력 -->
+      <div class="panel">
+        <h4 class="panel__title">프로젝트 트러블슈팅 이력</h4>
+        <div id="pm-troubles" class="troubles"></div>
+      </div>
+
+      <!-- 하단 키워드(개발환경 항목 나열) -->
+      <div class="panel">
+        <h4 class="panel__title">개발환경</h4>
+        <div id="pm-tags" class="tags"></div>
+      </div>
+    </div>
+  </dialog>
+
+  <script src="/assets/js/site.js"></script>
 </body>
 </html>

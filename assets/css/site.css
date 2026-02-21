@@ -1,0 +1,449 @@
+:root{
+  /* PPT Light Theme */
+  --bg-topbar: #bfc5d8;        /* 연보라 상단바 */
+  --bg-page: #f3f4f6;          /* 베이스 */
+  --bg-grad-a: rgba(255,255,255,.92);
+  --bg-grad-b: rgba(255,224,230,.35);
+
+  --text: #0b0f18;
+  --muted: rgba(11,15,24,.68);
+
+  --line: rgba(20,25,35,.14);
+
+  /* Glass (light) */
+  --glass: rgba(255,255,255,.60);
+  --glass-strong: rgba(255,255,255,.72);
+  --glass-border: rgba(255,255,255,.85);
+  --shadow: 0 10px 24px rgba(10,14,20,.12);
+
+  --radius: 16px;
+  --container: 1100px;
+
+  --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono","Courier New", monospace;
+  --sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+}
+
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0;
+  font-family: var(--sans);
+  color: var(--text);
+
+  /* PPT 캡처 느낌의 라이트 그라데이션 */
+  background:
+    radial-gradient(900px 520px at 75% 20%, var(--bg-grad-b), transparent 60%),
+    radial-gradient(900px 520px at 25% 30%, rgba(230,240,255,.55), transparent 60%),
+    var(--bg-page);
+}
+
+a{color:inherit}
+.container{
+  width: min(var(--container), calc(100% - 32px));
+  margin: 0 auto;
+}
+.muted{color: var(--muted)}
+.mono{font-family: var(--mono)}
+
+/* ===== Topbar / Nav Pills ===== */
+.topbar{
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  background: var(--bg-topbar);
+  border-bottom: 1px solid rgba(0,0,0,.08);
+}
+.topbar__inner{
+  padding: 14px 0;
+  display:flex;
+  justify-content:center; /* PPT처럼 가운데 정렬 */
+}
+
+.nav{
+  display:flex;
+  gap: 18px;
+  flex-wrap: wrap;
+}
+
+.nav a{
+  text-decoration:none;
+  font-weight: 650;
+  font-size: 15px;
+  padding: 10px 28px;
+  border-radius: 999px;
+
+  /* pill glass */
+  background: linear-gradient(180deg, rgba(255,255,255,.92), rgba(235,240,250,.82));
+  border: 1px solid rgba(255,255,255,.95);
+  box-shadow:
+    0 10px 18px rgba(0,0,0,.12),
+    inset 0 2px 2px rgba(255,255,255,.9);
+
+  color: rgba(10,14,20,.88);
+}
+.nav a:hover{
+  transform: translateY(-1px);
+}
+
+/* ===== Sections ===== */
+.section{
+  padding: 40px 0;
+}
+
+/* PPT처럼 섹션 경계선 대신 넓은 ‘밴드’ 느낌 */
+.section + .section{
+  border-top: 0;
+}
+
+/* 섹션 제목: 왼쪽 큰 라벨(About/Skils/Projects/Contact) */
+.section__title{
+  margin: 0 0 18px 0;
+  display:inline-block;
+  min-width: 360px;
+  padding: 14px 26px;
+  border-radius: 12px;
+  background: rgba(235,238,245,.85);
+  border: 1px solid rgba(0,0,0,.10);
+  box-shadow: inset 0 2px 0 rgba(255,255,255,.9);
+
+  font-size: 30px;
+  letter-spacing: -0.02em;
+}
+
+/* ===== Hero ===== */
+.hero{
+  padding-top: 42px;
+  padding-bottom: 34px;
+}
+.hero__grid{
+  display:grid;
+  grid-template-columns: 1fr 1fr;
+  align-items:center;
+  gap: 18px;
+}
+.hero__name{
+  margin:0 0 10px 0;
+  font-size: 22px;
+  font-weight: 750;
+}
+.hero__title{
+  margin:0;
+  font-size: 54px;
+  line-height: 1.06;
+  font-weight: 800;
+}
+.hero__role{
+  margin:0;
+  font-size: 20px;
+  font-weight: 750;
+  text-align: right;
+  color: rgba(10,14,20,.75);
+}
+
+/* ===== Glass panels / cards ===== */
+.panel,
+.card,
+.contact,
+.modal{
+  background: var(--glass);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.panel{
+  padding: 18px;
+}
+.card{
+  padding: 18px;
+  cursor: pointer;
+}
+.card:hover{transform: translateY(-1px)}
+
+/* ===== Skills layout (PPT: 3 columns) ===== */
+.skills{
+  display:grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
+}
+
+
+/* ===== Projects grid (PPT: 3 cards) ===== */
+.grid{
+  display:grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.projectcard__title{
+  font-weight: 900;
+  font-size: 30px;
+  margin-bottom: 10px;
+}
+.projectcard__desc{
+  color: rgba(10,14,20,.70);
+  line-height: 1.5;
+  font-weight: 650;
+}
+
+/* ===== Contact cards (PPT: two wide cards) ===== */
+.contact{
+  padding: 18px;
+  display:grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+  background: rgba(210,215,230,.55);
+}
+
+.contact__row{
+  background: var(--glass-strong);
+  border: 1px solid rgba(255,255,255,.9);
+  border-radius: 14px;
+  padding: 18px;
+  display:block;
+}
+
+.contact__label{
+  font-weight: 900;
+  color: #c21b1b;
+  font-size: 24px;
+  margin-bottom: 6px;
+}
+.contact__value{
+  text-decoration:none;
+  font-weight: 900;
+  font-size: 34px;
+  word-break: break-word;
+}
+.contact__value:hover{text-decoration:underline}
+
+.footer{
+  padding: 36px 0 0 0;
+  text-align:center;
+}
+.footer .muted{
+  color: rgba(10,14,20,.75);
+  font-weight: 900;
+  font-size: 44px;
+}
+
+/* ===== Modal (Project popup PPT 4~5p 라이트) ===== */
+.backdrop{
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.25);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  display:none;
+  z-index: 40;
+}
+
+.modal{
+  width: min(980px, calc(100% - 24px));
+  background: rgba(255,255,255,.80);
+  border: 1px solid rgba(255,255,255,.95);
+  padding: 0;
+  color: var(--text);
+}
+.modal::backdrop{background: transparent}
+
+.modal__head{
+  display:flex;
+  justify-content: space-between;
+  align-items:flex-start;
+  gap: 14px;
+  padding: 18px 18px 0 18px;
+  border-bottom: 1px solid rgba(0,0,0,.08);
+}
+.modal__title{
+  margin:0;
+  font-size: 28px;
+  font-weight: 900;
+}
+.modal__close{
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  border: 1px solid rgba(0,0,0,.10);
+  background: rgba(255,255,255,.65);
+  font-size: 22px;
+  cursor:pointer;
+}
+.modal__body{
+  padding: 14px 18px 18px 18px;
+}
+
+.pm-grid{
+  display:grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  margin-bottom: 14px;
+}
+.panel__title{
+  margin: 0 0 10px 0;
+  font-size: 14px;
+  color: rgba(10,14,20,.60);
+  letter-spacing: .02em;
+}
+.kv{
+  list-style:none;
+  padding:0;
+  margin:0;
+  display:grid;
+  gap: 10px;
+}
+.kv li{
+  display:flex;
+  justify-content: space-between;
+  gap: 12px;
+  border-top: 1px solid rgba(0,0,0,.10);
+  padding-top: 10px;
+}
+.kv li:first-child{border-top:none; padding-top:0}
+.kv__k{color: rgba(10,14,20,.65)}
+.kv__v{color: rgba(10,14,20,.92)}
+
+.troubles{
+  display:grid;
+  gap: 10px;
+}
+.trouble{
+  border: 1px solid rgba(0,0,0,.10);
+  border-radius: 14px;
+  padding: 14px;
+  background: rgba(255,255,255,.62);
+}
+.trouble__row{
+  display:flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  color: rgba(10,14,20,.62);
+  font-size: 13px;
+  font-weight: 700;
+}
+.tags{
+  display:flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.tag{
+  border: 1px solid rgba(0,0,0,.12);
+  border-radius: 999px;
+  padding: 8px 12px;
+  color: rgba(10,14,20,.70);
+  font-size: 13px;
+  background: rgba(255,255,255,.65);
+}
+
+@media (max-width: 980px){
+  .hero__grid{grid-template-columns: 1fr}
+  .hero__role{text-align:left}
+  .skills{grid-template-columns: 1fr}
+  .grid{grid-template-columns: 1fr}
+  .contact{grid-template-columns: 1fr}
+  .section__title{min-width: auto; width: 100%}
+  .hero__title{font-size: 44px}
+  .contact__value{font-size: 26px}
+  .footer .muted{font-size: 36px}
+  .pm-grid{grid-template-columns: 1fr}
+}
+
+/* ===== Skills: Group Panel + Tiles (PPT 2번 스타일) ===== */
+.skills-tiles{
+  display:grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
+}
+
+/* 큰 그룹 패널(Strong/Knowledgeable/ETC) */
+.skillpanel{
+  background: rgba(210,215,230,.55); /* 2번처럼 회청색 큰 판 */
+  border: 1px solid rgba(255,255,255,.85);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  padding: 16px;
+}
+
+.skillpanel__title{
+  margin: 0 0 12px 0;
+  font-size: 28px;
+  font-weight: 900;
+  color: #c21b1b;
+}
+
+/* 패널 안 타일 그리드 */
+.tilegrid{
+  display:grid;
+  gap: 12px;
+}
+.tilegrid--2{ grid-template-columns: repeat(2, minmax(0, 1fr)); }
+
+/* 개별 타일 */
+.tile{
+  background: rgba(255,255,255,.42);
+  border: 1px solid rgba(255,255,255,.85);
+  border-radius: 12px;
+  padding: 12px;
+  min-height: 126px;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.9);
+}
+
+/* 빈칸 타일 */
+.tile--empty{
+  background: rgba(255,255,255,.18);
+  border: 1px solid rgba(255,255,255,.55);
+}
+
+/* 타일 헤더: 왼쪽 이름 + 오른쪽 아이콘 */
+.tile__head{
+  display:flex;
+  align-items:flex-start;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.tile__name{
+  font-size: 28px;
+  font-weight: 900;
+  letter-spacing: -0.01em;
+}
+
+.tile__icon{
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  flex: 0 0 auto;
+}
+
+/* 아이콘 아직 없을 때 placeholder */
+.tile__icon.placeholder{
+  background: rgba(0,0,0,.06);
+  border: 1px solid rgba(0,0,0,.08);
+}
+
+/* 타일 본문 */
+.tile__label{
+  font-weight: 900;
+  color: rgba(10,14,20,.78);
+  margin-bottom: 4px;
+}
+
+.tile__text{
+  font-weight: 650;
+  color: rgba(10,14,20,.72);
+  line-height: 1.35;
+}
+
+/* Responsive */
+@media (max-width: 980px){
+  .skills-tiles{grid-template-columns: 1fr;}
+  .tilegrid--2{grid-template-columns: repeat(2, minmax(0, 1fr));}
+}
+@media (max-width: 560px){
+  .tilegrid--2{grid-template-columns: 1fr;}
+}
