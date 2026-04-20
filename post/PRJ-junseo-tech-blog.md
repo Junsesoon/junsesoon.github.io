@@ -1,6 +1,6 @@
 ---
-project title: ""
-category: project overview
+project title: "junseo-tech-blog"
+category1: project
 start date: yyyy-mm-dd
 end date: yyyy-mm-dd
 플랫폼: [tag1, tag2, tag3]
@@ -17,6 +17,7 @@ tag: [tag1, tag2, tag3]
 summary: ""
 thumbnail: "/asset/image/~~.jpg"
 ---
+
 # prototype image
 
 # 설명~
