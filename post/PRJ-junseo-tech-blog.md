@@ -1,23 +1,27 @@
 ---
 project title: "junseo-tech-blog"
-category1: project
-start date: yyyy-mm-dd
-end date: yyyy-mm-dd
-플랫폼: [tag1, tag2, tag3]
-개발인원: 0
-담당역할: "~역할(00%)"
-언어: [tag1, tag2, tag3]
-서버: [tag1, tag2, tag3]
-프레임워크: [tag1, tag2, tag3]
-DB: [tag1, tag2, tag3]
-IDE: [tag1, tag2, tag3]
-API: [tag1, tag2, tag3]
-라이브러리: [tag1, tag2, tag3]
-tag: [tag1, tag2, tag3]
-summary: ""
+category1: "project overview"
+start date: 2026-01-01
+end date: 2026-01-01
+플랫폼: [web]
+개발인원: 1
+담당역할: "기획(100%)"
+언어: [javascript]
+서버: [ubuntu]
+프레임워크: [없음]
+DB: [없음]
+IDE: [VScode]
+API: [없음]
+라이브러리: [없음]
+tag: [javascript, frontend, web]
+summary: "기술 블로그를 제작하는 중입니다"
 thumbnail: "/asset/image/~~.jpg"
 ---
+# document
+<!-- 게시물 내용이 main.js에 의해 동적으로 렌더링됩니다. -->
 
-# prototype image
+# trouble shooting
+<!-- 게시물 내용이 main.js에 의해 동적으로 렌더링됩니다. -->
 
-# 설명~
+# decision
+<!-- 게시물 내용이 main.js에 의해 동적으로 렌더링됩니다. -->

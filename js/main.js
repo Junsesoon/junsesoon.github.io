@@ -1,4 +1,27 @@
 /**
+ * 모든 게시물의 상세 정보(Front Matter, 콘텐츠 포함)를 저장하는 전역 캐시 변수입니다.
+ * 페이지 로드 시 한 번만 빌드하여 반복적인 fetch 요청을 방지합니다.
+ */
+let detailedPosts = [];
+
+/**
+ * post-list.js의 모든 게시물 경로를 기반으로 Markdown 파일을 가져와 파싱한 후,
+ * detailedPosts 배열에 상세 정보를 채웁니다.
+ */
+async function buildDetailedPosts() {
+    if (detailedPosts.length > 0) return; // 이미 빌드되었다면 실행하지 않음
+
+    const promises = posts.map(async (post) => {
+        const response = await fetch(post.path);
+        const markdown = await response.text();
+        const { frontMatter, content } = parseFrontMatter(markdown);
+        return { ...post, frontMatter, content };
+    });
+
+    detailedPosts = await Promise.all(promises);
+}
+
+/**
  * Markdown 텍스트에서 Front Matter와 순수 콘텐츠를 분리하여 파싱합니다.
  * @param {string} markdown - 파싱할 Markdown 전체 텍스트.
  * @returns {{frontMatter: object, content: string}} - 파싱된 Front Matter 객체와 나머지 콘텐츠.
@@ -35,23 +58,24 @@ async function renderProjectList() {
     const container = document.getElementById('all-project-list');
     if (!container) return; // 해당 ID의 컨테이너가 없으면 함수 종료
 
-    const projectPosts = posts.filter(post => post.category1 === 'project');
+    // 미리 빌드된 detailedPosts에서 'project' 타입의 게시물을 필터링합니다.
+    const projectPosts = detailedPosts.filter(post => post.frontMatter.category1 === 'project overview');
     if (projectPosts.length === 0) {
         container.innerHTML = '<p>아직 프로젝트가 없습니다.</p>';
         return;
     }
 
+    container.innerHTML = ''; // 중복 렌더링을 방지하기 위해 컨테이너를 비웁니다.
+
     for (const post of projectPosts) {
-        const response = await fetch(post.path);
-        const markdown = await response.text();
-        const { frontMatter } = parseFrontMatter(markdown);
+        const { frontMatter } = post;
 
         const projectCard = document.createElement('div');
         projectCard.className = 'project-card'; // CSS 스타일링을 위한 클래스
         projectCard.innerHTML = `
             <a href="post.html?id=${post.id}">
                 <div class="card-content">
-                    <h3>${frontMatter['project title']}</h3>
+                    <h3>${frontMatter['project title'] || frontMatter.title}</h3>
                     <p>${frontMatter.summary}</p>
                 </div>
             </a>
@@ -61,7 +85,7 @@ async function renderProjectList() {
 }
 
 /**
- * post.html 페이지에 특정 게시물의 상세 내용을 렌더링합니다.
+ * post.html 페이지에 특정 게시물의 상세 내용을 렌더링합니다. 'project overview' 타입에 대한 특별 로직을 포함합니다.
  */
 async function renderPostDetail() {
     const container = document.getElementById('post-container');
@@ -75,40 +99,88 @@ async function renderPostDetail() {
         return;
     }
 
-    const post = posts.find(p => p.id === postId);
+    // 미리 빌드된 detailedPosts에서 현재 게시물 정보를 찾습니다.
+    const post = detailedPosts.find(p => p.id === postId);
     if (!post) {
         container.innerHTML = '<h2>게시물을 찾을 수 없습니다.</h2><p>해당 ID의 게시물이 존재하지 않습니다.</p>';
         return;
     }
 
-    const response = await fetch(post.path);
-    const markdown = await response.text();
-    const { frontMatter, content } = parseFrontMatter(markdown);
+    const { frontMatter, content } = post;
 
-    // 페이지 제목을 게시물 제목으로 업데이트
-    document.title = `${frontMatter['project title'] || frontMatter.title} - Junseo Blog`;
+    // 'project overview' 게시물인 경우, 특별한 레이아웃으로 렌더링합니다.
+    if (frontMatter.category1 === 'project overview') {
+        document.title = `${frontMatter['project title']} - Junseo Blog`;
 
-    // 파싱된 콘텐츠를 HTML로 변환하여 렌더링
-    container.innerHTML = `
-        <h1>${frontMatter['project title'] || frontMatter.title}</h1>
-        <div class="post-body">${content ? marked.parse(content) : ''}</div>
-    `;
+        // 1. Front Matter 속성을 테이블 형태로 만듭니다.
+        let propertiesHtml = '<div class="project-properties"><h2>Project Summary</h2><table>';
+        const propertyOrder = ['start date', 'end date', '플랫폼', '개발인원', '담당역할', '언어', '서버', '프레임워크', 'DB', 'IDE', 'API', '라이브러리', 'tag'];
+        propertyOrder.forEach(key => {
+            if (frontMatter[key]) {
+                propertiesHtml += `<tr><th>${key}</th><td>${frontMatter[key]}</td></tr>`;
+            }
+        });
+        propertiesHtml += '</table></div>';
+
+        // 2. 썸네일, 요약, 속성 테이블, 마크다운 본문을 포함한 기본 구조를 렌더링합니다.
+        container.innerHTML = `
+            <h1>${frontMatter['project title']}</h1>
+            <p class="overview-subtitle">overview</p>
+            <p class="summary">${frontMatter.summary}</p>
+            ${propertiesHtml}
+            <div class="post-body">${content ? marked.parse(content) : ''}</div>
+        `;
+
+        // 3. 연관 게시물(document, troubleshooting, decision) 목록을 찾아서 삽입합니다.
+        const projectName = frontMatter['project title'];
+        if (projectName) {
+            const relatedPosts = detailedPosts.filter(p => p.frontMatter.project === projectName && p.id !== postId);
+
+            const renderRelatedPosts = (category, headingText) => {
+                const headingElement = Array.from(container.querySelectorAll('h1, h2, h3, h4, h5, h6')).find(h => h.textContent.trim().toLowerCase() === headingText.toLowerCase());
+                if (!headingElement) return;
+
+                const postsForCategory = relatedPosts
+                    .filter(p => p.frontMatter.category1 === category)
+                    .sort((a, b) => new Date(b.frontMatter.date) - new Date(a.frontMatter.date));
+
+                let listHtml = postsForCategory.length > 0
+                    ? '<ul>' + postsForCategory.slice(0, 3).map(p => `<li><a href="post.html?id=${p.id}">${p.frontMatter.title}</a> (${p.frontMatter.date || '날짜 없음'})</li>`).join('') + '</ul>'
+                    : '<p>관련 게시물이 없습니다.</p>';
+
+                const listContainer = document.createElement('div');
+                listContainer.className = 'related-posts-list';
+                listContainer.innerHTML = listHtml;
+                headingElement.parentNode.insertBefore(listContainer, headingElement.nextSibling);
+            };
+
+            renderRelatedPosts('document', 'document');
+            renderRelatedPosts('troubleshooting', 'trouble shooting');
+            renderRelatedPosts('decision', 'decision');
+        }
+    } else {
+        // 일반 게시물 렌더링
+        document.title = `${frontMatter.title} - Junseo Blog`;
+        container.innerHTML = `
+            <h1>${frontMatter.title}</h1>
+            <div class="post-meta">${frontMatter.date ? `<p>작성일: ${frontMatter.date}</p>` : ''}</div>
+            <div class="post-body">${content ? marked.parse(content) : ''}</div>
+        `;
+    }
 }
 
 document.addEventListener('DOMContentLoaded', () => {
     const loadHeader = fetch('./template/header.html').then(res => res.text()).then(html => document.querySelector('header').innerHTML = html);
     const loadFooter = fetch('./template/footer.html').then(res => res.text()).then(html => document.querySelector('footer').innerHTML = html);
 
-    // 헤더와 푸터가 모두 로드된 후, 페이지별 콘텐츠 렌더링 실행
-    Promise.all([loadHeader, loadFooter]).then(() => {
-        // 현재 페이지에 필요한 렌더링 함수만 선택적으로 실행합니다.
+    Promise.all([loadHeader, loadFooter]).then(async () => {
+        await buildDetailedPosts(); // 모든 포스트 정보를 미리 빌드합니다.
+
         if (document.getElementById('all-project-list')) {
             renderProjectList();
         }
         if (document.getElementById('post-container')) {
             renderPostDetail();
         }
-        // 향후 skill.html 등을 위한 렌더링 함수도 여기에 추가할 수 있습니다.
-        // if (document.getElementById('all-skill-list')) renderSkillList();
     });
 });

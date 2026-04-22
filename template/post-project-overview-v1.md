@@ -17,6 +17,11 @@ tag: [tag1, tag2, tag3]
 summary: ""
 thumbnail: "/asset/image/~~.jpg"
 ---
-# prototype image
+# document
+<!-- 게시물 내용이 main.js에 의해 동적으로 렌더링됩니다. -->
 
-# 설명~
+# trouble shooting
+<!-- 게시물 내용이 main.js에 의해 동적으로 렌더링됩니다. -->
+
+# decision
+<!-- 게시물 내용이 main.js에 의해 동적으로 렌더링됩니다. -->
