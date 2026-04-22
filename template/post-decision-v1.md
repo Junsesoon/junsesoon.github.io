@@ -1,7 +1,7 @@
 ---
 title: ""
 date: yyyy-mm-dd
-category: decision
+category1: decision
 tag: [tag1, tag2, tag3]
 summary: ""
 thumbnail: "/asset/image/~~.jpg"

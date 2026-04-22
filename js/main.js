@@ -50,7 +50,6 @@ async function renderProjectList() {
         projectCard.className = 'project-card'; // CSS 스타일링을 위한 클래스
         projectCard.innerHTML = `
             <a href="post.html?id=${post.id}">
-                <img src="${frontMatter.thumbnail || './asset/image/placeholder.png'}" alt="${frontMatter['project title']}">
                 <div class="card-content">
                     <h3>${frontMatter['project title']}</h3>
                     <p>${frontMatter.summary}</p>

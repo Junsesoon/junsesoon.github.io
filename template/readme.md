@@ -6,7 +6,8 @@ enddate
 tag
 summary
 title: post title
-project title: fullname 으로 기록
+project: 해당 post가 어떤 project에 속하는지 식별함
+project title: fullname 으로 기록. project post를 식별함
 category1: 대분류 혹은 main page가 어디인지(about/project/skill/troubleshooting/decision/document)
 category2: category1의 하위분류. 추가적으로 분류해야할 것들이 있다면 기록
 플랫폼: web, android, ios

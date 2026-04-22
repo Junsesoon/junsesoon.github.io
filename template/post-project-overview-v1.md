@@ -1,6 +1,6 @@
 ---
 project title: ""
-category: project overview
+category1: project overview
 start date: yyyy-mm-dd
 end date: yyyy-mm-dd
 플랫폼: [tag1, tag2, tag3]

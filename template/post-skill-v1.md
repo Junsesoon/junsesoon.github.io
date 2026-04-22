@@ -1,6 +1,6 @@
 ---
 title: ""
-category: skill
+category1: skill
 tag: [tag1, tag2, tag3]
 proficiency: [strong / knowledgeable / etc.]
 summary: ""
