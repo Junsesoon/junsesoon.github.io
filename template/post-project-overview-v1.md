@@ -3,8 +3,8 @@ project title: ""
 category1: project overview
 start date: yyyy-mm-dd
 end date: yyyy-mm-dd
-플랫폼: [tag1, tag2, tag3]
 개발인원: 0
+플랫폼: [tag1, tag2, tag3]
 담당역할: "~역할(00%)"
 언어: [tag1, tag2, tag3]
 서버: [tag1, tag2, tag3]

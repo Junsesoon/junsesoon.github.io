@@ -1,17 +1,15 @@
 ---
 date: 2026-03-17
 project: "junseo-tech-blog"
-category1: troubleshooting
+category1: "trouble shooting"
 COMPLETION: true
 title: "콘솔 로그 파헤치기"
+summary: 
+  - 사소한 경로 오타가 불러온 렌더링 오류 해결하기. undefined 버튼에 대한 해결과 라이브러리 로드 실패 추적 과정
 tags:
   - FrontEnd
   - html
 ---
-## 요약
-- 사소한 경로 오타가 불러온 렌더링 오류 해결하기
-- undefined 버튼에 대한 해결과 라이브러리 로드 실패 추적 과정
-
 ## 상황  
 프로젝트 목록 페이지에 테스트용 게시글 하나를 추가했는데 이상하게도 undefined button이 3개나 동시에 생겨버렸다. 게시글은 하나인데 왜 글은 3개나 생겼을까?
 그리고 해당 게시글을 눌러보면 GNB와 footer만 있고 본문이 모두 날아가 있는 상태였다.

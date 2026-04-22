@@ -33,7 +33,7 @@ about
 project
 project overview
 skill
-troubleshooting
+trouble shooting
 decision
 document
 

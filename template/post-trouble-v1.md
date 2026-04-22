@@ -2,7 +2,7 @@
 ---
 title: ""
 date: yyyy-mm-dd
-category1: troubleshooting
+category1: "trouble shooting"
 tag: [tag1, tag2, tag3]
 summary: ""
 thumbnail: "/asset/image/~~.jpg"
