@@ -169,6 +169,130 @@ async function renderPostDetail() {
     }
 }
 
+/**
+ * troubleshooting.html 페이지에 트러블슈팅 로그 목록을 렌더링합니다.
+ */
+async function renderTroubleshootingList() {
+    const container = document.getElementById('all-troubleshooting-log-list');
+    if (!container) return;
+
+    // 'troubleshooting' 카테고리의 게시물을 날짜 내림차순으로 필터링 및 정렬합니다.
+    const troubleshootingPosts = detailedPosts
+        .filter(post => post.frontMatter.category1 === 'troubleshooting')
+        .sort((a, b) => new Date(b.frontMatter.date) - new Date(a.frontMatter.date));
+
+    if (troubleshootingPosts.length === 0) {
+        container.innerHTML = '<p>아직 작성된 트러블슈팅 로그가 없습니다.</p>';
+        return;
+    }
+
+    // 페이지네이션 로직
+    const urlParams = new URLSearchParams(window.location.search);
+    const currentPage = parseInt(urlParams.get('page') || '1', 10);
+    const postsPerPage = 9;
+    const totalPages = Math.ceil(troubleshootingPosts.length / postsPerPage);
+    const startIndex = (currentPage - 1) * postsPerPage;
+
+    // 현재 페이지에 해당하는 게시물만 선택합니다.
+    const postsForPage = troubleshootingPosts.slice(startIndex, startIndex + postsPerPage);
+
+    let listHtml = '<ul class="post-list">'; // CSS 스타일링을 위한 클래스
+    for (const post of postsForPage) {
+        const { frontMatter, id } = post;
+        const summary = frontMatter.summary || '요약 정보가 없습니다.';
+        listHtml += `
+            <li>
+                <a href="post.html?id=${id}">
+                    <h3>${frontMatter.title || '제목 없음'}</h3>
+                    <p>${summary}</p>
+                    <span class="post-date">${frontMatter.date || '날짜 없음'}</span>
+                </a>
+            </li>`;
+    }
+    listHtml += '</ul>';
+
+    // 페이지네이션 컨트롤
+    let paginationHtml = '';
+    if (totalPages > 1) {
+        paginationHtml = '<div class="pagination">';
+        if (currentPage > 1) {
+            paginationHtml += `<a href="?page=${currentPage - 1}">[prev]</a>`;
+        } else {
+            paginationHtml += `<span>[prev]</span>`;
+        }
+        if (currentPage < totalPages) {
+            paginationHtml += `<a href="?page=${currentPage + 1}">[next]</a>`;
+        } else {
+            paginationHtml += `<span>[next]</span>`;
+        }
+        paginationHtml += '</div>';
+    }
+
+    container.innerHTML = listHtml + paginationHtml;
+}
+
+/**
+ * decision.html 페이지에 의사결정 로그 목록을 렌더링합니다.
+ */
+async function renderDecisionList() {
+    const container = document.getElementById('all-decision-log-list');
+    if (!container) return;
+
+    // 'decision' 카테고리의 게시물을 날짜 내림차순으로 필터링 및 정렬합니다.
+    const decisionPosts = detailedPosts
+        .filter(post => post.frontMatter.category1 === 'decision')
+        .sort((a, b) => new Date(b.frontMatter.date) - new Date(a.frontMatter.date));
+
+    if (decisionPosts.length === 0) {
+        container.innerHTML = '<p>아직 작성된 의사결정 로그가 없습니다.</p>';
+        return;
+    }
+
+    // 페이지네이션 로직
+    const urlParams = new URLSearchParams(window.location.search);
+    const currentPage = parseInt(urlParams.get('page') || '1', 10);
+    const postsPerPage = 9;
+    const totalPages = Math.ceil(decisionPosts.length / postsPerPage);
+    const startIndex = (currentPage - 1) * postsPerPage;
+
+    // 현재 페이지에 해당하는 게시물만 선택합니다.
+    const postsForPage = decisionPosts.slice(startIndex, startIndex + postsPerPage);
+
+    let listHtml = '<ul class="post-list">'; // CSS 스타일링을 위한 클래스
+    for (const post of postsForPage) {
+        const { frontMatter, id } = post;
+        const summary = frontMatter.summary || '요약 정보가 없습니다.';
+        listHtml += `
+            <li>
+                <a href="post.html?id=${id}">
+                    <h3>${frontMatter.title || '제목 없음'}</h3>
+                    <p>${summary}</p>
+                    <span class="post-date">${frontMatter.date || '날짜 없음'}</span>
+                </a>
+            </li>`;
+    }
+    listHtml += '</ul>';
+
+    // 페이지네이션 컨트롤
+    let paginationHtml = '';
+    if (totalPages > 1) {
+        paginationHtml = '<div class="pagination">';
+        if (currentPage > 1) {
+            paginationHtml += `<a href="?page=${currentPage - 1}">[prev]</a>`;
+        } else {
+            paginationHtml += `<span>[prev]</span>`;
+        }
+        if (currentPage < totalPages) {
+            paginationHtml += `<a href="?page=${currentPage + 1}">[next]</a>`;
+        } else {
+            paginationHtml += `<span>[next]</span>`;
+        }
+        paginationHtml += '</div>';
+    }
+
+    container.innerHTML = listHtml + paginationHtml;
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     const loadHeader = fetch('./template/header.html').then(res => res.text()).then(html => document.querySelector('header').innerHTML = html);
     const loadFooter = fetch('./template/footer.html').then(res => res.text()).then(html => document.querySelector('footer').innerHTML = html);
@@ -181,6 +305,12 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         if (document.getElementById('post-container')) {
             renderPostDetail();
+        }
+        if (document.getElementById('all-troubleshooting-log-list')) {
+            renderTroubleshootingList();
+        }
+        if (document.getElementById('all-decision-log-list')) {
+            renderDecisionList();
         }
     });
 });

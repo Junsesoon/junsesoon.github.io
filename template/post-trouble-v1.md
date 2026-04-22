@@ -2,12 +2,11 @@
 ---
 title: ""
 date: yyyy-mm-dd
-category1: trouble shooting
+category1: troubleshooting
 tag: [tag1, tag2, tag3]
 summary: ""
 thumbnail: "/asset/image/~~.jpg"
 ---
-
 # 상황
 
 # 문제
