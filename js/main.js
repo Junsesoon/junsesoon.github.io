@@ -151,6 +151,44 @@ async function renderProjectList() {
 }
 
 /**
+ * index.html 페이지의 홈 화면에 최근 프로젝트 3개를 렌더링합니다.
+ */
+async function renderHomeProjectList() {
+    const container = document.getElementById('project-list');
+    if (!container) return; // 해당 ID의 컨테이너가 없으면 함수 종료
+
+    // 미리 빌드된 detailedPosts에서 'project overview' 타입의 게시물을 필터링합니다.
+    const projectPosts = detailedPosts.filter(post => post.frontMatter.category1 === 'project overview');
+    const recentProjects = projectPosts.slice(0, 3); // 최대 3개까지만 자르기
+
+    if (recentProjects.length === 0) {
+        container.innerHTML = '<p>아직 프로젝트가 없습니다.</p>';
+        return;
+    }
+
+    container.innerHTML = ''; // 중복 렌더링 방지
+
+    for (const post of recentProjects) {
+        const { frontMatter } = post;
+
+        const projectCard = document.createElement('div');
+        projectCard.className = 'project-card'; // CSS 스타일링용 클래스
+        projectCard.innerHTML = `
+            <a href="post.html?id=${post.id}">
+                <div class="card-content">
+                    <h3>${frontMatter['project title'] || frontMatter.title}</h3>
+                    <p class="summary">${frontMatter.summary || ''}</p>
+                    <div class="core-tech">
+                        <!-- core tech 내용은 추후 추가 예정이므로 비워둡니다 -->
+                    </div>
+                </div>
+            </a>
+        `;
+        container.appendChild(projectCard);
+    }
+}
+
+/**
  * post.html 페이지에 특정 게시물의 상세 내용을 렌더링합니다. 'project overview' 타입에 대한 특별 로직을 포함합니다.
  */
 async function renderPostDetail() {
@@ -369,6 +407,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (document.getElementById('all-project-list')) {
             renderProjectList();
+        }
+        if (document.getElementById('project-list')) {
+            renderHomeProjectList();
         }
         if (document.getElementById('post-container')) {
             renderPostDetail();
