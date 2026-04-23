@@ -1,4 +1,3 @@
-import { DOM_IDS } from './const.js';
 import { parseFrontMatter } from './parser.js';
 import { renderProjectList, renderPostDetail, renderTroubleshootingList, renderDecisionList } from './render.js';
 import { posts } from './post-list.js';
@@ -27,24 +26,36 @@ async function buildDetailedPosts() {
     detailedPosts = await Promise.all(promises);
 }
 
+const routes = {
+    'index.html': [renderProjectList],
+    'project.html': [renderProjectList],
+    'post.html': [renderPostDetail],
+    'troubleshooting.html': [renderTroubleshootingList],
+    'decision.html': [renderDecisionList],
+    'skill.html': [], // Placeholder for renderSkillList
+    'about.html': [], // Placeholder for renderAboutMe
+};
+
+async function router(posts) {
+    const pathname = window.location.pathname;
+    // Extract filename from path. Handles both root '/' and '/index.html' as 'index.html'.
+    const pageName = pathname.endsWith('/') ? 'index.html' : pathname.substring(pathname.lastIndexOf('/') + 1);
+
+    const renderFunctions = routes[pageName];
+
+    if (renderFunctions) {
+        for (const renderFunc of renderFunctions) {
+            await renderFunc(posts);
+        }
+    }
+}
+
 document.addEventListener('DOMContentLoaded', () => {
-    const loadHeader = fetch('./template/header.html').then(res => res.text()).then(html => document.querySelector('header').innerHTML = html);
-    const loadFooter = fetch('./template/footer.html').then(res => res.text()).then(html => document.querySelector('footer').innerHTML = html);
+    const loadHeader = fetch('/template/header.html').then(res => res.text()).then(html => document.querySelector('header').innerHTML = html);
+    const loadFooter = fetch('/template/footer.html').then(res => res.text()).then(html => document.querySelector('footer').innerHTML = html);
 
     Promise.all([loadHeader, loadFooter]).then(async () => {
         await buildDetailedPosts(); // 모든 포스트 정보를 미리 빌드합니다.
-
-        if (document.getElementById(DOM_IDS.ALL_PROJECT_LIST)) {
-            renderProjectList(detailedPosts);
-        }
-        if (document.getElementById(DOM_IDS.POST_CONTAINER)) {
-            renderPostDetail(detailedPosts);
-        }
-        if (document.getElementById(DOM_IDS.ALL_TROUBLESHOOTING_LOG_LIST)) {
-            renderTroubleshootingList(detailedPosts);
-        }
-        if (document.getElementById(DOM_IDS.ALL_DECISION_LOG_LIST)) {
-            renderDecisionList(detailedPosts);
-        }
+        await router(detailedPosts);
     });
 });

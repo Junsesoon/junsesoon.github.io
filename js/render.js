@@ -1,4 +1,4 @@
-import { DOM_IDS } from './const.js';
+import { DOM_IDS, CATEGORIES, PAGINATION, PROJECT_PROPERTY_ORDER } from './const.js';
 
 /**
  * project.html 페이지에 프로젝트 목록을 렌더링합니다.
@@ -10,7 +10,7 @@ export async function renderProjectList(detailedPosts) {
     const limit = container.dataset.limit ? parseInt(container.dataset.limit, 10) : null;
 
     // 전달받은 detailedPosts에서 'project' 타입의 게시물을 필터링합니다.
-    let projectPosts = detailedPosts.filter(post => post.frontMatter.category1 === 'project overview');
+    let projectPosts = detailedPosts.filter(post => post.frontMatter.category1 === CATEGORIES.PROJECT_OVERVIEW);
 
     if (limit) {
         projectPosts = projectPosts.slice(0, limit);
@@ -44,7 +44,7 @@ export async function renderProjectList(detailedPosts) {
 }
 
 /**
- * post.html 페이지에 특정 게시물의 상세 내용을 렌더링합니다. 'project overview' 타입에 대한 특별 로직을 포함합니다.
+ * post.html 페이지에 특정 게시물의 상세 내용을 렌더링합니다. 'project overview' 타입에 대한 특별 로직을 포함합니다
  */
 export async function renderPostDetail(detailedPosts) {
     const container = document.getElementById(DOM_IDS.POST_CONTAINER);
@@ -66,157 +66,135 @@ export async function renderPostDetail(detailedPosts) {
     }
 
     const { frontMatter, content } = post;
-
-    // 'project overview' 게시물인 경우, 특별한 레이아웃으로 렌더링합니다.
-    if (frontMatter.category1 === 'project overview') {
-        const displayTitle = frontMatter['project title'] || frontMatter.title;
-        document.title = `${displayTitle} - Junseo Blog`;
-
-        // 1. Front Matter 속성을 테이블 형태로 만듭니다.
-        let propertiesHtml = '<div class="project-properties"><h2>Project Summary</h2><table>';
-        const propertyOrder = ['start date', 'end date', '플랫폼', '개발인원', '담당역할', '언어', '서버', '프레임워크', 'DB', 'IDE', 'API', '라이브러리', 'tag'];
-        propertyOrder.forEach(key => {
-            if (frontMatter[key]) {
-                propertiesHtml += `<tr><th>${key}</th><td>${frontMatter[key]}</td></tr>`;
-            }
-        });
-        propertiesHtml += '</table></div>';
-
-        // 2. 썸네일, 요약, 속성 테이블, 마크다운 본문을 포함한 기본 구조를 렌더링합니다.
-        container.innerHTML = `
-            <h1>${displayTitle}</h1>
-            <p class="overview-subtitle">overview</p>
-            <p class="summary">${frontMatter.summary}</p>
-            ${propertiesHtml}
-            <div class="post-body">${content ? marked.parse(content) : ''}</div>
-        `;
-
-        // 3. 연관 게시물(document, troubleshooting, decision) 목록을 찾아서 삽입합니다.
-        const projectName = displayTitle;
-        if (projectName) {
-            const relatedPosts = detailedPosts.filter(p => p.frontMatter.project === projectName && p.id !== postId);
-
-            const renderRelatedPosts = (category, headingText) => {
-                const headingElement = Array.from(container.querySelectorAll('h1, h2, h3, h4, h5, h6')).find(h => h.textContent.trim().toLowerCase() === headingText.toLowerCase());
-                if (!headingElement) return;
-
-                const postsForCategory = relatedPosts
-                    .filter(p => p.frontMatter.category1 === category)
-                    .sort((a, b) => new Date(b.frontMatter.date) - new Date(a.frontMatter.date));
-
-                let listHtml = postsForCategory.length > 0
-                    ? '<ul>' + postsForCategory.slice(0, 3).map(p => `<li><a href="post.html?id=${p.id}">${p.frontMatter.title}</a> (${p.frontMatter.date || '날짜 없음'})</li>`).join('') + '</ul>'
-                    : '<p>관련 게시물이 없습니다.</p>';
-
-                const listContainer = document.createElement('div');
-                listContainer.className = DOM_IDS.RELATED_POSTS_LIST_CLASS;
-                listContainer.innerHTML = listHtml;
-                headingElement.parentNode.insertBefore(listContainer, headingElement.nextSibling);
-            };
-
-            renderRelatedPosts('document', 'document');
-            renderRelatedPosts('trouble shooting', 'trouble shooting');
-            renderRelatedPosts('decision', 'decision');
-        }
+    
+    if (frontMatter.category1 === CATEGORIES.PROJECT_OVERVIEW) {
+        await renderProjectOverviewDetail(container, post, detailedPosts);
     } else {
-        // 일반 게시물 렌더링
-        document.title = `${frontMatter.title} - Junseo Blog`;
-        container.innerHTML = `
-            <h1>${frontMatter.title}</h1>
-            <div class="post-meta">${frontMatter.date ? `<p>작성일: ${frontMatter.date}</p>` : ''}</div>
-            <div class="post-body">${content ? marked.parse(content) : ''}</div>
-        `;
+        await renderGeneralPostDetail(container, post);
     }
 }
 
 /**
- * troubleshooting.html 페이지에 트러블슈팅 로그 목록을 렌더링합니다.
+ * troubleshooting.html 페이지에 트러블슈팅 로그 목록을 렌더링합니다
  */
 export async function renderTroubleshootingList(detailedPosts) {
     const container = document.getElementById(DOM_IDS.ALL_TROUBLESHOOTING_LOG_LIST);
     if (!container) return;
 
-    // 전달받은 detailedPosts에서 'troubleshooting' 카테고리의 게시물을 날짜 내림차순으로 필터링 및 정렬합니다.
     const troubleshootingPosts = detailedPosts
-        .filter(post => post.frontMatter.category1 === 'trouble shooting')
+        .filter(post => post.frontMatter.category1 === CATEGORIES.TROUBLE_SHOOTING)
         .sort((a, b) => new Date(b.frontMatter.date) - new Date(a.frontMatter.date));
 
-    if (troubleshootingPosts.length === 0) {
-        container.innerHTML = '<p>아직 작성된 트러블슈팅 로그가 없습니다.</p>';
-        return;
-    }
-
-    // 페이지네이션 로직
-    const urlParams = new URLSearchParams(window.location.search);
-    const currentPage = parseInt(urlParams.get('page') || '1', 10);
-    const postsPerPage = 9;
-    const totalPages = Math.ceil(troubleshootingPosts.length / postsPerPage);
-    const startIndex = (currentPage - 1) * postsPerPage;
-
-    // 현재 페이지에 해당하는 게시물만 선택합니다.
-    const postsForPage = troubleshootingPosts.slice(startIndex, startIndex + postsPerPage);
-
-    let listHtml = '<ul class="post-list">'; // CSS 스타일링을 위한 클래스
-    for (const post of postsForPage) {
-        const { frontMatter, id } = post;
-        const summary = frontMatter.summary || '';
-        listHtml += `
-            <li>
-                <a href="post.html?id=${id}">
-                    <h3>${frontMatter.title}</h3>
-                    <p class="summary">${summary}</p>
-                    <span class="post-date">${frontMatter.date || '날짜 없음'}</span>
-                </a>
-            </li>`;
-    }
-    listHtml += '</ul>';
-
-    // 페이지네이션 컨트롤
-    let paginationHtml = '';
-    if (totalPages > 1) {
-        paginationHtml = '<div class="pagination">';
-        if (currentPage > 1) {
-            paginationHtml += `<a href="?page=${currentPage - 1}">[prev]</a>`;
-        } else {
-            paginationHtml += `<span>[prev]</span>`;
-        }
-        if (currentPage < totalPages) {
-            paginationHtml += `<a href="?page=${currentPage + 1}">[next]</a>`;
-        } else {
-            paginationHtml += `<span>[next]</span>`;
-        }
-        paginationHtml += '</div>';
-    }
-
-    container.innerHTML = listHtml + paginationHtml;
+    renderPaginatedList(container, troubleshootingPosts, '작성된 트러블슈팅 로그가 없습니다.');
 }
 
 /**
- * decision.html 페이지에 의사결정 로그 목록을 렌더링합니다.
+ * decision.html 페이지에 의사결정 로그 목록을 렌더링합니다
  */
 export async function renderDecisionList(detailedPosts) {
     const container = document.getElementById(DOM_IDS.ALL_DECISION_LOG_LIST);
     if (!container) return;
 
-    // 전달받은 detailedPosts에서 'decision' 카테고리의 게시물을 날짜 내림차순으로 필터링 및 정렬합니다.
+    // 전달받은 detailedPosts에서 'decision' 카테고리의 게시물을 날짜 내림차순으로 필터링 및 정렬합니다
     const decisionPosts = detailedPosts
-        .filter(post => post.frontMatter.category1 === 'decision')
+        .filter(post => post.frontMatter.category1 === CATEGORIES.DECISION)
         .sort((a, b) => new Date(b.frontMatter.date) - new Date(a.frontMatter.date));
 
-    if (decisionPosts.length === 0) {
-        container.innerHTML = '<p>아직 작성된 의사결정 로그가 없습니다.</p>';
+    renderPaginatedList(container, decisionPosts, '작성된 의사결정 로그가 없습니다.');
+}
+
+/**
+ * 'project overview' 타입 게시물의 상세 내용을 렌더링합니다.
+ * @param {HTMLElement} container - 게시물 내용을 렌더링할 DOM 요소
+ * @param {object} post - 렌더링할 게시물 객체 (frontMatter, content 포함)
+ * @param {Array} detailedPosts - 모든 상세 게시물 데이터 (연관 게시물 검색용)
+ */
+async function renderProjectOverviewDetail(container, post, detailedPosts) {
+    const { frontMatter, content } = post;
+    const displayTitle = frontMatter['project title'] || frontMatter.title;
+    document.title = `${displayTitle} - Junseo Blog`;
+
+    // 1. Front Matter 속성을 테이블 형태로 만듭니다.
+    let propertiesHtml = '<div class="project-properties"><h2>Project Summary</h2><table>';
+    PROJECT_PROPERTY_ORDER.forEach(key => {
+        if (frontMatter[key]) {
+            propertiesHtml += `<tr><th>${key}</th><td>${frontMatter[key]}</td></tr>`;
+        }
+    });
+    propertiesHtml += '</table></div>';
+
+    // 2. 썸네일, 요약, 속성 테이블, 마크다운 본문을 포함한 기본 구조를 렌더링합니다
+    container.innerHTML = `
+        <h1>${displayTitle}</h1>
+        <p class="overview-subtitle">overview</p>
+        <p class="summary">${frontMatter.summary}</p>
+        ${propertiesHtml}
+        <div class="post-body">${content ? marked.parse(content) : ''}</div>
+    `;
+
+    // 3. 연관 게시물(document, troubleshooting, decision) 목록을 찾아서 삽입합니다
+    const projectName = displayTitle;
+    if (projectName) {
+        const relatedPosts = detailedPosts.filter(p => p.frontMatter.project === projectName && p.id !== post.id);
+
+        const renderRelatedPosts = (category, headingText) => {
+            const headingElement = Array.from(container.querySelectorAll('h1, h2, h3, h4, h5, h6')).find(h => h.textContent.trim().toLowerCase() === headingText.toLowerCase());
+            if (!headingElement) return;
+
+            const postsForCategory = relatedPosts
+                .filter(p => p.frontMatter.category1 === category)
+                .sort((a, b) => new Date(b.frontMatter.date) - new Date(a.frontMatter.date));
+
+            let listHtml = postsForCategory.length > 0
+                ? '<ul>' + postsForCategory.slice(0, 3).map(p => `<li><a href="post.html?id=${p.id}">${p.frontMatter.title}</a> (${p.frontMatter.date || '날짜 없음'})</li>`).join('') + '</ul>'
+                : '<p>관련 게시물이 없습니다.</p>';
+
+            const listContainer = document.createElement('div');
+            listContainer.className = DOM_IDS.RELATED_POSTS_LIST_CLASS;
+            listContainer.innerHTML = listHtml;
+            headingElement.parentNode.insertBefore(listContainer, headingElement.nextSibling);
+        };
+
+        renderRelatedPosts(CATEGORIES.DOCUMENT, 'document');
+        renderRelatedPosts(CATEGORIES.TROUBLE_SHOOTING, 'trouble shooting');
+        renderRelatedPosts(CATEGORIES.DECISION, 'decision');
+    }
+}
+
+/**
+ * 일반 게시물의 상세 내용을 렌더링합니다
+ * @param {HTMLElement} container - 게시물 내용을 렌더링할 DOM 요소
+ * @param {object} post - 렌더링할 게시물 객체 (frontMatter, content 포함)
+ */
+async function renderGeneralPostDetail(container, post) {
+    const { frontMatter, content } = post;
+    document.title = `${frontMatter.title} - Junseo Blog`;
+    container.innerHTML = `
+        <h1>${frontMatter.title}</h1>
+        <div class="post-meta">${frontMatter.date ? `<p>작성일: ${frontMatter.date}</p>` : ''}</div>
+        <div class="post-body">${content ? marked.parse(content) : ''}</div>
+    `;
+}
+
+/**
+ * 페이지네이션된 목록과 컨트롤을 렌더링하는 공통 함수
+ * @param {HTMLElement} container - 목록을 렌더링할 DOM 요소
+ * @param {Array} posts - 렌더링할 전체 게시물 배열
+ * @param {string} noPostsMessage - 게시물이 없을 때 표시할 메시지
+ * @param {number} postsPerPage - 페이지 당 게시물 수
+ */
+function renderPaginatedList(container, posts, noPostsMessage, postsPerPage = PAGINATION.POSTS_PER_PAGE) {
+    if (posts.length === 0) {
+        container.innerHTML = `<p>${noPostsMessage}</p>`;
         return;
     }
 
-    // 페이지네이션 로직
     const urlParams = new URLSearchParams(window.location.search);
     const currentPage = parseInt(urlParams.get('page') || '1', 10);
-    const postsPerPage = 9;
-    const totalPages = Math.ceil(decisionPosts.length / postsPerPage);
+    const totalPages = Math.ceil(posts.length / postsPerPage);
     const startIndex = (currentPage - 1) * postsPerPage;
 
-    // 현재 페이지에 해당하는 게시물만 선택합니다.
-    const postsForPage = decisionPosts.slice(startIndex, startIndex + postsPerPage);
+    const postsForPage = posts.slice(startIndex, startIndex + postsPerPage);
 
     let listHtml = '<ul class="post-list">'; // CSS 스타일링을 위한 클래스
     for (const post of postsForPage) {
@@ -233,20 +211,11 @@ export async function renderDecisionList(detailedPosts) {
     }
     listHtml += '</ul>';
 
-    // 페이지네이션 컨트롤
     let paginationHtml = '';
     if (totalPages > 1) {
         paginationHtml = '<div class="pagination">';
-        if (currentPage > 1) {
-            paginationHtml += `<a href="?page=${currentPage - 1}">[prev]</a>`;
-        } else {
-            paginationHtml += `<span>[prev]</span>`;
-        }
-        if (currentPage < totalPages) {
-            paginationHtml += `<a href="?page=${currentPage + 1}">[next]</a>`;
-        } else {
-            paginationHtml += `<span>[next]</span>`;
-        }
+        paginationHtml += currentPage > 1 ? `<a href="?page=${currentPage - 1}">${PAGINATION.PREV_TEXT}</a>` : `<span>${PAGINATION.PREV_TEXT}</span>`;
+        paginationHtml += currentPage < totalPages ? `<a href="?page=${currentPage + 1}">${PAGINATION.NEXT_TEXT}</a>` : `<span>${PAGINATION.NEXT_TEXT}</span>`;
         paginationHtml += '</div>';
     }
 
