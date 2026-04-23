@@ -1,4 +1,4 @@
-const posts = [
+export const posts = [
     {
         "id": "DEC-Blog Global navigation bar structure change",
         "category1": "decision",

@@ -30,11 +30,13 @@ DEC: decision
 
 ## category1 legend
 about
+about-work
+about-edu
+about-specification
 project
-project overview
+project-overview
 skill
 trouble shooting
 decision
 document
-
-## category2 legend
+contact
