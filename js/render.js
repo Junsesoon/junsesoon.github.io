@@ -198,20 +198,25 @@ function renderPaginatedList(container, posts, noPostsMessage, postsPerPage = PA
 
     const postsForPage = posts.slice(startIndex, startIndex + postsPerPage);
 
-    let listHtml = '<ul class="post-list">'; // CSS 스타일링을 위한 클래스
+    let listHtml = '<div class="post-card-list">'; // 카드 레이아웃을 위한 컨테이너
     for (const post of postsForPage) {
         const { frontMatter, id } = post;
-        const summary = frontMatter.summary || '';
+        // summary가 배열일 경우를 대비해 join으로 처리
+        const summary = Array.isArray(frontMatter.summary) ? frontMatter.summary.join(' ') : (frontMatter.summary || '');
         listHtml += `
-            <li>
+            <div class="post-card">
                 <a href="post.html?id=${id}">
-                    <h3>${frontMatter.title}</h3>
-                    <p class="summary">${summary}</p>
-                    <span class="post-date">${frontMatter.date || '날짜 없음'}</span>
+                    <div class="card-content">
+                        <h3>${frontMatter.title}</h3>
+                        <p class="summary">${summary}</p>
+                        <div class="card-footer">
+                            <span class="post-date">${frontMatter.date || '날짜 없음'}</span>
+                        </div>
+                    </div>
                 </a>
-            </li>`;
+            </div>`;
     }
-    listHtml += '</ul>';
+    listHtml += '</div>';
 
     let paginationHtml = '';
     if (totalPages > 1) {
