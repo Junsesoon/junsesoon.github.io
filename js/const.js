@@ -1,9 +1,11 @@
 // id 관리
 export const DOM_IDS = {
-    ALL_PROJECT_LIST: 'all-project-list',
-    ALL_TROUBLESHOOTING_LOG_LIST: 'all-troubleshooting-log-list',
-    ALL_DECISION_LOG_LIST: 'all-decision-log-list',
-    ALL_SKILL_LIST: 'all-skill-list',
+    HOME_PROJECT_LIST: 'home-project-list', // 홈페이지 프로젝트 목록
+    HOME_SKILL_LIST: 'HOME-skill-list', // 홈페이지 스킬 목록
+    PROJECT_LIST: 'PRJ-project-list', // 프로젝트 페이지 목록
+    ALL_TROUBLESHOOTING_LOG_LIST: 'TRB-troubleshooting-log-list',
+    ALL_DECISION_LOG_LIST: 'DEC-decision-log-list',
+    ALL_SKILL_LIST: 'SKL-skill-list',
     POST_CONTAINER: 'post-container',
     ABOUT_ME_DETAIL: 'about-me-detail',
     RELATED_POSTS_LIST_CLASS: 'related-posts-list' // 클래스 이름이지만 상수화하여 관리

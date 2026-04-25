@@ -4,8 +4,10 @@ import { DOM_IDS, CATEGORIES, PAGINATION, PROJECT_PROPERTY_ORDER } from './const
  * project.html 페이지에 프로젝트 목록을 렌더링합니다.
  */
 export async function renderProjectList(detailedPosts) {
-    const container = document.getElementById(DOM_IDS.ALL_PROJECT_LIST); // ID가 통합되었습니다.
-    if (!container) return; // 해당 ID의 컨테이너가 없으면 함수 종료
+    // 홈페이지(home-project-list) 또는 프로젝트 페이지(project-list)의 컨테이너를 찾습니다.
+    const container = document.getElementById(DOM_IDS.HOME_PROJECT_LIST) || document.getElementById(DOM_IDS.PROJECT_LIST);
+
+    if (!container) return; // 컨테이너가 두 페이지 모두에 없으면 함수 종료
 
     const limit = container.dataset.limit ? parseInt(container.dataset.limit, 10) : null;
 
