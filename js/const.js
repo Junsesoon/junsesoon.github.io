@@ -5,6 +5,7 @@ export const DOM_IDS = {
     PROJECT_LIST: 'PRJ-project-list', // 프로젝트 페이지 목록
     ALL_TROUBLESHOOTING_LOG_LIST: 'TRB-troubleshooting-log-list',
     ALL_DECISION_LOG_LIST: 'DEC-decision-log-list',
+    ALL_POST_LIST: 'POST-post-list',
     ALL_SKILL_LIST: 'SKL-skill-list',
     POST_CONTAINER: 'post-container',
     ABOUT_ME_DETAIL: 'about-me-detail',
@@ -20,6 +21,7 @@ export const CATEGORIES = {
     DOCUMENT: 'document',
     TROUBLE_SHOOTING: 'trouble shooting',
     DECISION: 'decision',
+    KNOWLEDGE: 'knowledge',
 };
 
 // 페이지 버튼 설정

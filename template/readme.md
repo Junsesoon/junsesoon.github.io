@@ -27,12 +27,15 @@ PRJ: project
 SKL: skill
 TRB: trouble shooting
 DEC: decision
+KNO: knowledge
+DOC: document
 
 ## category1 legend
 about
 about-work
 about-edu
 about-specification
+knowledge
 project
 project-overview
 skill

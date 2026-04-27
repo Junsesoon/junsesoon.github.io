@@ -1,5 +1,5 @@
 import { parseFrontMatter } from './parser.js';
-import { renderProjectList, renderPostDetail, renderTroubleshootingList, renderDecisionList } from './render.js';
+import { renderProjectList, renderPostDetail, renderTroubleshootingList, renderDecisionList, renderAllPostList } from './render.js';
 import { posts } from './post-list.js';
 
 /**
@@ -29,9 +29,10 @@ async function buildDetailedPosts() {
 const routes = {
     'index.html': [renderProjectList],
     'project.html': [renderProjectList],
-    'post.html': [renderPostDetail],
+    'post.html': [renderAllPostList],
     'troubleshooting.html': [renderTroubleshootingList],
     'decision.html': [renderDecisionList],
+    'post-template.html': [renderPostDetail],
     'skill.html': [], // Placeholder for renderSkillList
     'about.html': [], // Placeholder for renderAboutMe
 };
@@ -51,8 +52,8 @@ async function router(posts) {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-    const loadHeader = fetch('/template/header.html').then(res => res.text()).then(html => document.querySelector('header').innerHTML = html);
-    const loadFooter = fetch('/template/footer.html').then(res => res.text()).then(html => document.querySelector('footer').innerHTML = html);
+    const loadHeader = fetch('./template/header.html').then(res => res.text()).then(html => document.querySelector('header').innerHTML = html);
+    const loadFooter = fetch('./template/footer.html').then(res => res.text()).then(html => document.querySelector('footer').innerHTML = html);
 
     Promise.all([loadHeader, loadFooter]).then(async () => {
         await buildDetailedPosts(); // 모든 포스트 정보를 미리 빌드합니다.

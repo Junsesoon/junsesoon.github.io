@@ -31,7 +31,7 @@ export async function renderProjectList(detailedPosts) {
         const projectCard = document.createElement('div');
         projectCard.className = 'project-card'; // CSS 스타일링을 위한 클래스
         projectCard.innerHTML = `
-            <a href="post.html?id=${id}">
+            <a href="./post-template.html?id=${id}">
                 <div class="card-content">
                     <h3>${frontMatter['project title'] || frontMatter.title}</h3>
                     <p class="summary">${frontMatter.summary || ''}</p>
@@ -46,7 +46,7 @@ export async function renderProjectList(detailedPosts) {
 }
 
 /**
- * post.html 페이지에 특정 게시물의 상세 내용을 렌더링합니다. 'project overview' 타입에 대한 특별 로직을 포함합니다
+ * post-template.html 페이지에 특정 게시물의 상세 내용을 렌더링합니다. 'project overview' 타입에 대한 특별 로직을 포함합니다
  */
 export async function renderPostDetail(detailedPosts) {
     const container = document.getElementById(DOM_IDS.POST_CONTAINER);
@@ -106,6 +106,22 @@ export async function renderDecisionList(detailedPosts) {
 }
 
 /**
+ * post.html 페이지에 모든 게시물(knowledge, troubleshooting, decision) 목록을 렌더링합니다.
+ */
+export async function renderAllPostList(detailedPosts) {
+    const container = document.getElementById(DOM_IDS.ALL_POST_LIST);
+    if (!container) return;
+
+    // 'knowledge', 'trouble shooting', 'decision' 카테고리의 게시물을 날짜 내림차순으로 필터링 및 정렬합니다.
+    const allowedCategories = [CATEGORIES.KNOWLEDGE, CATEGORIES.TROUBLE_SHOOTING, CATEGORIES.DECISION];
+    const combinedPosts = detailedPosts
+        .filter(post => allowedCategories.includes(post.frontMatter.category1))
+        .sort((a, b) => new Date(b.frontMatter.date) - new Date(a.frontMatter.date));
+
+    renderPaginatedList(container, combinedPosts, '작성된 게시물이 없습니다.');
+}
+
+/**
  * 'project overview' 타입 게시물의 상세 내용을 렌더링합니다.
  * @param {HTMLElement} container - 게시물 내용을 렌더링할 DOM 요소
  * @param {object} post - 렌더링할 게시물 객체 (frontMatter, content 포함)
@@ -148,7 +164,7 @@ async function renderProjectOverviewDetail(container, post, detailedPosts) {
                 .sort((a, b) => new Date(b.frontMatter.date) - new Date(a.frontMatter.date));
 
             let listHtml = postsForCategory.length > 0
-                ? '<ul>' + postsForCategory.slice(0, 3).map(p => `<li><a href="post.html?id=${p.id}">${p.frontMatter.title}</a> (${p.frontMatter.date || '날짜 없음'})</li>`).join('') + '</ul>'
+                ? '<ul>' + postsForCategory.slice(0, 3).map(p => `<li><a href="./post-template.html?id=${p.id}">${p.frontMatter.title}</a> (${p.frontMatter.date || '날짜 없음'})</li>`).join('') + '</ul>'
                 : '<p>관련 게시물이 없습니다.</p>';
 
             const listContainer = document.createElement('div');
@@ -205,7 +221,7 @@ function renderPaginatedList(container, posts, noPostsMessage, postsPerPage = PA
         const summary = Array.isArray(frontMatter.summary) ? frontMatter.summary.join(' ') : (frontMatter.summary || '');
         listHtml += `
             <div class="post-card">
-                <a href="post.html?id=${id}">
+                <a href="./post-template.html?id=${id}">
                     <div class="card-content">
                         <h3>${frontMatter.title}</h3>
                         <p class="summary">${summary}</p>
