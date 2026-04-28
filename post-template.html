@@ -12,11 +12,15 @@
         <!-- /template/header.html이 동적으로 로드됩니다. -->
     </header>
 
-    <main>
-        <article id="post-container">
-            <!-- 게시물 내용이 main.js에 의해 동적으로 렌더링됩니다. -->
-        </article>
-    </main>
+    <div class="body-container">
+        <aside class="sidebar left-sidebar"></aside>
+        <main id="content">
+            <article id="post-container">
+                <!-- 게시물 내용이 main.js에 의해 동적으로 렌더링됩니다. -->
+            </article>
+        </main>
+        <aside class="sidebar right-sidebar"></aside>
+    </div>
 
     <footer>
         <!-- /template/footer.html이 동적으로 로드됩니다. -->
