@@ -1,5 +1,6 @@
 ---
-date: 2026-03-17
+start date: 2026-03-17
+end date: 2026-03-17
 project: "junseo-tech-blog"
 category1: "trouble shooting"
 COMPLETION: true

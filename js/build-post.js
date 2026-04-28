@@ -22,27 +22,47 @@ console.log("🛠  빌드 자동화 스크립트 실행");
  * @returns {object} - 파싱된 Front Matter 객체.
  */
 function parseFrontMatterForBuild(markdown) {
-    // Front Matter 블록은 '---'로 시작하고 끝나는 YAML 형식이라고 가정합니다.
-    // '---'는 반드시 독립적인 줄에 있어야 합니다.
     const frontMatterRegex = /^---\n([\s\S]*?)\n---\n/;
-    const match = markdown.match(frontMatterRegex);
+    const match = frontMatterRegex.exec(markdown);
 
     if (!match) {
         return {};
     }
 
-    const frontMatterBlock = match[1].trim();
+    const frontMatterBlock = match[1];
     const frontMatter = {};
+    const lines = frontMatterBlock.split('\n');
+    let currentKey = null;
 
-    frontMatterBlock.split('\n').forEach(line => {
-        const parts = line.split(':');
-        if (parts.length >= 2) {
-            const key = parts[0].trim();
-            const value = parts.slice(1).join(':').trim();
-            // 값에서 앞뒤 따옴표 제거 (예: "project" -> project)
-            frontMatter[key] = value.replace(/^["']|["']$/g, '');
+    lines.forEach(line => {
+        if (line.trim() === '') return;
+
+        const lineIndent = line.match(/^\s*/)[0].length;
+        const trimmedLine = line.trimStart();
+
+        const colonIndex = trimmedLine.indexOf(':');
+        const isNewKey = colonIndex > -1 && lineIndent === 0;
+
+        if (isNewKey) {
+            currentKey = trimmedLine.substring(0, colonIndex).trim();
+            const value = trimmedLine.substring(colonIndex + 1).trim();
+            if (value) { // 값이 있는 경우에만 할당
+                frontMatter[currentKey] = value.replace(/^["']|["']$/g, '');
+            }
+        } else if (currentKey && trimmedLine.startsWith('-') && lineIndent > 0) {
+            const listItem = trimmedLine.substring(1).trim().replace(/^["']|["']$/g, '');
+            if (!Array.isArray(frontMatter[currentKey])) {
+                frontMatter[currentKey] = [];
+            }
+            frontMatter[currentKey].push(listItem);
         }
     });
+
+    // category1이 배열인 경우 첫 번째 항목을 사용합니다.
+    if (Array.isArray(frontMatter.category1)) {
+        frontMatter.category1 = frontMatter.category1[0] || null;
+    }
+
     return frontMatter;
 }
 

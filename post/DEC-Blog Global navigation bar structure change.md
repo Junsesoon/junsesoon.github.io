@@ -1,5 +1,6 @@
 ---
-date: 2026-03-31
+start date: 2026-03-31
+end date: 2026-03-31
 project:
   - junseo-tech-blog
 category1: decision

@@ -1,6 +1,8 @@
 ---
 title: ""
 category1: skill
+start date: yyyy-mm-dd
+end date: yyyy-mm-dd
 tag: [tag1, tag2, tag3]
 proficiency: [strong / knowledgeable / etc.]
 summary: ""
@@ -12,4 +14,3 @@ thumbnail: "/asset/image/~~.jpg"
 # latest 5 post
 
 # all post list
-

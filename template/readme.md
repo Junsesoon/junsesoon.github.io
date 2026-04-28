@@ -1,8 +1,8 @@
 # Create post rule
 ## property
-date
-startdate
-enddate
+date: 각종 날짜
+startdate: 최초 작성일, 프로젝트 시작일 등
+enddate: 최종 수정일, 프로젝트 종료일 등
 tag
 summary
 title: post title

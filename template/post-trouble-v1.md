@@ -1,7 +1,8 @@
 
 ---
 title: ""
-date: yyyy-mm-dd
+start date: yyyy-mm-dd
+end date: yyyy-mm-dd
 category1: "trouble shooting"
 tag: [tag1, tag2, tag3]
 summary: ""
@@ -18,4 +19,3 @@ thumbnail: "/asset/image/~~.jpg"
 # 해결
 
 # 회고
-

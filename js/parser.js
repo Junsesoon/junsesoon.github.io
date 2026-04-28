@@ -57,7 +57,9 @@ export function parseFrontMatter(markdown) {
                 const listItem = trimmedLine.substring(1).trim();
                 if (!Array.isArray(frontMatter[currentKey])) {
                     // 기존 값이 문자열이었다면 배열로 변환하고 기존 값을 첫 번째 아이템으로 추가
-                    frontMatter[currentKey] = frontMatter[currentKey] ? [frontMatter[currentKey]] : [];
+                    // 이 키에 대한 첫 번째 리스트 아이템인 경우, 배열로 새로 초기화합니다.
+                    // 'key: value' 뒤에 리스트가 오는 경우, 'value'를 버리고 리스트로 덮어씁니다.
+                    frontMatter[currentKey] = [];
                 }
                 frontMatter[currentKey].push(listItem);
             } else {
@@ -68,6 +70,18 @@ export function parseFrontMatter(markdown) {
             }
         }
     });
+
+    // date 속성을 start date로 마이그레이션하고, end date가 없으면 start date로 설정합니다.
+    if (frontMatter.date) {
+        if (!frontMatter['start date']) {
+            frontMatter['start date'] = frontMatter.date;
+        }
+        delete frontMatter.date;
+    }
+
+    if (frontMatter['start date'] && !frontMatter['end date']) {
+        frontMatter['end date'] = frontMatter['start date'];
+    }
 
     // 값의 형식을 일관성 있게 문자열로 변환합니다.
     for (const key in frontMatter) {

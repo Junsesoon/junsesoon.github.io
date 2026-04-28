@@ -1,6 +1,7 @@
 ---
-date: yyyy-mm-dd
-category1: 
+start date: yyyy-mm-dd
+end date: yyyy-mm-dd
+category1:
     - decision
 tag:
     - tag1
@@ -21,4 +22,3 @@ thumbnail: "/asset/image/~~.jpg"
 # 이유
 
 # 회고
-

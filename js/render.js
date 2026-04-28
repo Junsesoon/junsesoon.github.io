@@ -85,7 +85,7 @@ export async function renderTroubleshootingList(detailedPosts) {
 
     const troubleshootingPosts = detailedPosts
         .filter(post => post.frontMatter.category1 === CATEGORIES.TROUBLE_SHOOTING)
-        .sort((a, b) => new Date(b.frontMatter.date) - new Date(a.frontMatter.date));
+        .sort((a, b) => new Date(b.frontMatter['end date']) - new Date(a.frontMatter['end date']));
 
     renderPaginatedList(container, troubleshootingPosts, '작성된 트러블슈팅 로그가 없습니다.');
 }
@@ -100,7 +100,7 @@ export async function renderDecisionList(detailedPosts) {
     // 전달받은 detailedPosts에서 'decision' 카테고리의 게시물을 날짜 내림차순으로 필터링 및 정렬합니다
     const decisionPosts = detailedPosts
         .filter(post => post.frontMatter.category1 === CATEGORIES.DECISION)
-        .sort((a, b) => new Date(b.frontMatter.date) - new Date(a.frontMatter.date));
+        .sort((a, b) => new Date(b.frontMatter['end date']) - new Date(a.frontMatter['end date']));
 
     renderPaginatedList(container, decisionPosts, '작성된 의사결정 로그가 없습니다.');
 }
@@ -116,7 +116,7 @@ export async function renderAllPostList(detailedPosts) {
     const allowedCategories = [CATEGORIES.KNOWLEDGE, CATEGORIES.TROUBLE_SHOOTING, CATEGORIES.DECISION];
     const combinedPosts = detailedPosts
         .filter(post => allowedCategories.includes(post.frontMatter.category1))
-        .sort((a, b) => new Date(b.frontMatter.date) - new Date(a.frontMatter.date));
+        .sort((a, b) => new Date(b.frontMatter['end date']) - new Date(a.frontMatter['end date']));
 
     renderPaginatedList(container, combinedPosts, '작성된 게시물이 없습니다.');
 }
@@ -161,10 +161,10 @@ async function renderProjectOverviewDetail(container, post, detailedPosts) {
 
             const postsForCategory = relatedPosts
                 .filter(p => p.frontMatter.category1 === category)
-                .sort((a, b) => new Date(b.frontMatter.date) - new Date(a.frontMatter.date));
+                .sort((a, b) => new Date(b.frontMatter['end date']) - new Date(a.frontMatter['end date']));
 
             let listHtml = postsForCategory.length > 0
-                ? '<ul>' + postsForCategory.slice(0, 3).map(p => `<li><a href="./post-template.html?id=${p.id}">${p.frontMatter.title}</a> (${p.frontMatter.date || '날짜 없음'})</li>`).join('') + '</ul>'
+                ? '<ul>' + postsForCategory.slice(0, 3).map(p => `<li><a href="./post-template.html?id=${p.id}">${p.frontMatter.title}</a> (${p.frontMatter['end date'] || '날짜 없음'})</li>`).join('') + '</ul>'
                 : '<p>관련 게시물이 없습니다.</p>';
 
             const listContainer = document.createElement('div');
@@ -187,9 +187,19 @@ async function renderProjectOverviewDetail(container, post, detailedPosts) {
 async function renderGeneralPostDetail(container, post) {
     const { frontMatter, content } = post;
     document.title = `${frontMatter.title} - Junseo Blog`;
+
+    let dateHtml = '';
+    if (frontMatter['start date']) {
+        dateHtml = `<p>작성일: ${frontMatter['start date']}</p>`;
+        // end date가 있고 start date와 다를 경우에만 수정일을 표시합니다.
+        if (frontMatter['end date'] && frontMatter['end date'] !== frontMatter['start date']) {
+            dateHtml += `<p>수정일: ${frontMatter['end date']}</p>`;
+        }
+    }
+
     container.innerHTML = `
         <h1>${frontMatter.title}</h1>
-        <div class="post-meta">${frontMatter.date ? `<p>작성일: ${frontMatter.date}</p>` : ''}</div>
+        <div class="post-meta">${dateHtml}</div>
         <div class="post-body">${content ? marked.parse(content) : ''}</div>
     `;
 }
@@ -226,7 +236,7 @@ function renderPaginatedList(container, posts, noPostsMessage, postsPerPage = PA
                         <h3>${frontMatter.title}</h3>
                         <p class="summary">${summary}</p>
                         <div class="card-footer">
-                            <span class="post-date">${frontMatter.date || '날짜 없음'}</span>
+                            <span class="post-date">${frontMatter['end date'] || '날짜 없음'}</span>
                         </div>
                     </div>
                 </a>
