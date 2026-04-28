@@ -6,7 +6,7 @@ const fs = require('fs'); // Node.js 파일 시스템 모듈
 const path = require('path');
 
 // 마크다운 게시물 파일들이 위치한 디렉토리
-const postsDirectory = path.join(__dirname, '../../junseo-blog/post');
+const postsRootDirectory = path.join(__dirname, '../../junseo-blog/post');
 // 생성될 post-list.js 파일의 경로
 const outputFilePath = path.join(__dirname, './post-list.js');
 // 2. 확인용 로그 추가 (어디를 보고 있는지 터미널에 찍어줍니다)
@@ -66,43 +66,75 @@ function parseFrontMatterForBuild(markdown) {
     return frontMatter;
 }
 
+/**
+ * 주어진 디렉토리 내의 모든 마크다운 파일 경로를 재귀적으로 찾습니다.
+ * @param {string} dir - 검색을 시작할 디렉토리 경로.
+ * @param {string[]} fileList - 찾은 파일 경로를 저장할 배열.
+ * @param {string} baseDir - 상대 경로 계산을 위한 기준 디렉토리.
+ * @returns {Promise<string[]>} - 마크다운 파일들의 상대 경로 배열. (예: "category/post-name.md")
+ */
+async function getAllMarkdownFiles(dir, fileList = [], baseDir = dir) {
+    const files = await fs.promises.readdir(dir, { withFileTypes: true });
+
+    for (const file of files) {
+        const fullPath = path.join(dir, file.name);
+        if (file.isDirectory()) {
+            await getAllMarkdownFiles(fullPath, fileList, baseDir);
+        } else if (file.isFile() && file.name.endsWith('.md')) {
+            const relativePath = path.relative(baseDir, fullPath);
+            fileList.push(relativePath);
+        }
+    }
+    return fileList;
+}
+
 async function generatePostsData() {
     let postsData = [];
 
     try {
-        // 게시물 디렉토리가 존재하는지 확인
-        if (!fs.existsSync(postsDirectory)) {
-            console.warn(`경고: 게시물 디렉토리를 찾을 수 없습니다: ${postsDirectory}. 빈 posts.js 파일이 생성됩니다.`);
+        // 게시물 루트 디렉토리가 존재하는지 확인
+        if (!fs.existsSync(postsRootDirectory)) {
+            console.warn(`경고: 게시물 디렉토리를 찾을 수 없습니다: ${postsRootDirectory}. 빈 posts.js 파일이 생성됩니다.`);
             await fs.promises.writeFile(outputFilePath, 'const posts = [];\n', 'utf8');
             return;
         }
 
-        const files = await fs.promises.readdir(postsDirectory);
+        // 모든 마크다운 파일의 상대 경로를 가져옵니다.
+        const markdownRelativePaths = await getAllMarkdownFiles(postsRootDirectory);
 
-        for (const file of files) {
-            if (file.endsWith('.md')) {
-                const filePath = path.join(postsDirectory, file);
-                const markdownContent = await fs.promises.readFile(filePath, 'utf8');
+        for (const relativePath of markdownRelativePaths) {
+            // Windows 경로 구분자(\)를 POSIX 구분자(/)로 통일합니다.
+            const posixRelativePath = relativePath.replace(/\\/g, '/');
 
-                const frontMatter = parseFrontMatterForBuild(markdownContent);
-
-                const id = file.replace(/\.md$/, ''); // 파일명에서 .md 확장자 제거
-                const category1 = frontMatter.category1 || 'uncategorized'; // Front Matter에 category1이 없으면 'uncategorized'로 기본값 설정
-                const postPath = `./post/${file}`; // HTML 파일 기준 게시물 경로
-
-                postsData.push({ id, category1, path: postPath });
+            // 'template' 문자열을 포함하는 경로(폴더 또는 파일)는 건너뜁니다.
+            if (posixRelativePath.includes('template')) {
+                console.log(`🟡 템플릿 파일/폴더를 건너뜁니다: ${posixRelativePath}`);
+                continue;
             }
+
+            const filePath = path.join(postsRootDirectory, relativePath);
+            const markdownContent = await fs.promises.readFile(filePath, 'utf8');
+
+            const frontMatter = parseFrontMatterForBuild(markdownContent);
+
+            // 파일명만 ID로 사용합니다. (예: "파이썬")
+            const id = path.basename(posixRelativePath, '.md');
+            const category1 = frontMatter.category1 || 'uncategorized'; // Front Matter에 category1이 없으면 'uncategorized'로 기본값 설정
+            const postPath = `./post/${posixRelativePath}`; // HTML 파일 기준 게시물 경로 (예: "./post/knowledge/파이썬.md")
+
+            postsData.push({ id, category1, path: postPath });
         }
 
-        const outputContent = `const posts = ${JSON.stringify(postsData, null, 4)};\n`;
-        await fs.promises.writeFile(outputFilePath, outputContent, 'utf8');
-        console.log(`성공적으로 ${outputFilePath} 파일을 생성했습니다.`);
+        const fileContent = `export const posts = ${JSON.stringify(postsData, null, 4)};\n`;
+        await fs.promises.writeFile(outputFilePath, fileContent, 'utf8');
 
+        console.log(`✅ ${outputFilePath} 파일이 성공적으로 생성되었습니다.`);
+        console.log(`✅ 총 ${postsData.length}개의 게시물이 처리되었습니다.`);
     } catch (error) {
-        console.error('게시물 데이터 생성 중 오류 발생:', error);
-        // 오류 발생 시 빈 posts 배열을 가진 파일을 생성하여 애플리케이션이 깨지지 않도록 함
-        await fs.promises.writeFile(outputFilePath, 'const posts = [];\n', 'utf8');
+        console.error('🚨 게시물 데이터를 생성하는 중 오류가 발생했습니다:', error);
     }
+    console.log("-----------------------------------------");
 }
 
+// 스크립트 실행
 generatePostsData();
