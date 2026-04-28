@@ -1,5 +1,5 @@
 import { parseFrontMatter } from './parser.js';
-import { renderProjectList, renderPostDetail, renderTroubleshootingList, renderDecisionList, renderAllPostList } from './render.js';
+import { renderProjectList, renderPostDetail, renderTroubleshootingList, renderDecisionList, renderAllPostList, generateToc } from './render.js';
 import { posts } from './post-list.js';
 
 /**
@@ -47,6 +47,11 @@ async function router(posts) {
     if (renderFunctions) {
         for (const renderFunc of renderFunctions) {
             await renderFunc(posts);
+        }
+
+        // post-template.html 페이지인 경우, 렌더링 후 목차를 생성합니다.
+        if (pageName === 'post-template.html') {
+            generateToc();
         }
     }
 }

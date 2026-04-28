@@ -254,3 +254,68 @@ function renderPaginatedList(container, posts, noPostsMessage, postsPerPage = PA
 
     container.innerHTML = listHtml + paginationHtml;
 }
+
+/**
+ * 게시물 내용(#post-container)을 기반으로 목차(#toc-list)를 생성합니다.
+ * h1, h2 태그를 대상으로 합니다.
+ */
+export function generateToc() {
+    const postContainer = document.getElementById('post-container');
+    const tocList = document.getElementById('toc-list');
+    const tocContainer = document.getElementById('toc-container');
+
+    // 목차 관련 DOM 요소가 없으면 함수를 종료합니다.
+    if (!tocContainer || !tocList || !postContainer) {
+        if (tocContainer) tocContainer.style.display = 'none';
+        return;
+    }
+
+    tocList.innerHTML = ''; // 기존 목차 초기화
+    const headers = postContainer.querySelectorAll('h1, h2');
+
+    if (headers.length === 0) {
+        tocContainer.style.display = 'none'; // 헤더가 없으면 목차 컨테이너를 숨깁니다.
+        return;
+    }
+
+    tocContainer.style.display = 'block'; // 헤더가 있으면 목차 컨테이너를 보여줍니다.
+
+    headers.forEach((header, index) => {
+        let id = header.id;
+        if (!id) {
+            id = `header-${header.textContent.trim().toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]+/g, '')}`;
+            if (document.getElementById(id)) {
+                id = `${id}-${index}`; // 중복 ID 방지
+            }
+            header.id = id;
+        }
+
+        const li = document.createElement('li');
+        li.className = `toc-item-${header.tagName.toLowerCase()}`;
+        li.innerHTML = `<a href="#${id}">${header.textContent}</a>`;
+        tocList.appendChild(li);
+    });
+
+    // 스크롤 위치에 따라 목차 항목을 하이라이트하는 스크롤 스파이 기능
+    const tocLinks = document.querySelectorAll('#toc-list a');
+    const scrollSpy = () => {
+        const offset = 80; // GNB 높이(60px) + 여유(20px)
+        let currentActiveId = null;
+
+        headers.forEach(header => {
+            if (header.getBoundingClientRect().top < offset) {
+                currentActiveId = header.id;
+            }
+        });
+
+        tocLinks.forEach(link => {
+            link.classList.remove('active');
+            if (link.getAttribute('href') === `#${currentActiveId}`) {
+                link.classList.add('active');
+            }
+        });
+    };
+
+    window.addEventListener('scroll', scrollSpy);
+    scrollSpy(); // 페이지 로드 시 초기 상태를 설정하기 위해 한 번 호출합니다.
+}

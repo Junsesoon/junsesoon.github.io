@@ -32,6 +32,7 @@ h1, h2, h3, h4, h5, h6 {
     display: flex;
     flex: 1; /* header와 footer 사이의 모든 공간을 차지 */
     width: 100%;
+    padding-top: 60px; /* 고정된 헤더의 높이(60px)만큼 콘텐츠를 아래로 내립니다. */
 }
 
 /* 메인 콘텐츠 영역 */
@@ -110,10 +111,16 @@ main#content {
     ===================================== */
 .gnb {
     display: flex;
+    position: fixed; /* GNB를 화면 상단에 고정 */
+    top: 0;
+    left: 0;
+    width: 100%;
     justify-content: space-between; /* 양 끝으로 요소들을 밀어냅니다 */
     align-items: center;
     background-color: #333; /* GNB 배경색을 부모 요소로 이동 */
-    padding: 0 40px; /* 양옆 여백을 줘서 화면 끝에 너무 붙지 않게 합니다 */
+    padding: 0 0; /* 양옆 여백을 줘서 화면 끝에 너무 붙지 않게 합니다 */
+    z-index: 1000; /* 다른 요소들 위에 표시되도록 z-index 설정 */
+    height: 60px; /* JS, TOC에서 참조하는 높이와 일치시킵니다. */
 }
 
 .gnb ul {
@@ -122,8 +129,8 @@ main#content {
     align-items: center;
     list-style: none;
     margin: 0;
-    padding: 15px 0;
-    gap: 30px; /* 메뉴 간격 */
+    padding: 0 40px;
+    gap: 15px; /* 메뉴 간격을 줄여 더 많은 항목이 보이도록 조정 */
 }
 
 .gnb ul li a {
@@ -278,4 +285,70 @@ h2 {
 .card-footer .post-date {
     color: #777;
     font-size: 0.9rem;
+}
+
+/* =====================================
+   3.8. Table of Contents
+    ===================================== */
+
+#toc-container {
+    position: sticky; /* 화면 스크롤 시 따라옴 */
+    top: 100px; /* 상단에서 100px 떨어진 위치에 고정 */
+    max-height: calc(100vh - 100px); /* 화면 높이에서 여유 공간을 뺀 만큼만 차지 (GNB 60px + 여백 40px) */
+    overflow-y: auto; /* 내용이 길어지면 스크롤바 표시 */
+    padding: 0 15px;
+    display: none; /* 기본적으로 숨김, JS로 헤더가 있을 때 표시 */
+}
+
+#toc-container h3 {
+    font-size: 1.1rem;
+    margin-top: 0;
+    margin-bottom: 15px;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 10px;
+}
+
+#toc-list {
+    list-style-type: none;
+    padding-left: 5px;
+}
+
+#toc-list li a {
+    display: block;
+    padding: 6px 0;
+    text-decoration: none;
+    color: #555;
+    font-size: 0.9rem;
+    transition: all 0.2s ease-in-out;
+}
+
+#toc-list li a:hover {
+    color: #007bff; /* 호버 시 색상 변경 */
+    transform: translateX(4px); /* 살짝 오른쪽으로 이동 */
+}
+
+/* 스크롤 위치에 따라 활성화된 목차 항목 */
+#toc-list li a.active {
+    color: #007bff;
+    font-weight: bold;
+}
+
+/* h2 태그에 대한 들여쓰기 */
+#toc-list .toc-item-h2 {
+    padding-left: 15px;
+}
+
+/* ==========================================================================
+
+   4. Media Queries (Responsive Design)
+
+   ========================================================================== */
+
+@media (max-width: 1440px) {
+    .gnb {
+        padding: 0 0; /* GNB 좌우 여백을 줄입니다 */
+    }
+    .gnb ul {
+        gap: 20px; /* 메뉴 간격 */
+    }
 }
