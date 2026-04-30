@@ -12,3 +12,10 @@
         gap: 20px; /* 메뉴 간격 */
     }
 }
+
+@media (max-width: 1024px) {
+    #skill-category-grid {
+        grid-template-columns: 1fr; /* 화면이 작아지면 1열로 변경 */
+        gap: 24px; /* 간격 조정 */
+    }
+}

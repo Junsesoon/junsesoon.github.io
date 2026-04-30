@@ -15,6 +15,11 @@ export const posts = [
         "path": "./post/project/TB-junseo-tech-blog.md"
     },
     {
+        "id": "python",
+        "category1": "skill",
+        "path": "./post/skill/python.md"
+    },
+    {
         "id": "콘솔 로그 파헤치기",
         "category1": "trouble shooting",
         "path": "./post/troubleshooting/콘솔 로그 파헤치기.md"

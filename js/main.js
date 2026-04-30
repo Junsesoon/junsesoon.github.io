@@ -1,6 +1,10 @@
 import { parseFrontMatter } from './parser.js';
-import { renderProjectList, renderPostDetail, renderTroubleshootingList, renderDecisionList, renderAllPostList, generateToc } from './render.js';
-import { posts } from './post-list.js';
+import {
+    renderProjectList, renderPostDetail, renderTroubleshootingList,
+    renderDecisionList, renderAllPostList, generateToc,
+    renderHomeSkills, renderSkillCards, showSkillOverlay, closeSkillOverlay
+} from './render.js';
+import { posts } from './post-list.js'; // 모든 게시물 목록
 
 /**
  * 모든 게시물의 상세 정보(Front Matter, 콘텐츠 포함)를 저장하는 전역 캐시 변수입니다.
@@ -27,13 +31,13 @@ async function buildDetailedPosts() {
 }
 
 const routes = {
-    'index.html': [renderProjectList],
+    'index.html': [renderProjectList, renderHomeSkills],
     'project.html': [renderProjectList],
     'post.html': [renderAllPostList],
     'troubleshooting.html': [renderTroubleshootingList],
     'decision.html': [renderDecisionList],
     'post-template.html': [renderPostDetail],
-    'skill.html': [], // Placeholder for renderSkillList
+    'skill.html': [renderSkillCards],
     'about.html': [], // Placeholder for renderAboutMe
 };
 

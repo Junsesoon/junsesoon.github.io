@@ -1,4 +1,5 @@
 import { DOM_IDS, CATEGORIES, PAGINATION, PROJECT_PROPERTY_ORDER } from './const.js';
+import { skills } from './skill-list.js'; // 스킬 데이터 직접 임포트
 
 /**
  * project.html 페이지에 프로젝트 목록을 렌더링합니다.
@@ -318,4 +319,131 @@ export function generateToc() {
 
     window.addEventListener('scroll', scrollSpy);
     scrollSpy(); // 페이지 로드 시 초기 상태를 설정하기 위해 한 번 호출합니다.
+}
+
+/**
+ * 홈페이지에 'main stack' 스킬 목록을 렌더링합니다.
+ * @param {Array<Object>} detailedPosts - 모든 상세 게시물 데이터 (showSkillOverlay에 전달).
+ */
+export function renderHomeSkills(detailedPosts) {
+    const container = document.getElementById(DOM_IDS.HOME_SKILL_LIST);
+    if (!container) return;
+
+    // 숙련도 레벨 '★'인 스킬만 필터링합니다.
+    const mainSkills = skills.filter(skill => skill.proficiency === '★');
+
+    if (mainSkills.length === 0) {
+        container.innerHTML = '<li>주요 기술 스택을 준비 중입니다.</li>';
+        return;
+    }
+
+    container.innerHTML = ''; // 기존 목록 초기화
+
+    mainSkills.forEach(skill => {
+        const li = document.createElement('li');
+        li.className = 'home-skill-item';
+        li.setAttribute('data-skill-id', skill.id);
+        li.style.cursor = 'pointer';
+
+        li.innerHTML = `
+            <div class="home-skill-thumbnail">
+                <img src="${skill.thumbnail || '/asset/image/default-skill.png'}" alt="${skill.title}">
+            </div>
+            <span class="home-skill-title">${skill.title}</span>
+        `;
+
+        li.addEventListener('click', () => showSkillOverlay(skill.id, detailedPosts)); // Pass detailedPosts
+        container.appendChild(li);
+    });
+}
+
+/**
+ * 스킬 카드들을 동적으로 렌더링하여 해당 카테고리 섹션에 추가합니다.
+ * @param {Array<Object>} detailedPosts - 모든 상세 게시물 데이터 (showSkillOverlay에 전달).
+ */
+export function renderSkillCards(detailedPosts) {
+    const backendContainer = document.getElementById('backend-skills')?.querySelector('.skill-card-list');
+    const frontendContainer = document.getElementById('frontend-skills')?.querySelector('.skill-card-list');
+    const productivityContainer = document.getElementById('productivity-skills')?.querySelector('.skill-card-list');
+    const infraContainer = document.getElementById('infra-skills')?.querySelector('.skill-card-list');
+
+    if (!backendContainer && !frontendContainer && !productivityContainer && !infraContainer) {
+        return; // 스킬 페이지가 아니면 아무것도 하지 않음
+    }
+
+    skills.forEach(skill => {
+        if (!skill.id) return; // ID가 없으면 카드를 생성하지 않음
+
+        const skillCard = document.createElement('div');
+        skillCard.className = 'skill-card';
+        skillCard.setAttribute('data-skill-id', skill.id);
+        skillCard.style.cursor = 'pointer';
+
+        skillCard.innerHTML = `
+            <div class="skill-card-thumbnail">
+                <img src="${skill.thumbnail || '/asset/image/default-skill.png'}" alt="${skill.title}">
+            </div>
+            <div class="skill-card-content">
+                <h3>${skill.title}</h3>
+                <div class="skill-proficiency">숙련도: ${skill.proficiency}</div>
+            </div>
+        `;
+
+        skillCard.addEventListener('click', () => showSkillOverlay(skill.id, detailedPosts)); // Pass detailedPosts
+
+        if (skill.category2 === 'Back end' && backendContainer) backendContainer.appendChild(skillCard);
+        else if (skill.category2 === 'Front end' && frontendContainer) frontendContainer.appendChild(skillCard);
+        else if (skill.category2 === 'Productivity' && productivityContainer) productivityContainer.appendChild(skillCard);
+        else if (skill.category2 === 'Infra' && infraContainer) infraContainer.appendChild(skillCard);
+    });
+}
+
+/**
+ * 스킬 상세 정보를 보여주는 오버레이를 생성하고 표시합니다.
+ * @param {string} skillId - 표시할 스킬의 ID.
+ * @param {Array<Object>} detailedPosts - 모든 상세 게시물 데이터.
+ */
+export async function showSkillOverlay(skillId, detailedPosts) {
+    const skillPost = detailedPosts.find(post => post.id === skillId);
+    if (!skillPost) {
+        console.error(`ID가 "${skillId}"인 스킬을 찾을 수 없습니다.`);
+        return;
+    }
+
+    const overlay = document.createElement('div');
+    overlay.id = 'skill-overlay';
+    overlay.className = 'skill-overlay';
+    overlay.innerHTML = `
+        <div class="skill-overlay-content">
+            <button class="close-button">&times;</button>
+            <div class="skill-overlay-body">
+                <h1>${skillPost.frontMatter.title}</h1>
+                <div class="post-meta">
+                    <span>숙련도: ${skillPost.frontMatter.proficiency || 'N/A'}</span>
+                </div>
+                <hr>
+                ${marked.parse(skillPost.content)}
+            </div>
+        </div>
+    `;
+
+    document.body.appendChild(overlay);
+    document.body.style.overflow = 'hidden'; // 배경 스크롤 방지
+    overlay.style.display = 'flex';
+
+    overlay.querySelector('.close-button').addEventListener('click', closeSkillOverlay);
+    overlay.addEventListener('click', e => {
+        if (e.target === overlay) closeSkillOverlay();
+    });
+}
+
+/**
+ * 스킬 오버레이를 닫고 DOM에서 제거합니다.
+ */
+export function closeSkillOverlay() {
+    const overlay = document.getElementById('skill-overlay');
+    if (overlay) {
+        document.body.removeChild(overlay);
+        document.body.style.overflow = ''; // 배경 스크롤 복원
+    }
 }
