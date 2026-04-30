@@ -4,7 +4,7 @@ category1: skill
 start date: yyyy-mm-dd
 end date: yyyy-mm-dd
 tag: [tag1, tag2, tag3]
-proficiency: [strong / knowledgeable / etc.]
+proficiency: [main stack / knowledgeable / etc.]
 summary: ""
 thumbnail: "/asset/image/~~.jpg"
 ---
