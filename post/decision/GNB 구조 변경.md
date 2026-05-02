@@ -4,13 +4,11 @@ end date: 2026-03-31
 project:
   - junseo-tech-blog
 category1: decision
+summary: 블로그 Global Navigation Bar의 구성과 역할을 수정하였음
 tags:
   - UI
   - UX
 ---
-# 요약
-블로그 Global Navigation Bar의 구성과 역할을 수정하였음
-
 # 배경
 - [[wire-frame-v2.0.0|wire-frame-v2.0.0]]
 - 블로그 글이 많아질 경우 side bar의 폴더트리가 급격하게 길어질텐데 어떻게 하는게 좋을지 고민하게 됨

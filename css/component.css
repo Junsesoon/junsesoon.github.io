@@ -26,6 +26,15 @@
     align-items: flex-start; /* 가로축: 좌측 정렬 */
 }
 
+/* 공용 페이지 설명서 */
+#page-readme {
+    padding: 24px;
+    margin-bottom: 40px; /* 히어로 제목과의 간격 */
+    border-radius: 8px;
+    width: 100%; /* 너비를 100%로 설정하여 일관된 레이아웃 유지 */
+    box-sizing: border-box; /* 패딩과 테두리가 너비에 포함되도록 설정 */
+}
+
 /* About 페이지 히어로 */
 #about-hero {
     padding: 40px;
@@ -44,7 +53,6 @@
     align-items: center;
     text-align: center; /* 텍스트 자체도 중앙 정렬 */
 }
-
 
 /* =====================================
     1.2. Page-Specific Sections
@@ -109,7 +117,7 @@ h2 {
 }
 
 .skill-category-section {
-    border: 1px solid; /* 색상은 theme.css에서 정의 */
+    /* border 색상은 theme.css에서 정의 */
     border-radius: 12px;
     padding: 24px;
 }
@@ -119,7 +127,7 @@ h2 {
     margin-top: 0;
     margin-bottom: 24px;
     padding-bottom: 16px;
-    border-bottom: 1px solid; /* 색상은 theme.css에서 정의 */
+    /* border-bottom 색상은 theme.css에서 정의 */
 }
 
 /* =====================================
@@ -169,14 +177,12 @@ h2 {
     ===================================== */
 .post-card {
     aspect-ratio: 3 / 4; /* 게시물 카드의 가로:세로 비율 고정 */
-    border: 1px solid #e0e0e0;
     border-radius: 12px;
     transition: transform 0.3s ease, box-shadow 0.3s ease;
     overflow: hidden;
 }
 
 .project-card {
-    border: 1px solid #e0e0e0;
     border-radius: 12px;
     transition: transform 0.3s ease, box-shadow 0.3s ease;
     overflow: hidden;
@@ -268,7 +274,7 @@ h2 {
     margin-bottom: 8px;
 }
 
-.skill-proficiency {
+.skill-familiarity {
     font-size: 0.85rem;
 }
 
@@ -280,7 +286,6 @@ h2 {
     overflow: hidden; /* 넘치는 텍스트를 숨김 */
     text-overflow: ellipsis;
     display: -webkit-box;
-    -webkit-line-clamp: 4; /* 표시할 최대 라인 수 (조정 가능) */
     -webkit-box-orient: vertical;
 }
 
@@ -398,7 +403,6 @@ h2 {
     font-weight: bold;
     line-height: 1;
     border: none;
-    background: transparent;
     padding: 0;
     cursor: pointer;
 }

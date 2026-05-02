@@ -95,8 +95,8 @@ async function generateSkillsData() {
                 skillsData.push({
                     id: id,
                     title: frontMatter.title || id,
-                    category2: category2,
-                    proficiency: frontMatter.proficiency || '',
+                    category2: category2, // category2는 그대로 유지
+                    familiar: frontMatter.familiar || '', // 'proficiency' 대신 'familiar' 사용
                     summary: frontMatter.summary || '',
                     thumbnail: frontMatter.thumbnail || frontMatter.logo || '',
                     link: `/post-template.html?id=${id}`

@@ -330,7 +330,7 @@ export function renderHomeSkills(detailedPosts) {
     if (!container) return;
 
     // 숙련도 레벨 '★'인 스킬만 필터링합니다.
-    const mainSkills = skills.filter(skill => skill.proficiency === '★');
+    const mainSkills = skills.filter(skill => skill.familiar === '★');
 
     if (mainSkills.length === 0) {
         container.innerHTML = '<li>주요 기술 스택을 준비 중입니다.</li>';
@@ -385,7 +385,7 @@ export function renderSkillCards(detailedPosts) {
             </div>
             <div class="skill-card-content">
                 <h3>${skill.title}</h3>
-                <div class="skill-proficiency">숙련도: ${skill.proficiency}</div>
+                <div class="skill-familiarity">기술친화도: ${skill.familiar}</div>
             </div>
         `;
 
@@ -419,7 +419,7 @@ export async function showSkillOverlay(skillId, detailedPosts) {
             <div class="skill-overlay-body">
                 <h1>${skillPost.frontMatter.title}</h1>
                 <div class="post-meta">
-                    <span>숙련도: ${skillPost.frontMatter.proficiency || 'N/A'}</span>
+                    <span>기술친화도: ${skillPost.frontMatter.familiar || 'N/A'}</span>
                 </div>
                 <hr>
                 ${marked.parse(skillPost.content)}

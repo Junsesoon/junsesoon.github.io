@@ -1,8 +1,13 @@
 export const posts = [
     {
-        "id": "Blog Global navigation bar structure change",
+        "id": "GNB 구조 변경",
         "category1": "decision",
-        "path": "./post/decision/Blog Global navigation bar structure change.md"
+        "path": "./post/decision/GNB 구조 변경.md"
+    },
+    {
+        "id": "기술 역량 시각화 전략 변경",
+        "category1": "decision",
+        "path": "./post/decision/기술 역량 시각화 전략 변경.md"
     },
     {
         "id": "파이썬",

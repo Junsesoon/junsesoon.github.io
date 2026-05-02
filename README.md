@@ -17,4 +17,5 @@ Initialized on 2026-02-19.
 
 ```bash
 node js/build-post.js
+node js/build-skill.js
 ```
