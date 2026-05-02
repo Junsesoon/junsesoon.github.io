@@ -1,0 +1,152 @@
+/* ==========================================================================
+
+   Theme Colors
+
+   ========================================================================== */
+
+/* Layout related colors */
+.sidebar {
+    background-color: #f8f9fa; /* 사이드바 배경색 */
+}
+
+.gnb {
+    background-color: #333; /* GNB 배경색 */
+}
+
+.gnb ul li a {
+    color: #fff; /* GNB 링크 색상 */
+}
+
+.gnb ul li a:hover {
+    color: #ffd700; /* GNB 링크 호버 색상 */
+}
+
+/* Component related colors */
+#home-hero {
+    background-color: #e9ecef; /* 홈페이지 히어로 섹션 배경색 */
+}
+
+#page-hero,
+#about-hero,
+#PRJ-hero {
+    background-color: #f1f3f5; /* 공용 히어로 섹션 배경색 */
+}
+
+/* 공용 페이지 설명서 */
+#page-readme {
+    background-color: #fff;
+    border-left: 4px solid #cde5ff;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+}
+
+
+/* Home page skill list colors */
+.home-skill-item {
+    background-color: #f8f9fa;
+    border: 1px solid #e9ecef;
+}
+
+.home-skill-item:hover {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
+}
+
+.home-skill-title {
+    color: #343a40;
+}
+
+.skill-card {
+    border: 1px solid #e0e0e0;
+    background-color: #fff;
+}
+
+.skill-card:hover {
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+}
+
+.skill-card a {
+    color: #333;
+}
+
+.skill-card-content h3 {
+    color: #222;
+}
+
+.skill-familiarity {
+    color: #555;
+}
+
+.skill-category-section {
+    border: 1px solid #e0e0e0;
+    background-color: #ffffff;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+}
+
+.skill-category-section h3 {
+    border-bottom: 1px solid #eeeeee;
+}
+
+.post-card,
+.project-card {
+    border: 1px solid #e0e0e0; /* 카드 테두리 색상 */
+    background-color: #fff; /* 카드 배경색 */
+}
+
+.project-card:hover,
+.post-card:hover {
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1); /* 카드 호버 시 그림자 색상 */
+}
+
+.project-card a,
+.post-card a {
+    color: #333; /* 카드 링크 색상 */
+}
+
+.card-content h3 {
+    color: #222; /* 카드 제목 색상 */
+}
+
+.card-content .summary {
+    color: #555; /* 카드 요약 텍스트 색상 */
+}
+
+.card-footer .post-date {
+    color: #777; /* 카드 날짜 텍스트 색상 */
+}
+
+#toc-container h3 {
+    border-bottom: 1px solid #eee; /* 목차 제목 하단 테두리 색상 */
+}
+
+#toc-list li a {
+    color: #555; /* 목차 링크 색상 */
+}
+
+#toc-list li a:hover {
+    color: #007bff; /* 목차 링크 호버 색상 */
+}
+
+#toc-list li a.active {
+    color: #007bff; /* 활성화된 목차 링크 색상 */
+}
+
+/* Skill Overlay Colors */
+.skill-overlay {
+    background-color: rgba(0, 0, 0, 0.7);
+}
+
+.skill-overlay-content {
+    background-color: #fff;
+}
+
+.skill-overlay-body hr {
+    border-color: #eee;
+}
+
+.close-button {
+    color: #aaa;
+    background: transparent;
+}
+
+.close-button:hover {
+    color: #333;
+}

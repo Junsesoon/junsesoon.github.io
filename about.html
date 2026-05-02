@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>Junseo Blog - About</title>
+    <link rel="stylesheet" href="./css/base.css">
+    <link rel="stylesheet" href="./css/layout.css">
+    <link rel="stylesheet" href="./css/component.css">
+    <link rel="stylesheet" href="./css/theme.css">
+    <link rel="stylesheet" href="./css/style.css">
+    <style>
+        /* 이력서 헤더 및 A4 컨테이너 임시 스타일 */
+        .resume-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+        .resume-title-group {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        .resume-title-group h2 {
+            margin: 0;
+        }
+        .action-btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+        }
+        .download-btn {
+            background-color: #4CAF50;
+            color: white;
+        }
+        .view-mode-btn {
+            background-color: #6c757d;
+            color: white;
+        }
+        .a4-container {
+            width: 210mm; /* A4 사이즈 가로 고정 */
+            min-height: 297mm; /* A4 사이즈 세로 최소 높이 지정 */
+            margin: 0;
+            background-color: #ffffff;
+            padding: 15mm;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1); /* 종이 느낌을 위한 그림자 효과 */
+            border-radius: 4px;
+            box-sizing: border-box; /* 패딩을 포함하여 210x297mm 규격 유지 */
+        }
+
+        /* 인쇄 및 PDF 저장 시 자동으로 페이지가 분리되도록 설정 */
+        @media print {
+            .a4-container {
+                width: 210mm;
+                margin: 0;
+                box-shadow: none;
+            }
+            /* 컨텐츠 블록이 페이지 중간에 반으로 잘리지 않도록 방지 */
+            .list-placeholder {
+                page-break-inside: avoid;
+                break-inside: avoid;
+            }
+        }
+
+        /* About 페이지 레이아웃 및 Placeholder용 임시 스타일 */
+        .about-grid-container {
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+            margin-top: 0;
+        }
+        .grid-2col {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+        }
+        .grid-4col {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+        }
+        .placeholder {
+            background-color: #f8f9fa;
+            border: 2px dashed #adb5bd;
+            padding: 10px;
+            text-align: flex-start;
+            border-radius: 8px;
+            min-height: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            justify-content: center;
+            color: #495057;
+        }
+        .photo-placeholder {
+            width: 3.5cm;
+            height: 4.5cm;
+            padding: 5px; /* 고정된 크기에 맞춰 패딩 축소 */
+            box-sizing: border-box;
+            font-size: 12px; /* 텍스트가 넘치지 않도록 조절 */
+            font-weight: bold;
+        }
+        .list-placeholder {
+            align-items: flex-start;
+            justify-content: flex-start;
+            min-height: 150px;
+        }
+    </style>
+</head>
+<body>
+    <header></header>
+
+    <div class="body-container">
+        <aside class="sidebar left-sidebar"></aside>
+        <main id="content">
+            <!-- banner -->
+            <section id="page-hero">
+                <h1>About</h1>
+                <p>저에 대해 소개합니다.</p>
+            </section>
+
+            <!-- About Content section -->
+            <section id="about-content">
+                <div class="resume-header">
+                    <div class="resume-title-group">
+                        <h2>이력서 다운로드</h2>
+                        <button class="action-btn download-btn">Download</button>
+                    </div>
+                    <button class="action-btn view-mode-btn">View Mode</button>
+                </div>
+
+                <!-- 자바스크립트를 통해 About Me 콘텐츠가 이곳에 렌더링될 예정입니다 -->
+                <div id="about-me-detail" class="a4-container">
+                    <div class="about-grid-container">
+                        <!-- 1. 좌측 최상단: 증명사진 및 인사말 (2 Column) -->
+                        <div class="grid-2col">
+                            <div class="placeholder photo-placeholder">증명사진 Placeholder</div>
+                            <div class="placeholder">간단한 인사말 / 소개 Placeholder</div>
+                        </div>
+
+                        <!-- 2. Personal Info: 3 Row x 4 Column -->
+                        <div class="grid-4col">
+                            <!-- 1번째 줄 -->
+                            <div class="placeholder">홍길동</div>
+                            <div class="placeholder">YYYY.MM.DD</div>
+                            <div class="placeholder">공백</div>
+                            <div class="placeholder">공백</div>
+                            <!-- 2번째 줄 -->
+                            <div class="placeholder">email@example.com</div>
+                            <div class="placeholder">010-XXXX-XXXX</div>
+                            <div class="placeholder">공백</div>
+                            <div class="placeholder">공백</div>
+                            <!-- 3번째 줄 -->
+                            <div class="placeholder">ㅇㅇ광역시 ㅇㅇ구</div>
+                            <div class="placeholder">github.com</div>
+                            <div class="placeholder">공백</div>
+                            <div class="placeholder">공백</div>
+                        </div>
+
+                        <!-- 3. 스킬, 자격증, 학력 등: 무한 확장 가능 (2 Column) -->
+                        <div class="grid-2col">
+                            <div class="placeholder list-placeholder">
+                                <h3>보유스킬</h3>
+                                <p>- HTML / CSS / JS</p>
+                            </div>
+                            <div class="placeholder list-placeholder">
+                                <h3>자격증</h3>
+                                <p>- 항공정비사 면허</p>
+                                <p>- 항공산업기사</p>
+                            </div>
+                            <div class="placeholder list-placeholder">
+                                <h3>학력</h3>
+                                <p>- 00 대학교 졸업</p>
+                            </div>
+                            <!-- 아래에 div를 추가할수록 2단 구조를 유지하며 무한 확장됩니다 -->
+                            <div class="placeholder list-placeholder">
+                                <h3>기타 (무한 확장)</h3>
+                                <p>- 추가 항목</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+        <aside class="sidebar right-sidebar"></aside>
+    </div>
+
+    <footer></footer>
+
+    <script src="./asset/lib/marked.min.js"></script>
+    <script type="module" src="./js/main.js"></script>
+</body>
+</html>

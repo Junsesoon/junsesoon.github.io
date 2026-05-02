@@ -1,12 +1,51 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="ko">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Junseo Blog (new)</title>
+    <meta charset="UTF-8">
+    <title>Junseo Blog</title>
+    <link rel="stylesheet" href="./css/base.css">
+    <link rel="stylesheet" href="./css/layout.css">
+    <link rel="stylesheet" href="./css/component.css">
+    <link rel="stylesheet" href="./css/theme.css">
+    <link rel="stylesheet" href="./css/style.css"> <!-- 미디어 쿼리 등 최종 조정 -->
 </head>
 <body>
-  <h1>New blog initialized.</h1>
-  <p>If you see this, main reset succeeded.</p>
+    <header></header>
+
+    <div class="body-container">
+        <main id="content">
+            <!-- banner -->
+            <section id="home-hero">
+                <h1>Hello, I'm Junseo!</h1>
+                <p>개발 과정에서의 문제 해결과 의사결정 과정을 기록하는 공간입니다.</p>
+            </section>
+
+            <!-- Skil section -->
+            <section id="skill">
+                <h2>Skill</h2>
+                <!-- 자바스크립트를 통해 최근 글 목록이 이곳에 렌더링될 예정입니다 -->
+                <ul id="HOME-skill-list"></ul>
+            </section>
+
+            <!-- Project section -->
+            <section id="project">
+                <h2>Project</h2>
+                <!-- 자바스크립트를 통해 주요 프로젝트가 이곳에 렌더링될 예정입니다 -->
+                <div id="home-project-list" data-limit="3"></div>
+            </section>
+
+            <!-- Contact section -->
+            <section id="contact">
+                <h2>Contact</h2>
+                <!-- 자바스크립트를 통해 주요 프로젝트가 이곳에 렌더링될 예정입니다 -->
+                <div id="contact-list"></div>
+            </section>
+        </main>
+    </div>
+
+    <footer></footer>
+
+    <script src="./asset/lib/marked.min.js"></script>
+    <script type="module" src="./js/main.js"></script>
 </body>
 </html>

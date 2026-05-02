@@ -1,0 +1,74 @@
+/* ==========================================================================
+
+   Main Layout
+
+   ========================================================================== */
+
+/* 기본 여백 제거 및 전체 화면 높이 설정 */
+body {
+    margin: 0;
+    padding: 0;
+    display: flex;
+    /* align-items: center; */
+    flex-direction: column;
+    min-height: 100vh; /* 화면 전체 높이를 차지하도록 설정 */
+}
+
+/* 메인 레이아웃 컨테이너 (사이드바 + 메인 콘텐츠) */
+.body-container {
+    display: flex;
+    flex: 1; /* header와 footer 사이의 모든 공간을 차지 */
+    width: 100%;
+    padding-top: 60px; /* 고정된 헤더의 높이(60px)만큼 콘텐츠를 아래로 내립니다. */
+}
+
+/* 메인 콘텐츠 영역 */
+main#content {
+    flex: 1; /* 남은 공간을 모두 차지 */
+    padding: 40px;
+    box-sizing: border-box; /* 패딩이 너비에 포함되도록 설정 */
+    overflow-y: auto; /* 콘텐츠가 길어질 경우 스크롤 */
+}
+
+/* 사이드바 스타일 (현재는 비어있음) */
+.sidebar {
+    width: 200px;
+    flex-shrink: 0; /* 사이드바 너비가 줄어들지 않도록 고정 */
+}
+
+/* ==========================================================================
+
+   Header & Navigation
+
+   ========================================================================== */
+
+/* GNB (Global Navigation Bar) */
+.gnb {
+    display: flex;
+    position: fixed; /* GNB를 화면 상단에 고정 */
+    top: 0;
+    left: 0;
+    width: 100%;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 0; /* 양옆 여백을 줘서 화면 끝에 너무 붙지 않게 합니다 */
+    z-index: 1000; /* 다른 요소들 위에 표시되도록 z-index 설정 */
+    height: 60px; /* JS, TOC에서 참조하는 높이와 일치시킵니다. */
+}
+
+.gnb ul {
+    display: flex;
+    flex-direction: row; /* 가로 배치 */
+    align-items: center;
+    list-style: none;
+    margin: 0;
+    padding: 0 40px;
+    gap: 15px; /* 메뉴 간격을 줄여 더 많은 항목이 보이도록 조정 */
+}
+
+.gnb ul li a {
+    text-decoration: none;
+    font-weight: bold;
+    font-size: 1.1rem;
+    transition: color 0.3s;
+}
