@@ -41,11 +41,11 @@
             color: white;
         }
         .a4-container {
-            width: 210mm; /* A4 사이즈 가로 고정 */
-            min-height: 297mm; /* A4 사이즈 세로 최소 높이 지정 */
-            margin: 0;
+            max-width: 210mm; /* A4 사이즈 가로 최소 너비 */
+            width: 100%; /* 작은 화면에서는 100% 너비 사용 */
+            min-height: 297mm; /* A4 사이즈 세로 최소 높이 */
             background-color: #ffffff;
-            padding: 15mm;
+            padding: 5.05% 7.14%; /* A4 비율에 맞춘 반응형 패딩 (15mm 기준) */
             box-shadow: 0 4px 6px rgba(0,0,0,0.1); /* 종이 느낌을 위한 그림자 효과 */
             border-radius: 4px;
             box-sizing: border-box; /* 패딩을 포함하여 210x297mm 규격 유지 */
