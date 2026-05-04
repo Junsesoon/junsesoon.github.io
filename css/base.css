@@ -20,6 +20,8 @@ p {
 h1, h2, h3, h4, h5, h6 {
     margin: 0; /* 브라우저 기본 마진 제거 */
     padding: 0; /* 브라우저 기본 패딩 제거 */
+    margin-top: 0; /* 단락 상단 여백 초기화 */
+    margin-bottom: 0px; /* 단락 하단 여백 설정 */
     font-weight: bold; /* 기본적으로 굵은 글씨체 유지 */
 }
 
@@ -30,4 +32,37 @@ h1, h2, h3, h4, h5, h6 {
     text-transform: uppercase;
     letter-spacing: 0.05em;
     line-height: 1;
+}
+
+/* Post content heading margins */
+.post-body h1 {
+    font-size: 2em; /* Adjust as needed */
+    margin-top: 20px;
+    margin-bottom: 0px;
+}
+
+.post-body h2 {
+    font-size: 1.5em; /* Adjust as needed */
+    margin-top: 10px;
+    margin-bottom: 0px;
+}
+
+.post-body h3 {
+    font-size: 1.2em; /* Adjust as needed */
+    margin-top: 5px;
+    margin-bottom: 0px;
+}
+
+.post-body h4 {
+    font-size: 1em; /* Adjust as needed */
+    margin-top: 0px;
+    margin-bottom: 0px;
+}
+
+.post-body h5 {
+    font-size: 0.9em; /* Adjust as needed */
+}
+
+.post-body h6 {
+    font-size: 0.8em; /* Adjust as needed */
 }

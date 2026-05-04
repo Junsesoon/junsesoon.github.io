@@ -211,6 +211,7 @@ async function renderGeneralPostDetail(container, post) {
     container.innerHTML = `
         <h1>${frontMatter.title}</h1>
         <div class="post-meta">${dateHtml}</div>
+        <p class="summary">${frontMatter.summary || ''}</p>
         <div class="post-body">${content ? marked.parse(content) : ''}</div>
     `;
 }

@@ -57,12 +57,6 @@
 /* =====================================
     1.2. Page-Specific Sections
     ===================================== */
-/* 섹션 제목(h2)에 대한 스타일 예시 */
-h2 {
-    margin-bottom: 20px; /* 제목 아래에 20px 여백 추가 */
-    font-size: 1.8rem;
-}
-
 /* Project 페이지 목록 컨테이너 */
 #PRJ-projects-overview {
     margin-top: 40px;

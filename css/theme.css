@@ -189,3 +189,22 @@
 .close-button:hover {
     color: #333;
 }
+
+/* Post content heading colors */
+.post-body h1 {
+    color: red;
+}
+.post-body h2 {
+    color: orange;
+}
+.post-body h3 {
+    color: blue;
+}
+.post-body h4 {
+    color: green;
+}
+/* Post content summary color */
+#post-container .summary {
+    color: #777;
+    font-style: italic;
+}
