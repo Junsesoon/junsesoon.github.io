@@ -1,4 +1,4 @@
-import { DOM_IDS, CATEGORIES, PAGINATION, PROJECT_PROPERTY_ORDER } from './const.js';
+import { DOM_IDS, CATEGORIES, PAGINATION, PROJECT_PROPERTY_ORDER, GNB_BUTTON_VISIBILITY } from './const.js';
 import { skills } from './skill-list.js'; // 스킬 데이터 직접 임포트
 
 /**
@@ -107,14 +107,24 @@ export async function renderDecisionList(detailedPosts) {
 }
 
 /**
- * post.html 페이지에 모든 게시물(knowledge, troubleshooting, decision) 목록을 렌더링합니다.
+ * post.html 페이지에 모든 게시물(knowledge, troubleshooting, decision) 목록을 렌더링
  */
 export async function renderAllPostList(detailedPosts) {
     const container = document.getElementById(DOM_IDS.ALL_POST_LIST);
     if (!container) return;
 
-    // 'knowledge', 'trouble shooting', 'decision' 카테고리의 게시물을 날짜 내림차순으로 필터링 및 정렬합니다.
-    const allowedCategories = [CATEGORIES.KNOWLEDGE, CATEGORIES.TROUBLE_SHOOTING, CATEGORIES.DECISION];
+    // GNB_BUTTON_VISIBILITY 설정에 따라 허용된 카테고리를 동적으로 구성
+    const allowedCategories = [];
+    if (GNB_BUTTON_VISIBILITY['post']) {
+        allowedCategories.push(CATEGORIES.KNOWLEDGE);
+    }
+    if (GNB_BUTTON_VISIBILITY['troubleshooting']) {
+        allowedCategories.push(CATEGORIES.TROUBLE_SHOOTING);
+    }
+    if (GNB_BUTTON_VISIBILITY['decision']) {
+        allowedCategories.push(CATEGORIES.DECISION);
+    }
+
     const combinedPosts = detailedPosts
         .filter(post => allowedCategories.includes(post.frontMatter.category1))
         .sort((a, b) => new Date(b.frontMatter['end date']) - new Date(a.frontMatter['end date']));

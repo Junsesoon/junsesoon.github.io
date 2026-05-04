@@ -30,3 +30,15 @@ export const PAGINATION = {
     PREV_TEXT: '[prev]',
     NEXT_TEXT: '[next]',
 };
+
+// GNB 버튼 가시성 설정
+export const GNB_BUTTON_VISIBILITY = {
+    'home': true,
+    'about': true,
+    'skill': true,
+    'project': true,
+    'post': true,
+    'troubleshooting': true,
+    'decision': true,
+    // 여기에 추가적인 GNB 버튼과 가시성(true/false)을 설정
+};
