@@ -150,3 +150,42 @@
 .close-button:hover {
     color: #333;
 }
+
+/* Category-specific colors */
+.category-project-overview {
+    background-color: #e0f7fa; /* Light Cyan */
+    color: #00796b; /* Dark Teal */
+}
+
+.category-document {
+    background-color: #e3f2fd; /* Light Blue */
+    color: #1976d2; /* Medium Blue */
+}
+
+.category-trouble-shooting {
+    background-color: #ffe0b2; /* Light Orange */
+    color: #f57c00; /* Dark Orange */
+}
+
+.category-decision {
+    background-color: #fce4ec; /* Light Pink */
+    color: #c2185b; /* Dark Pink */
+}
+
+.category-knowledge {
+    background-color: #e8f5e9; /* Light Green */
+    color: #388e3c; /* Dark Green */
+}
+
+.category-skill {
+    background-color: #ede7f6; /* Light Purple */
+    color: #512da8; /* Deep Purple */
+}
+
+.category-uncategorized {
+    background-color: #f5f5f5; /* Light Grey */
+    color: #616161; /* Dark Grey */
+}
+.close-button:hover {
+    color: #333;
+}

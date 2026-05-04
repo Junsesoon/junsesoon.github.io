@@ -172,6 +172,16 @@ h2 {
     margin: 20px auto 0; /* 위쪽 여백은 유지하고, 좌우는 auto로 중앙 정렬 */
 }
 
+/* Styling for .post-category1-tag */
+.post-category1-tag {
+    display: inline-block;
+    padding: 0.3em 0.7em;
+    align-self: flex-start; /* Ensures the tag only takes up as much width as its content */
+    border-radius: 12px;
+    margin-bottom: 8px;
+    white-space: nowrap;
+}
+
 /* =====================================
     1.4. Card Base Styles
     ===================================== */

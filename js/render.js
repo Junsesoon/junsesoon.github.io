@@ -244,6 +244,9 @@ function renderPaginatedList(container, posts, noPostsMessage, postsPerPage = PA
             <div class="post-card">
                 <a href="./post-template.html?id=${id}">
                     <div class="card-content">
+                        <div class="post-category1-tag category-${(frontMatter.category1 || 'Uncategorized').toLowerCase().replace(/\s/g, '-') }">
+                            <span>${frontMatter.category1 || 'Uncategorized'}</span>
+                        </div>
                         <h3>${frontMatter.title}</h3>
                         <p class="summary">${summary}</p>
                         <div class="card-footer">
