@@ -83,7 +83,7 @@ async function generateSkillsData() {
             const markdownContent = await fs.promises.readFile(filePath, 'utf8');
             const frontMatter = parseFrontMatterForSkillBuild(markdownContent);
 
-            if (frontMatter.category1 === 'skill') {
+            if (frontMatter.category1 === 'my skill') { // Changed from 'skill' to 'my skill'
                 const id = path.basename(posixRelativePath, '.md');
                 
                 let category2 = frontMatter.category2 || 'uncategorized';

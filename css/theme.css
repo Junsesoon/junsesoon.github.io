@@ -177,9 +177,9 @@
     color: #388e3c; /* Dark Green */
 }
 
-.category-skill {
-    background-color: #ede7f6; /* Light Purple */
-    color: #512da8; /* Deep Purple */
+.category-my-skill { /* Changed from .category-skill to .category-my-skill */
+    background-color: #ede7f6; /* Light Purple */ 
+    color: #512da8; /* Deep Purple */ 
 }
 
 .category-uncategorized {

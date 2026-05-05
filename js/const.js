@@ -22,6 +22,7 @@ export const CATEGORIES = {
     TROUBLE_SHOOTING: 'trouble shooting',
     DECISION: 'decision',
     KNOWLEDGE: 'knowledge',
+    MY_SKILL: 'my skill',
 };
 
 // 페이지 버튼 설정

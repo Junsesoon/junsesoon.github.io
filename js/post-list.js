@@ -10,9 +10,9 @@ export const posts = [
         "path": "./post/decision/기술 역량 시각화 전략 변경.md"
     },
     {
-        "id": "파이썬",
+        "id": "deep dive-python",
         "category1": "knowledge",
-        "path": "./post/knowledge/파이썬.md"
+        "path": "./post/knowledge/deep dive-python.md"
     },
     {
         "id": "TB-junseo-tech-blog",
@@ -21,7 +21,7 @@ export const posts = [
     },
     {
         "id": "python",
-        "category1": "skill",
+        "category1": "my skill",
         "path": "./post/skill/python.md"
     },
     {

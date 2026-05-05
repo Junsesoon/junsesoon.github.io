@@ -39,13 +39,14 @@ knowledge
 project
 project-overview
 skill
+my skill
 trouble shooting
 decision
 document
 contact
 
 ## category2 legend
-### skill
+### my skill
 BackEnd
 FrontEnd
 Infra
