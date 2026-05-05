@@ -6,10 +6,10 @@
 
 @media (max-width: 1440px) {
     .gnb {
-        padding: 0 0; /* GNB 좌우 여백을 줄입니다 */
+        padding: 0 40px; /* GNB 좌우 여백을 줄입니다 */
     }
     .gnb ul {
-        gap: 20px; /* 메뉴 간격 */
+        gap: 40px; /* 메뉴 간격 */
     }
 }
 

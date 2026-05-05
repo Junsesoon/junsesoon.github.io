@@ -124,12 +124,51 @@ export async function renderAllPostList(detailedPosts) {
     if (GNB_BUTTON_VISIBILITY['decision']) {
         allowedCategories.push(CATEGORIES.DECISION);
     }
+    // blog-gnb용 카테고리 추가
+    if (GNB_BUTTON_VISIBILITY['cs']) {
+        allowedCategories.push(CATEGORIES.CS);
+    }
+    if (GNB_BUTTON_VISIBILITY['language']) {
+        allowedCategories.push(CATEGORIES.LANGUAGE);
+    }
+    if (GNB_BUTTON_VISIBILITY['data']) {
+        allowedCategories.push(CATEGORIES.DATA);
+    }
+    if (GNB_BUTTON_VISIBILITY['infra']) {
+        allowedCategories.push(CATEGORIES.INFRA);
+    }
+    if (GNB_BUTTON_VISIBILITY['tools']) {
+        allowedCategories.push(CATEGORIES.TOOLS);
+    }
 
     const combinedPosts = detailedPosts
         .filter(post => allowedCategories.includes(post.frontMatter.category1))
         .sort((a, b) => new Date(b.frontMatter['end date']) - new Date(a.frontMatter['end date']));
 
     renderPaginatedList(container, combinedPosts, '작성된 게시물이 없습니다.');
+}
+
+/**
+ * index.html (블로그 홈) 페이지에 블로그 카테고리 게시물 목록을 렌더링합니다.
+ */
+export async function renderBlogHomeList(detailedPosts) {
+    const container = document.getElementById(DOM_IDS.BLOG_HOME_POST_LIST);
+    if (!container) return;
+
+    // 블로그 관련 카테고리만 필터링합니다.
+    const blogCategories = [
+        CATEGORIES.CS,
+        CATEGORIES.LANGUAGE,
+        CATEGORIES.DATA,
+        CATEGORIES.INFRA,
+        CATEGORIES.TOOLS
+    ];
+
+    const blogPosts = detailedPosts
+        .filter(post => blogCategories.includes(post.frontMatter.category1))
+        .sort((a, b) => new Date(b.frontMatter['end date']) - new Date(a.frontMatter['end date']));
+
+    renderPaginatedList(container, blogPosts, '작성된 블로그 게시물이 없습니다.');
 }
 
 /**

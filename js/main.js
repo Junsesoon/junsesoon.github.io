@@ -1,11 +1,11 @@
 import { parseFrontMatter } from './parser.js';
 import {
     renderProjectList, renderPostDetail, renderTroubleshootingList,
-    renderDecisionList, renderAllPostList, generateToc,
+    renderDecisionList, renderAllPostList, generateToc, renderBlogHomeList,
     renderHomeSkills, renderSkillCards, showSkillOverlay, closeSkillOverlay
 } from './render.js';
 import { posts } from './post-list.js'; // 모든 게시물 목록
-import { GNB_BUTTON_VISIBILITY } from './const.js'; // GNB 버튼 가시성 설정을 위한 상수 임포트
+import { GNB_BUTTON_VISIBILITY, GNB_STYLE } from './const.js'; // GNB 버튼 가시성 설정을 위한 상수 임포트
 
 /**
  * 모든 게시물의 상세 정보(Front Matter, 콘텐츠 포함)를 저장하는 전역 캐시 변수입니다.
@@ -32,7 +32,8 @@ async function buildDetailedPosts() {
 }
 
 const routes = {
-    'index.html': [renderProjectList, renderHomeSkills],
+    'index.html': [renderBlogHomeList],
+    'portfolio-home.html': [renderProjectList, renderHomeSkills],
     'project.html': [renderProjectList],
     'post.html': [renderAllPostList],
     'troubleshooting.html': [renderTroubleshootingList],
@@ -44,8 +45,11 @@ const routes = {
 
 async function router(posts) {
     const pathname = window.location.pathname;
-    // 경로에서 파일 이름을 추출. 루트, '/', '/index.html' 모두 'index.html'로 처리함
-    const pageName = pathname.endsWith('/') ? 'index.html' : pathname.substring(pathname.lastIndexOf('/') + 1);
+    // 경로에서 파일 이름을 추출. 루트('/')는 'index.html'로 처리합니다.
+    let pageName = pathname.substring(pathname.lastIndexOf('/') + 1);
+    if (pageName === '') {
+        pageName = 'index.html';
+    }
 
     const renderFunctions = routes[pageName];
 
@@ -66,6 +70,23 @@ async function router(posts) {
  * const.js에 정의된 GNB_BUTTON_VISIBILITY 설정을 기반으로 버튼을 숨기거나 표시합니다.
  */
 function applyGnbVisibility() {
+    const gnb = document.querySelector('.gnb');
+    if (gnb) {
+        // 기존 GNB 스타일 클래스를 제거하고 현재 설정된 스타일 클래스를 추가합니다.
+        gnb.classList.remove('portfolio-gnb', 'blog-gnb');
+        gnb.classList.add(GNB_STYLE);
+
+        // GNB 스타일에 따라 Home 링크를 동적으로 변경합니다.
+        const homeLink = document.querySelector('[data-gnb-id="home"] a');
+        if (homeLink) {
+            if (GNB_STYLE === 'blog-gnb') {
+                homeLink.href = './index.html'; // 블로그 홈
+            } else { // 'portfolio-gnb'
+                homeLink.href = './portfolio-home.html'; // 포트폴리오 홈
+            }
+        }
+    }
+
     const gnbButtons = document.querySelectorAll('[data-gnb-id]'); // GNB 버튼을 식별하는 셀렉터
     gnbButtons.forEach(button => {
         const buttonId = button.dataset.gnbId;
@@ -75,8 +96,35 @@ function applyGnbVisibility() {
             } else {
                 button.style.display = ''; // true면 기본값(보임)으로 설정
             }
+        } else if (buttonId) {
+            // GNB_BUTTON_VISIBILITY 설정에 없는 버튼은 기본적으로 숨깁니다.
+            button.style.display = 'none';
         }
     });
+}
+
+/**
+ * GNB 스타일 전환 버튼에 대한 이벤트 리스너를 설정합니다.
+ */
+function setupGnbSwitchListeners() {
+    const portfolioBtn = document.querySelector('[data-gnb-id="portfolio-btn"]');
+    const blogBtn = document.querySelector('[data-gnb-id="blog-btn"]');
+
+    if (portfolioBtn) {
+        portfolioBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            sessionStorage.setItem('gnbStyle', 'portfolio-gnb');
+            window.location.href = './portfolio-home.html'; // 포트폴리오 홈으로 이동
+        });
+    }
+
+    if (blogBtn) {
+        blogBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            sessionStorage.setItem('gnbStyle', 'blog-gnb');
+            window.location.href = './index.html'; // 블로그 홈으로 이동
+        });
+    }
 }
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -87,5 +135,6 @@ document.addEventListener('DOMContentLoaded', () => {
         await buildDetailedPosts(); // 모든 포스트 정보를 미리 빌드합니다.
         await router(detailedPosts);
         applyGnbVisibility(); // 헤더 로드 후 GNB 가시성 적용
+        setupGnbSwitchListeners(); // GNB 전환 버튼 리스너 설정
     });
 });

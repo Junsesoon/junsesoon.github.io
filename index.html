@@ -2,49 +2,36 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <title>Junseo Blog</title>
+    <title>Junseo Blog - Home</title>
     <link rel="stylesheet" href="./css/base.css">
     <link rel="stylesheet" href="./css/layout.css">
     <link rel="stylesheet" href="./css/component.css">
     <link rel="stylesheet" href="./css/theme.css">
-    <link rel="stylesheet" href="./css/style.css"> <!-- 미디어 쿼리 등 최종 조정 -->
+    <link rel="stylesheet" href="./css/style.css">
 </head>
 <body>
     <header></header>
 
     <div class="body-container">
+        <aside class="sidebar left-sidebar"></aside>
         <main id="content">
             <!-- banner -->
-            <section id="home-hero">
-                <h1>Hello, I'm Junseo!</h1>
-                <p>개발 과정에서의 문제 해결과 의사결정 과정을 기록하는 공간입니다.</p>
+            <section id="page-hero">
+                <h1>Blog</h1>
+                <p>CS, Language, Data, Infra, Tools 등 기술 관련 지식을 기록하고 공유합니다.</p>
             </section>
 
-            <!-- Skil section -->
-            <section id="skill">
-                <h2>Skill</h2>
-                <!-- 자바스크립트를 통해 최근 글 목록이 이곳에 렌더링될 예정입니다 -->
-                <ul id="HOME-skill-list"></ul>
-            </section>
-
-            <!-- Project section -->
-            <section id="project">
-                <h2>Project</h2>
-                <!-- 자바스크립트를 통해 주요 프로젝트가 이곳에 렌더링될 예정입니다 -->
-                <div id="home-project-list" data-limit="3"></div>
-            </section>
-
-            <!-- Contact section -->
-            <section id="contact">
-                <h2>Contact</h2>
-                <!-- 자바스크립트를 통해 주요 프로젝트가 이곳에 렌더링될 예정입니다 -->
-                <div id="contact-list"></div>
+            <!-- Post List section -->
+            <section id="blog-home-list-section">
+                <h2>Recent Posts</h2>
+                <!-- 자바스크립트를 통해 게시물 목록이 이곳에 렌더링될 예정입니다 -->
+                <div id="blog-home-post-list"></div>
             </section>
         </main>
+        <aside class="sidebar right-sidebar"></aside>
     </div>
 
     <footer></footer>
-
     <script src="./asset/lib/marked.min.js"></script>
     <script type="module" src="./js/main.js"></script>
 </body>
