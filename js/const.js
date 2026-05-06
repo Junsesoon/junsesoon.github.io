@@ -1,3 +1,6 @@
+// Google Analytics 측정 ID
+export const GA_MEASUREMENT_ID = 'G-BWB3NNP8NC';
+
 // id 관리
 export const DOM_IDS = {
     HOME_PROJECT_LIST: 'home-project-list', // 홈페이지 프로젝트 목록

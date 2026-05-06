@@ -1,4 +1,5 @@
 import { DOM_IDS, CATEGORIES, PAGINATION, PROJECT_PROPERTY_ORDER, GNB_BUTTON_VISIBILITY } from './const.js';
+import { trackPostView } from './analytics.js';
 import { skills } from './skill-list.js'; // 스킬 데이터 직접 임포트
 
 /**
@@ -71,11 +72,16 @@ export async function postRenderingRouter(detailedPosts) {
 
     const { frontMatter, content } = post;
     
+    // 적절한 게시물 상세 페이지를 렌더링
     if (frontMatter.category1 === CATEGORIES.PROJECT_OVERVIEW) {
         await renderProjectOverviewDetail(container, post, detailedPosts);
     } else {
         await renderGeneralPostDetail(container, post);
     }
+
+    // 게시물이 렌더링되고 `document.title`이 설정된 후,
+    // 정확한 분석을 위해 SPA 스타일의 게시물 탐색 기능에서 'page_view' 이벤트를 수동으로 트리거해야함
+    trackPostView();
 }
 
 /**

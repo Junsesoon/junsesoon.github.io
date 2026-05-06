@@ -5,6 +5,7 @@ import {
     renderHomeSkills, renderSkillCards, showSkillOverlay, closeSkillOverlay,
     renderCSList, renderLanguageList, renderDataList, renderInfraList, renderToolsList
 } from './render.js';
+import { initGA } from './analytics.js';
 import { posts } from './post-list.js'; // 모든 게시물 목록
 import { GNB_BUTTON_VISIBILITY, GNB_STYLE } from './const.js'; // GNB 버튼 가시성 설정을 위한 상수 임포트
 
@@ -134,6 +135,8 @@ function setupGnbSwitchListeners() {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
+    initGA(); // 페이지 로드 시마다 Google Analytics를 초기화
+
     const loadHeader = fetch('./template/header.html').then(res => res.text()).then(html => document.querySelector('header').innerHTML = html);
     const loadFooter = fetch('./template/footer.html').then(res => res.text()).then(html => document.querySelector('footer').innerHTML = html);
 
