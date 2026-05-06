@@ -293,6 +293,11 @@
     -webkit-box-orient: vertical;
 }
 
+/* 게시물 상세 페이지의 헤더가 고정된 GNB에 가려지지 않도록 스크롤 마진 추가 */
+#post-container h1 {
+    scroll-margin-top: 100px; /* GNB 높이 + 여유 공간을 고려하여 설정 */
+}
+
 .core-tech {
     margin-top: 20px;
     min-height: 30px; /* 내용이 없어도 공간이 확보되도록 설정 */

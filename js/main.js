@@ -1,6 +1,6 @@
 import { parseFrontMatter } from './parser.js';
 import {
-    renderProjectList, renderPostDetail, renderTroubleshootingList,
+    renderProjectList, postRenderingRouter, renderTroubleshootingList,
     renderDecisionList, renderAllPostList, generateToc, renderBlogHomeList,
     renderHomeSkills, renderSkillCards, showSkillOverlay, closeSkillOverlay,
     renderCSList, renderLanguageList, renderDataList, renderInfraList, renderToolsList
@@ -44,7 +44,7 @@ const routes = {
     'data.html': [renderDataList],
     'infra.html': [renderInfraList],
     'tools.html': [renderToolsList],
-    'post-template.html': [renderPostDetail],
+    'post-template.html': [postRenderingRouter],
     'skill.html': [renderSkillCards],
     'about.html': [], // Placeholder for renderAboutMe
 };

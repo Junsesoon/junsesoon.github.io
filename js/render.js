@@ -47,9 +47,10 @@ export async function renderProjectList(detailedPosts) {
 }
 
 /**
- * post-template.html 페이지에 특정 게시물의 상세 내용을 렌더링합니다. 'project overview' 타입에 대한 특별 로직을 포함합니다
+ * 게시물 종류에 따라 적절한 상세 페이지 렌더링 함수를 호출하는 라우터 역할을 합니다.
+ * 'project overview' 타입과 일반 게시물을 분기합니다.
  */
-export async function renderPostDetail(detailedPosts) {
+export async function postRenderingRouter(detailedPosts) {
     const container = document.getElementById(DOM_IDS.POST_CONTAINER);
     if (!container) return; // 해당 ID의 컨테이너가 없으면 함수 종료
 
@@ -318,11 +319,8 @@ async function renderGeneralPostDetail(container, post) {
 
     let dateHtml = '';
     if (frontMatter['start date']) {
-        dateHtml = `<p>작성일: ${frontMatter['start date']}</p>`;
-        // end date가 있고 start date와 다를 경우에만 수정일을 표시합니다.
-        if (frontMatter['end date'] && frontMatter['end date'] !== frontMatter['start date']) {
-            dateHtml += `<p>수정일: ${frontMatter['end date']}</p>`;
-        }
+        dateHtml = `<p>최초 작성일: ${frontMatter['start date']}</p>`;
+        dateHtml += `<p>최종 수정일: ${frontMatter['end date']}</p>`;
     }
 
     container.innerHTML = `
@@ -406,7 +404,7 @@ export function generateToc() {
     }
 
     tocList.innerHTML = ''; // 기존 목차 초기화
-    const headers = postContainer.querySelectorAll('h1, h2');
+    const headers = postContainer.querySelectorAll('h1'); // 목차에 표기할 헤더 레벨 설정 ex)'h1, h2'형식으로 추가
 
     if (headers.length === 0) {
         tocContainer.style.display = 'none'; // 헤더가 없으면 목차 컨테이너를 숨깁니다.
@@ -434,7 +432,7 @@ export function generateToc() {
     // 스크롤 위치에 따라 목차 항목을 하이라이트하는 스크롤 스파이 기능
     const tocLinks = document.querySelectorAll('#toc-list a');
     const scrollSpy = () => {
-        const offset = 80; // GNB 높이(60px) + 여유(20px)
+        const offset = 100; // GNB 높이(60px) + 여유(40px)
         let currentActiveId = null;
 
         headers.forEach(header => {
