@@ -1,4 +1,5 @@
-import { DOM_IDS, CATEGORIES, PAGINATION, PROJECT_PROPERTY_ORDER } from './const.js';
+import { DOM_IDS, CATEGORIES, PAGINATION, PROJECT_PROPERTY_ORDER, GNB_BUTTON_VISIBILITY } from './const.js';
+import { trackPostView } from './analytics.js';
 import { skills } from './skill-list.js'; // 스킬 데이터 직접 임포트
 
 /**
@@ -47,9 +48,10 @@ export async function renderProjectList(detailedPosts) {
 }
 
 /**
- * post-template.html 페이지에 특정 게시물의 상세 내용을 렌더링합니다. 'project overview' 타입에 대한 특별 로직을 포함합니다
+ * 게시물 종류에 따라 적절한 상세 페이지 렌더링 함수를 호출하는 라우터 역할을 합니다.
+ * 'project overview' 타입과 일반 게시물을 분기합니다.
  */
-export async function renderPostDetail(detailedPosts) {
+export async function postRenderingRouter(detailedPosts) {
     const container = document.getElementById(DOM_IDS.POST_CONTAINER);
     if (!container) return; // 해당 ID의 컨테이너가 없으면 함수 종료
 
@@ -70,11 +72,16 @@ export async function renderPostDetail(detailedPosts) {
 
     const { frontMatter, content } = post;
     
+    // 적절한 게시물 상세 페이지를 렌더링
     if (frontMatter.category1 === CATEGORIES.PROJECT_OVERVIEW) {
         await renderProjectOverviewDetail(container, post, detailedPosts);
     } else {
         await renderGeneralPostDetail(container, post);
     }
+
+    // 게시물이 렌더링되고 `document.title`이 설정된 후,
+    // 정확한 분석을 위해 SPA 스타일의 게시물 탐색 기능에서 'page_view' 이벤트를 수동으로 트리거해야함
+    trackPostView();
 }
 
 /**
@@ -107,19 +114,146 @@ export async function renderDecisionList(detailedPosts) {
 }
 
 /**
- * post.html 페이지에 모든 게시물(knowledge, troubleshooting, decision) 목록을 렌더링합니다.
+ * cs.html 페이지에 CS 게시물 목록을 렌더링합니다
+ */
+export async function renderCSList(detailedPosts) {
+    const container = document.getElementById(DOM_IDS.ALL_CS_LIST);
+    if (!container) return;
+
+    const csPosts = detailedPosts
+        .filter(post => post.frontMatter.category1 === CATEGORIES.KNOWLEDGE && post.frontMatter.category2 === CATEGORIES.CS)
+        .sort((a, b) => new Date(b.frontMatter['end date']) - new Date(a.frontMatter['end date']));
+
+    renderPaginatedList(container, csPosts, '작성된 CS 게시물이 없습니다.');
+}
+
+/**
+ * language.html 페이지에 Language 게시물 목록을 렌더링합니다
+ */
+export async function renderLanguageList(detailedPosts) {
+    const container = document.getElementById(DOM_IDS.ALL_LANGUAGE_LIST);
+    if (!container) return;
+
+    const languagePosts = detailedPosts
+        .filter(post => post.frontMatter.category1 === CATEGORIES.KNOWLEDGE && post.frontMatter.category2 === CATEGORIES.LANGUAGE)
+        .sort((a, b) => new Date(b.frontMatter['end date']) - new Date(a.frontMatter['end date']));
+
+    renderPaginatedList(container, languagePosts, '작성된 Language 게시물이 없습니다.');
+}
+
+/**
+ * data.html 페이지에 Data 게시물 목록을 렌더링합니다
+ */
+export async function renderDataList(detailedPosts) {
+    const container = document.getElementById(DOM_IDS.ALL_DATA_LIST);
+    if (!container) return;
+
+    const dataPosts = detailedPosts
+        .filter(post => post.frontMatter.category1 === CATEGORIES.KNOWLEDGE && post.frontMatter.category2 === CATEGORIES.DATA)
+        .sort((a, b) => new Date(b.frontMatter['end date']) - new Date(a.frontMatter['end date']));
+
+    renderPaginatedList(container, dataPosts, '작성된 Data 게시물이 없습니다.');
+}
+
+/**
+ * infra.html 페이지에 Infra 게시물 목록을 렌더링합니다
+ */
+export async function renderInfraList(detailedPosts) {
+    const container = document.getElementById(DOM_IDS.ALL_INFRA_LIST);
+    if (!container) return;
+
+    const infraPosts = detailedPosts
+        .filter(post => post.frontMatter.category1 === CATEGORIES.KNOWLEDGE && post.frontMatter.category2 === CATEGORIES.INFRA)
+        .sort((a, b) => new Date(b.frontMatter['end date']) - new Date(a.frontMatter['end date']));
+
+    renderPaginatedList(container, infraPosts, '작성된 Infra 게시물이 없습니다.');
+}
+
+/**
+ * tools.html 페이지에 Tools 게시물 목록을 렌더링합니다
+ */
+export async function renderToolsList(detailedPosts) {
+    const container = document.getElementById(DOM_IDS.ALL_TOOLS_LIST);
+    if (!container) return;
+
+    const toolsPosts = detailedPosts
+        .filter(post => post.frontMatter.category1 === CATEGORIES.KNOWLEDGE && post.frontMatter.category2 === CATEGORIES.TOOLS)
+        .sort((a, b) => new Date(b.frontMatter['end date']) - new Date(a.frontMatter['end date']));
+
+    renderPaginatedList(container, toolsPosts, '작성된 Tools 게시물이 없습니다.');
+}
+
+/**
+ * post.html 페이지에 모든 게시물(knowledge, troubleshooting, decision) 목록을 렌더링
  */
 export async function renderAllPostList(detailedPosts) {
     const container = document.getElementById(DOM_IDS.ALL_POST_LIST);
     if (!container) return;
 
-    // 'knowledge', 'trouble shooting', 'decision' 카테고리의 게시물을 날짜 내림차순으로 필터링 및 정렬합니다.
-    const allowedCategories = [CATEGORIES.KNOWLEDGE, CATEGORIES.TROUBLE_SHOOTING, CATEGORIES.DECISION];
+    // GNB_BUTTON_VISIBILITY 설정에 따라 허용된 카테고리를 동적으로 구성
+    const allowedCat1 = [];
+    const allowedCat2 = [];
+    if (GNB_BUTTON_VISIBILITY['post']) {
+        allowedCat1.push(CATEGORIES.KNOWLEDGE);
+    }
+    if (GNB_BUTTON_VISIBILITY['troubleshooting']) {
+        allowedCat1.push(CATEGORIES.TROUBLE_SHOOTING);
+    }
+    if (GNB_BUTTON_VISIBILITY['decision']) {
+        allowedCat1.push(CATEGORIES.DECISION);
+    }
+    // blog-gnb용 카테고리 추가
+    if (GNB_BUTTON_VISIBILITY['cs']) {
+        allowedCat2.push(CATEGORIES.CS);
+    }
+    if (GNB_BUTTON_VISIBILITY['language']) {
+        allowedCat2.push(CATEGORIES.LANGUAGE);
+    }
+    if (GNB_BUTTON_VISIBILITY['data']) {
+        allowedCat2.push(CATEGORIES.DATA);
+    }
+    if (GNB_BUTTON_VISIBILITY['infra']) {
+        allowedCat2.push(CATEGORIES.INFRA);
+    }
+    if (GNB_BUTTON_VISIBILITY['tools']) {
+        allowedCat2.push(CATEGORIES.TOOLS);
+    }
+
     const combinedPosts = detailedPosts
-        .filter(post => allowedCategories.includes(post.frontMatter.category1))
+        .filter(post => {
+            const cat1 = post.frontMatter.category1;
+            const cat2 = post.frontMatter.category2;
+
+            // cat1이 허용된 포트폴리오 카테고리이거나,
+            // cat1이 knowledge이고 cat2가 허용된 블로그 카테고리인 경우
+            return allowedCat1.includes(cat1) || (cat1 === CATEGORIES.KNOWLEDGE && allowedCat2.includes(cat2));
+        })
         .sort((a, b) => new Date(b.frontMatter['end date']) - new Date(a.frontMatter['end date']));
 
     renderPaginatedList(container, combinedPosts, '작성된 게시물이 없습니다.');
+}
+
+/**
+ * index.html (블로그 홈) 페이지에 블로그 카테고리 게시물 목록을 렌더링합니다.
+ */
+export async function renderBlogHomeList(detailedPosts) {
+    const container = document.getElementById(DOM_IDS.BLOG_HOME_POST_LIST);
+    if (!container) return;
+
+    // 블로그 관련 카테고리만 필터링합니다.
+    const blogCategories = [
+        CATEGORIES.CS,
+        CATEGORIES.LANGUAGE,
+        CATEGORIES.DATA,
+        CATEGORIES.INFRA,
+        CATEGORIES.TOOLS
+    ];
+
+    const blogPosts = detailedPosts
+        .filter(post => post.frontMatter.category1 === CATEGORIES.KNOWLEDGE && blogCategories.includes(post.frontMatter.category2))
+        .sort((a, b) => new Date(b.frontMatter['end date']) - new Date(a.frontMatter['end date']));
+
+    renderPaginatedList(container, blogPosts, '작성된 블로그 게시물이 없습니다.');
 }
 
 /**
@@ -191,16 +325,14 @@ async function renderGeneralPostDetail(container, post) {
 
     let dateHtml = '';
     if (frontMatter['start date']) {
-        dateHtml = `<p>작성일: ${frontMatter['start date']}</p>`;
-        // end date가 있고 start date와 다를 경우에만 수정일을 표시합니다.
-        if (frontMatter['end date'] && frontMatter['end date'] !== frontMatter['start date']) {
-            dateHtml += `<p>수정일: ${frontMatter['end date']}</p>`;
-        }
+        dateHtml = `<p>최초 작성일: ${frontMatter['start date']}</p>`;
+        dateHtml += `<p>최종 수정일: ${frontMatter['end date']}</p>`;
     }
 
     container.innerHTML = `
         <h1>${frontMatter.title}</h1>
         <div class="post-meta">${dateHtml}</div>
+        <p class="summary">${frontMatter.summary || ''}</p>
         <div class="post-body">${content ? marked.parse(content) : ''}</div>
     `;
 }
@@ -230,10 +362,16 @@ function renderPaginatedList(container, posts, noPostsMessage, postsPerPage = PA
         const { frontMatter, id } = post;
         // summary가 배열일 경우를 대비해 join으로 처리
         const summary = Array.isArray(frontMatter.summary) ? frontMatter.summary.join(' ') : (frontMatter.summary || '');
+        const isKnowledgePost = frontMatter.category1 === CATEGORIES.KNOWLEDGE;
+        const categoryTag = (isKnowledgePost && frontMatter.category3) ? frontMatter.category3 : (frontMatter.category1 || 'Uncategorized');
+        const categoryClass = categoryTag.toLowerCase().replace(/\s/g, '-');
         listHtml += `
             <div class="post-card">
                 <a href="./post-template.html?id=${id}">
                     <div class="card-content">
+                        <div class="post-category-tag category-${categoryClass}">
+                            <span>${categoryTag}</span>
+                        </div>
                         <h3>${frontMatter.title}</h3>
                         <p class="summary">${summary}</p>
                         <div class="card-footer">
@@ -272,7 +410,7 @@ export function generateToc() {
     }
 
     tocList.innerHTML = ''; // 기존 목차 초기화
-    const headers = postContainer.querySelectorAll('h1, h2');
+    const headers = postContainer.querySelectorAll('h1'); // 목차에 표기할 헤더 레벨 설정 ex)'h1, h2'형식으로 추가
 
     if (headers.length === 0) {
         tocContainer.style.display = 'none'; // 헤더가 없으면 목차 컨테이너를 숨깁니다.
@@ -300,7 +438,7 @@ export function generateToc() {
     // 스크롤 위치에 따라 목차 항목을 하이라이트하는 스크롤 스파이 기능
     const tocLinks = document.querySelectorAll('#toc-list a');
     const scrollSpy = () => {
-        const offset = 80; // GNB 높이(60px) + 여유(20px)
+        const offset = 100; // GNB 높이(60px) + 여유(40px)
         let currentActiveId = null;
 
         headers.forEach(header => {

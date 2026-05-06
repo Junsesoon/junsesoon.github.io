@@ -51,7 +51,8 @@ main#content {
     width: 100%;
     justify-content: space-between;
     align-items: center;
-    padding: 0 0; /* 양옆 여백을 줘서 화면 끝에 너무 붙지 않게 합니다 */
+    box-sizing: border-box; /* 패딩을 너비에 포함시켜 100%를 초과하지 않도록 합니다. */
+    padding: 0 40px; /* GNB 컨테이너에 양옆 여백을 적용합니다 */
     z-index: 1000; /* 다른 요소들 위에 표시되도록 z-index 설정 */
     height: 60px; /* JS, TOC에서 참조하는 높이와 일치시킵니다. */
 }
@@ -61,8 +62,8 @@ main#content {
     flex-direction: row; /* 가로 배치 */
     align-items: center;
     list-style: none;
-    margin: 0;
-    padding: 0 40px;
+    margin: 0; /* 기본 마진 제거 */
+    padding: 0; /* 기본 패딩 제거 */
     gap: 15px; /* 메뉴 간격을 줄여 더 많은 항목이 보이도록 조정 */
 }
 
@@ -71,4 +72,17 @@ main#content {
     font-weight: bold;
     font-size: 1.1rem;
     transition: color 0.3s;
+}
+
+/* 중앙 내비게이션을 가운데 정렬 */
+.gnb-center-nav {
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/* GNB 전환 버튼 스타일 */
+.gnb ul .gnb-switch-btn {
+    margin-left: 20px; /* 다른 메뉴 항목들과의 간격 */
+    /* border-left: 1px solid #555; 구분선 */
+    padding-left: 20px; /* 구분선과의 간격 */
 }

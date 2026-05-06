@@ -58,9 +58,12 @@ function parseFrontMatterForBuild(markdown) {
         }
     });
 
-    // category1이 배열인 경우 첫 번째 항목을 사용합니다.
-    if (Array.isArray(frontMatter.category1)) {
-        frontMatter.category1 = frontMatter.category1[0] || null;
+    // category1-4가 배열인 경우 첫 번째 항목을 사용합니다.
+    for (let i = 1; i <= 4; i++) {
+        const key = `category${i}`;
+        if (Array.isArray(frontMatter[key])) {
+            frontMatter[key] = frontMatter[key][0] || null;
+        }
     }
 
     return frontMatter;
@@ -119,10 +122,19 @@ async function generatePostsData() {
 
             // 파일명만 ID로 사용합니다. (예: "파이썬")
             const id = path.basename(posixRelativePath, '.md');
-            const category1 = frontMatter.category1 || 'uncategorized'; // Front Matter에 category1이 없으면 'uncategorized'로 기본값 설정
             const postPath = `./post/${posixRelativePath}`; // HTML 파일 기준 게시물 경로 (예: "./post/knowledge/파이썬.md")
 
-            postsData.push({ id, category1, path: postPath });
+            const postInfo = {
+                id,
+                path: postPath,
+                category1: frontMatter.category1 || 'uncategorized',
+            };
+
+            if (frontMatter.category2) postInfo.category2 = frontMatter.category2;
+            if (frontMatter.category3) postInfo.category3 = frontMatter.category3;
+            if (frontMatter.category4) postInfo.category4 = frontMatter.category4;
+
+            postsData.push(postInfo);
         }
 
         const fileContent = `export const posts = ${JSON.stringify(postsData, null, 4)};\n`;

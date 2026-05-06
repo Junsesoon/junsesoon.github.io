@@ -1,32 +1,36 @@
 export const posts = [
     {
         "id": "GNB 구조 변경",
-        "category1": "decision",
-        "path": "./post/decision/GNB 구조 변경.md"
+        "path": "./post/decision/GNB 구조 변경.md",
+        "category1": "decision"
     },
     {
         "id": "기술 역량 시각화 전략 변경",
-        "category1": "decision",
-        "path": "./post/decision/기술 역량 시각화 전략 변경.md"
+        "path": "./post/decision/기술 역량 시각화 전략 변경.md",
+        "category1": "decision"
     },
     {
-        "id": "파이썬",
+        "id": "deep dive-python",
+        "path": "./post/knowledge/deep dive-python.md",
         "category1": "knowledge",
-        "path": "./post/knowledge/파이썬.md"
+        "category2": "Programming Language",
+        "category3": "python",
+        "category4": "없음"
     },
     {
         "id": "TB-junseo-tech-blog",
-        "category1": "project overview",
-        "path": "./post/project/TB-junseo-tech-blog.md"
+        "path": "./post/project/TB-junseo-tech-blog.md",
+        "category1": "project overview"
     },
     {
         "id": "python",
-        "category1": "skill",
-        "path": "./post/skill/python.md"
+        "path": "./post/skill/python.md",
+        "category1": "my skill",
+        "category2": "[BackEnd]"
     },
     {
         "id": "콘솔 로그 파헤치기",
-        "category1": "trouble shooting",
-        "path": "./post/troubleshooting/콘솔 로그 파헤치기.md"
+        "path": "./post/troubleshooting/콘솔 로그 파헤치기.md",
+        "category1": "trouble shooting"
     }
 ];

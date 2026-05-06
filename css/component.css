@@ -57,12 +57,6 @@
 /* =====================================
     1.2. Page-Specific Sections
     ===================================== */
-/* 섹션 제목(h2)에 대한 스타일 예시 */
-h2 {
-    margin-bottom: 20px; /* 제목 아래에 20px 여백 추가 */
-    font-size: 1.8rem;
-}
-
 /* Project 페이지 목록 컨테이너 */
 #PRJ-projects-overview {
     margin-top: 40px;
@@ -170,6 +164,16 @@ h2 {
     gap: 24px;
     max-width: 1000px; /* 컨테이너의 최대 너비를 제한 */
     margin: 20px auto 0; /* 위쪽 여백은 유지하고, 좌우는 auto로 중앙 정렬 */
+}
+
+/* Styling for .post-category-tag */
+.post-category-tag {
+    display: inline-block;
+    padding: 0.3em 0.7em;
+    align-self: flex-start; /* Ensures the tag only takes up as much width as its content */
+    border-radius: 12px;
+    margin-bottom: 8px;
+    white-space: nowrap;
 }
 
 /* =====================================
@@ -287,6 +291,11 @@ h2 {
     text-overflow: ellipsis;
     display: -webkit-box;
     -webkit-box-orient: vertical;
+}
+
+/* 게시물 상세 페이지의 헤더가 고정된 GNB에 가려지지 않도록 스크롤 마진 추가 */
+#post-container h1 {
+    scroll-margin-top: 100px; /* GNB 높이 + 여유 공간을 고려하여 설정 */
 }
 
 .core-tech {

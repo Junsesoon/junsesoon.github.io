@@ -1,6 +1,6 @@
 ---
 title: ""
-category1: skill
+category1: my skill
 category2: [BackEnd / FrontEnd / Infra / Productivitiy]
 familiar: [★,★★,★★★,★★★★,★★★★★]
 start date: yyyy-mm-dd
