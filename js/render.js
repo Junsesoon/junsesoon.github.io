@@ -107,6 +107,76 @@ export async function renderDecisionList(detailedPosts) {
 }
 
 /**
+ * cs.html 페이지에 CS 게시물 목록을 렌더링합니다
+ */
+export async function renderCSList(detailedPosts) {
+    const container = document.getElementById(DOM_IDS.ALL_CS_LIST);
+    if (!container) return;
+
+    const csPosts = detailedPosts
+        .filter(post => post.frontMatter.category1 === CATEGORIES.KNOWLEDGE && post.frontMatter.category2 === CATEGORIES.CS)
+        .sort((a, b) => new Date(b.frontMatter['end date']) - new Date(a.frontMatter['end date']));
+
+    renderPaginatedList(container, csPosts, '작성된 CS 게시물이 없습니다.');
+}
+
+/**
+ * language.html 페이지에 Language 게시물 목록을 렌더링합니다
+ */
+export async function renderLanguageList(detailedPosts) {
+    const container = document.getElementById(DOM_IDS.ALL_LANGUAGE_LIST);
+    if (!container) return;
+
+    const languagePosts = detailedPosts
+        .filter(post => post.frontMatter.category1 === CATEGORIES.KNOWLEDGE && post.frontMatter.category2 === CATEGORIES.LANGUAGE)
+        .sort((a, b) => new Date(b.frontMatter['end date']) - new Date(a.frontMatter['end date']));
+
+    renderPaginatedList(container, languagePosts, '작성된 Language 게시물이 없습니다.');
+}
+
+/**
+ * data.html 페이지에 Data 게시물 목록을 렌더링합니다
+ */
+export async function renderDataList(detailedPosts) {
+    const container = document.getElementById(DOM_IDS.ALL_DATA_LIST);
+    if (!container) return;
+
+    const dataPosts = detailedPosts
+        .filter(post => post.frontMatter.category1 === CATEGORIES.KNOWLEDGE && post.frontMatter.category2 === CATEGORIES.DATA)
+        .sort((a, b) => new Date(b.frontMatter['end date']) - new Date(a.frontMatter['end date']));
+
+    renderPaginatedList(container, dataPosts, '작성된 Data 게시물이 없습니다.');
+}
+
+/**
+ * infra.html 페이지에 Infra 게시물 목록을 렌더링합니다
+ */
+export async function renderInfraList(detailedPosts) {
+    const container = document.getElementById(DOM_IDS.ALL_INFRA_LIST);
+    if (!container) return;
+
+    const infraPosts = detailedPosts
+        .filter(post => post.frontMatter.category1 === CATEGORIES.KNOWLEDGE && post.frontMatter.category2 === CATEGORIES.INFRA)
+        .sort((a, b) => new Date(b.frontMatter['end date']) - new Date(a.frontMatter['end date']));
+
+    renderPaginatedList(container, infraPosts, '작성된 Infra 게시물이 없습니다.');
+}
+
+/**
+ * tools.html 페이지에 Tools 게시물 목록을 렌더링합니다
+ */
+export async function renderToolsList(detailedPosts) {
+    const container = document.getElementById(DOM_IDS.ALL_TOOLS_LIST);
+    if (!container) return;
+
+    const toolsPosts = detailedPosts
+        .filter(post => post.frontMatter.category1 === CATEGORIES.KNOWLEDGE && post.frontMatter.category2 === CATEGORIES.TOOLS)
+        .sort((a, b) => new Date(b.frontMatter['end date']) - new Date(a.frontMatter['end date']));
+
+    renderPaginatedList(container, toolsPosts, '작성된 Tools 게시물이 없습니다.');
+}
+
+/**
  * post.html 페이지에 모든 게시물(knowledge, troubleshooting, decision) 목록을 렌더링
  */
 export async function renderAllPostList(detailedPosts) {
@@ -114,35 +184,43 @@ export async function renderAllPostList(detailedPosts) {
     if (!container) return;
 
     // GNB_BUTTON_VISIBILITY 설정에 따라 허용된 카테고리를 동적으로 구성
-    const allowedCategories = [];
+    const allowedCat1 = [];
+    const allowedCat2 = [];
     if (GNB_BUTTON_VISIBILITY['post']) {
-        allowedCategories.push(CATEGORIES.KNOWLEDGE);
+        allowedCat1.push(CATEGORIES.KNOWLEDGE);
     }
     if (GNB_BUTTON_VISIBILITY['troubleshooting']) {
-        allowedCategories.push(CATEGORIES.TROUBLE_SHOOTING);
+        allowedCat1.push(CATEGORIES.TROUBLE_SHOOTING);
     }
     if (GNB_BUTTON_VISIBILITY['decision']) {
-        allowedCategories.push(CATEGORIES.DECISION);
+        allowedCat1.push(CATEGORIES.DECISION);
     }
     // blog-gnb용 카테고리 추가
     if (GNB_BUTTON_VISIBILITY['cs']) {
-        allowedCategories.push(CATEGORIES.CS);
+        allowedCat2.push(CATEGORIES.CS);
     }
     if (GNB_BUTTON_VISIBILITY['language']) {
-        allowedCategories.push(CATEGORIES.LANGUAGE);
+        allowedCat2.push(CATEGORIES.LANGUAGE);
     }
     if (GNB_BUTTON_VISIBILITY['data']) {
-        allowedCategories.push(CATEGORIES.DATA);
+        allowedCat2.push(CATEGORIES.DATA);
     }
     if (GNB_BUTTON_VISIBILITY['infra']) {
-        allowedCategories.push(CATEGORIES.INFRA);
+        allowedCat2.push(CATEGORIES.INFRA);
     }
     if (GNB_BUTTON_VISIBILITY['tools']) {
-        allowedCategories.push(CATEGORIES.TOOLS);
+        allowedCat2.push(CATEGORIES.TOOLS);
     }
 
     const combinedPosts = detailedPosts
-        .filter(post => allowedCategories.includes(post.frontMatter.category1))
+        .filter(post => {
+            const cat1 = post.frontMatter.category1;
+            const cat2 = post.frontMatter.category2;
+
+            // cat1이 허용된 포트폴리오 카테고리이거나,
+            // cat1이 knowledge이고 cat2가 허용된 블로그 카테고리인 경우
+            return allowedCat1.includes(cat1) || (cat1 === CATEGORIES.KNOWLEDGE && allowedCat2.includes(cat2));
+        })
         .sort((a, b) => new Date(b.frontMatter['end date']) - new Date(a.frontMatter['end date']));
 
     renderPaginatedList(container, combinedPosts, '작성된 게시물이 없습니다.');
@@ -165,7 +243,7 @@ export async function renderBlogHomeList(detailedPosts) {
     ];
 
     const blogPosts = detailedPosts
-        .filter(post => blogCategories.includes(post.frontMatter.category1))
+        .filter(post => post.frontMatter.category1 === CATEGORIES.KNOWLEDGE && blogCategories.includes(post.frontMatter.category2))
         .sort((a, b) => new Date(b.frontMatter['end date']) - new Date(a.frontMatter['end date']));
 
     renderPaginatedList(container, blogPosts, '작성된 블로그 게시물이 없습니다.');
@@ -280,12 +358,15 @@ function renderPaginatedList(container, posts, noPostsMessage, postsPerPage = PA
         const { frontMatter, id } = post;
         // summary가 배열일 경우를 대비해 join으로 처리
         const summary = Array.isArray(frontMatter.summary) ? frontMatter.summary.join(' ') : (frontMatter.summary || '');
+        const isKnowledgePost = frontMatter.category1 === CATEGORIES.KNOWLEDGE;
+        const categoryTag = (isKnowledgePost && frontMatter.category3) ? frontMatter.category3 : (frontMatter.category1 || 'Uncategorized');
+        const categoryClass = categoryTag.toLowerCase().replace(/\s/g, '-');
         listHtml += `
             <div class="post-card">
                 <a href="./post-template.html?id=${id}">
                     <div class="card-content">
-                        <div class="post-category1-tag category-${(frontMatter.category1 || 'Uncategorized').toLowerCase().replace(/\s/g, '-') }">
-                            <span>${frontMatter.category1 || 'Uncategorized'}</span>
+                        <div class="post-category-tag category-${categoryClass}">
+                            <span>${categoryTag}</span>
                         </div>
                         <h3>${frontMatter.title}</h3>
                         <p class="summary">${summary}</p>

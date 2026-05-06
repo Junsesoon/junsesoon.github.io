@@ -25,8 +25,8 @@ h1, h2, h3, h4, h5, h6 {
     font-weight: bold; /* 기본적으로 굵은 글씨체 유지 */
 }
 
-/* Base typography for .post-category1-tag */
-.post-category1-tag {
+/* Base typography for .post-category-tag */
+.post-category-tag {
     font-size: 0.75em;
     font-weight: 600;
     text-transform: uppercase;

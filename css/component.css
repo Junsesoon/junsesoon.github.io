@@ -166,8 +166,8 @@
     margin: 20px auto 0; /* 위쪽 여백은 유지하고, 좌우는 auto로 중앙 정렬 */
 }
 
-/* Styling for .post-category1-tag */
-.post-category1-tag {
+/* Styling for .post-category-tag */
+.post-category-tag {
     display: inline-block;
     padding: 0.3em 0.7em;
     align-self: flex-start; /* Ensures the tag only takes up as much width as its content */

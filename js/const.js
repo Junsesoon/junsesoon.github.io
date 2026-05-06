@@ -6,6 +6,11 @@ export const DOM_IDS = {
     BLOG_HOME_POST_LIST: 'blog-home-post-list', // 블로그 홈 게시물 목록
     ALL_TROUBLESHOOTING_LOG_LIST: 'TRB-troubleshooting-log-list',
     ALL_DECISION_LOG_LIST: 'DEC-decision-log-list',
+    ALL_CS_LIST: 'CS-list',
+    ALL_LANGUAGE_LIST: 'LANGUAGE-list',
+    ALL_DATA_LIST: 'DATA-list',
+    ALL_INFRA_LIST: 'INFRA-list',
+    ALL_TOOLS_LIST: 'TOOLS-list',
     ALL_POST_LIST: 'POST-post-list',
     ALL_SKILL_LIST: 'SKL-skill-list',
     POST_CONTAINER: 'post-container',
@@ -26,7 +31,7 @@ export const CATEGORIES = {
     MY_SKILL: 'my skill',
     // blog-gnb categories
     CS: 'cs',
-    LANGUAGE: 'language',
+    LANGUAGE: 'Programming Language',
     DATA: 'data',
     INFRA: 'infra',
     TOOLS: 'tools',
@@ -75,7 +80,7 @@ const BLOG_GNB_VISIBILITY = {
     'data': true,
     'infra': true,
     'tools': true,
-    'portfolio-btn': true,  // 블로그 GNB에서는 'Portfolio' 버튼 표시
+    'portfolio-btn': true,  // 블로그 GNB에서는 'Portfolio' 버튼 숨김
     'blog-btn': false,      // 블로그 GNB에서는 'Blog' 버튼 숨김
 };
 

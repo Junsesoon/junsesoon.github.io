@@ -195,8 +195,21 @@
     background-color: #f5f5f5; /* Light Grey */
     color: #616161; /* Dark Grey */
 }
-.close-button:hover {
-    color: #333;
+
+/* Category3-specific colors (for knowledge posts) */
+.category-python {
+    background-color: #cce5ff; /* Light Blue for Python */
+    color: #004085; /* Dark Blue for Python */
+}
+
+.category-java {
+    background-color: #f8d7da; /* Light Red for Java */
+    color: #721c24; /* Dark Red for Java */
+}
+
+.category-container {
+    background-color: #d1ecf1; /* Light Cyan for Container */
+    color: #0c5460; /* Dark Cyan for Container */
 }
 
 /* Post content heading colors */

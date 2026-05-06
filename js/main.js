@@ -2,7 +2,8 @@ import { parseFrontMatter } from './parser.js';
 import {
     renderProjectList, renderPostDetail, renderTroubleshootingList,
     renderDecisionList, renderAllPostList, generateToc, renderBlogHomeList,
-    renderHomeSkills, renderSkillCards, showSkillOverlay, closeSkillOverlay
+    renderHomeSkills, renderSkillCards, showSkillOverlay, closeSkillOverlay,
+    renderCSList, renderLanguageList, renderDataList, renderInfraList, renderToolsList
 } from './render.js';
 import { posts } from './post-list.js'; // 모든 게시물 목록
 import { GNB_BUTTON_VISIBILITY, GNB_STYLE } from './const.js'; // GNB 버튼 가시성 설정을 위한 상수 임포트
@@ -38,6 +39,11 @@ const routes = {
     'post.html': [renderAllPostList],
     'troubleshooting.html': [renderTroubleshootingList],
     'decision.html': [renderDecisionList],
+    'cs.html': [renderCSList],
+    'language.html': [renderLanguageList],
+    'data.html': [renderDataList],
+    'infra.html': [renderInfraList],
+    'tools.html': [renderToolsList],
     'post-template.html': [renderPostDetail],
     'skill.html': [renderSkillCards],
     'about.html': [], // Placeholder for renderAboutMe

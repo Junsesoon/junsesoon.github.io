@@ -4,6 +4,12 @@ end date: 2026-04-26
 project:
 category1:
   - knowledge
+category2:
+  - Programming Language
+category3:
+  - python
+category4:
+  - 없음
 summary: 생산성을 최우선으로 하는 순수 객체 지향 언어
 tags:
   - python
