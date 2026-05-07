@@ -1,17 +1,17 @@
 export const posts = [
     {
         "id": "change-gnb-structure",
-        "path": "/post/decision/change-gnb-structure.md",
+        "path": "https://incheon-people.com/post/decision/change-gnb-structure.md",
         "category1": "decision"
     },
     {
         "id": "change-in-technology-capability-visualization-strategy",
-        "path": "/post/decision/change-in-technology-capability-visualization-strategy.md",
+        "path": "https://incheon-people.com/post/decision/change-in-technology-capability-visualization-strategy.md",
         "category1": "decision"
     },
     {
         "id": "deep-dive-python",
-        "path": "/post/knowledge/deep-dive-python.md",
+        "path": "https://incheon-people.com/post/knowledge/deep-dive-python.md",
         "category1": "knowledge",
         "category2": "Programming Language",
         "category3": "python",
@@ -19,18 +19,18 @@ export const posts = [
     },
     {
         "id": "TB-junseo-tech-blog",
-        "path": "/post/project/TB-junseo-tech-blog.md",
+        "path": "https://incheon-people.com/post/project/TB-junseo-tech-blog.md",
         "category1": "project overview"
     },
     {
         "id": "python",
-        "path": "/post/skill/python.md",
+        "path": "https://incheon-people.com/post/skill/python.md",
         "category1": "my skill",
         "category2": "[BackEnd]"
     },
     {
         "id": "digging-into-console-log",
-        "path": "/post/troubleshooting/digging-into-console-log.md",
+        "path": "https://incheon-people.com/post/troubleshooting/digging-into-console-log.md",
         "category1": "trouble shooting"
     }
 ];
