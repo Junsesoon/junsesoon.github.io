@@ -6,7 +6,7 @@ const fs = require('fs'); // Node.js 파일 시스템 모듈
 const path = require('path');
 
 // 마크다운 게시물 파일들이 위치한 디렉토리
-const postsRootDirectory = path.join(__dirname, '../../junseo-blog/post');
+const postsRootDirectory = path.join(__dirname, '../post');
 // 생성될 post-list.js 파일의 경로
 const outputFilePath = path.join(__dirname, './post-list.js');
 // 2. 확인용 로그 추가 (어디를 보고 있는지 터미널에 찍어줍니다)
