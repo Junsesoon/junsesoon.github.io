@@ -122,7 +122,7 @@ async function generatePostsData() {
 
             // 파일명만 ID로 사용합니다. (예: "파이썬")
             const id = path.basename(posixRelativePath, '.md');
-            const postPath = `./post/${posixRelativePath}`; // HTML 파일 기준 게시물 경로 (예: "./post/knowledge/파이썬.md")
+            const postPath = `/post/${posixRelativePath}`; // HTML 파일 기준 게시물 경로 (예: "/post/knowledge/파이썬.md")
 
             const postInfo = {
                 id,
