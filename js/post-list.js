@@ -1,17 +1,17 @@
 export const posts = [
     {
-        "id": "GNB 구조 변경",
-        "path": "./post/decision/GNB 구조 변경.md",
+        "id": "change-gnb-structure",
+        "path": "./post/decision/change-gnb-structure.md",
         "category1": "decision"
     },
     {
-        "id": "기술 역량 시각화 전략 변경",
-        "path": "./post/decision/기술 역량 시각화 전략 변경.md",
+        "id": "change-in-technology-capability-visualization-strategy",
+        "path": "./post/decision/change-in-technology-capability-visualization-strategy.md",
         "category1": "decision"
     },
     {
-        "id": "deep dive-python",
-        "path": "./post/knowledge/deep dive-python.md",
+        "id": "deep-dive-python",
+        "path": "./post/knowledge/deep-dive-python.md",
         "category1": "knowledge",
         "category2": "Programming Language",
         "category3": "python",
@@ -29,8 +29,8 @@ export const posts = [
         "category2": "[BackEnd]"
     },
     {
-        "id": "콘솔 로그 파헤치기",
-        "path": "./post/troubleshooting/콘솔 로그 파헤치기.md",
+        "id": "digging-into-console-log",
+        "path": "./post/troubleshooting/digging-into-console-log.md",
         "category1": "trouble shooting"
     }
 ];
