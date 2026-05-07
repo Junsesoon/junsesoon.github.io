@@ -83,7 +83,7 @@ const BLOG_GNB_VISIBILITY = {
     'data': true,
     'infra': true,
     'tools': true,
-    'portfolio-btn': true,  // 블로그 GNB에서는 'Portfolio' 버튼 숨김
+    'portfolio-btn': false,  // 블로그 GNB에서는 'Portfolio' 버튼 숨김
     'blog-btn': false,      // 블로그 GNB에서는 'Blog' 버튼 숨김
 };
 

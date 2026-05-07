@@ -56,3 +56,9 @@ node js/build-skill.js
 - frontmatter parsing logic 개선
 - post 상세 페이지의 '작성일' 항목 세분화 > '최초 작성일' & '최종 수정일'로 변경
 - 구글 애널리틱스 연결을 통한 트래픽 분석 활성화
+
+# junseo tech blog 1.1.1
+- distribution 2026-05-07
+
+## 수정사항
+- post card가 렌더링 되지 않는 문제 해결
