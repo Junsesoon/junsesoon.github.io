@@ -210,6 +210,36 @@
 .post-body h4 {
     color: green;
 }
+
+/* Code block styles */
+.post-body pre {
+    background-color: #282c34; /* atom-one-dark 테마 배경색 */
+    color: #abb2bf; /* atom-one-dark 테마 기본 텍스트 색상 */
+    border-radius: 5px;
+    padding: 1em;
+    line-height: 1.6;
+    white-space: pre-wrap;   /* 긴 코드 줄바꿈 허용 */
+    word-break: break-all;   /* 매우 긴 단어(URL 등) 강제 줄바꿈 */
+}
+
+/* highlight.js 테마와 충돌을 피하고 <pre> 태그 스타일과 조화롭게 만들기 위해 <code> 태그의 스타일을 일부 초기화합니다. */
+.post-body pre code.hljs {
+    padding: 0;
+    background-color: transparent;
+}
+
+.post-body code {
+    font-family: 'D2Coding', 'Courier New', Courier, monospace;
+}
+
+/* 인라인 코드 블록 스타일 */
+.post-body :not(pre) > code {
+    background-color: #e7e7e7;
+    color: #c7254e;
+    padding: 2px 4px;
+    border-radius: 4px;
+    font-size: 0.9em;
+}
 /* Post content summary color */
 #post-container .summary {
     color: #777;

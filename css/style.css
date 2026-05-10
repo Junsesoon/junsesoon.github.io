@@ -19,3 +19,19 @@
         gap: 24px; /* 간격 조정 */
     }
 }
+
+@media (max-width: 768px) {
+    main#content {
+        padding: 20px; /* 화면이 작아지면 메인 콘텐츠의 패딩을 줄여 가독성을 높입니다. */
+    }
+
+    /* 작은 화면에서 코드 블록의 스크롤바를 숨깁니다. (터치 스크롤은 여전히 가능) */
+    .post-body pre {
+        scrollbar-width: none; /* Firefox */
+        -ms-overflow-style: none; /* IE and Edge */
+    }
+
+    .post-body pre::-webkit-scrollbar {
+        display: none; /* Chrome, Safari, and Opera */
+    }
+}
