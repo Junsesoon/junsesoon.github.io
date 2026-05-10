@@ -1,3 +1,5 @@
+👉 link: https://incheon-people.com/ 👈
+
 # junseo tech blog 1.0.0
 - Initialized on 2026-02-19
 - distribution 2026-05-02
