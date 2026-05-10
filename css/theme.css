@@ -247,6 +247,34 @@
     border-radius: 4px;
     font-size: 0.9em;
 }
+
+/* 게시물 컨텐츠 표 스타일 */
+.post-body table {
+    /* width: 100%; */ /* 테이블 너비를 내용에 맞게 자동 조정하도록 설정 제거 */
+    border-collapse: separate; /* 'collapse'는 둥근 모서리를 지원하지 않으므로 'separate'로 변경합니다. */
+    border-spacing: 0;
+    margin: 2em 0;
+    border-radius: 8px; /* 테이블의 모서리를 둥글게 합니다. */
+    border: 1px solid #ddd;
+    overflow: hidden; /* 셀이 둥근 모서리를 넘어가지 않도록 합니다. */
+}
+
+.post-body th,
+.post-body td {
+    padding: 8px 12px;
+    text-align: left; /* 가독성을 위해 기본 텍스트 정렬을 왼쪽으로 변경 */
+    border-bottom: 1px solid #ddd; /* 내부 가로선 */
+    border-right: 1px solid #ddd;  /* 내부 세로선 */
+}
+
+.post-body thead th {
+    font-weight: bold;
+}
+
+/* 마지막 열과 행의 테두리를 제거하여 이중 테두리가 생기는 것을 방지합니다. */
+.post-body tr > *:last-child { border-right: none; }
+.post-body tbody tr:last-child > *,
+.post-body thead:last-child tr:last-child > * { border-bottom: none; }
 /* Post content summary color */
 #post-container .summary {
     color: #777;
