@@ -64,3 +64,14 @@ node js/build-skill.js
 
 ## 수정사항
 - post card가 렌더링 되지 않는 문제 해결
+
+# junseo tech blog 1.2.0
+- distribution 2026-05-10
+
+## 수정사항
+- highlight.js library 추가(⚠️특정 환경에서 라이브러리 충돌 이슈 해결 안 됨)
+- table style 추가
+- 게시물 내 이미지 크기를 반응형으로 변경
+
+## 포스팅
+- deep dive docker

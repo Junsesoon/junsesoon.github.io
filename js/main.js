@@ -137,6 +137,17 @@ function setupGnbSwitchListeners() {
 document.addEventListener('DOMContentLoaded', () => {
     initGA(); // 페이지 로드 시마다 Google Analytics를 초기화
 
+    // highlight.js가 로드되었는지 확인하고 marked에 신택스 하이라이팅을 적용합니다.
+    if (typeof hljs !== 'undefined') {
+        marked.setOptions({
+            highlight: function(code, lang) {
+                const language = hljs.getLanguage(lang) ? lang : 'plaintext';
+                return hljs.highlight(code, { language }).value;
+            },
+            langPrefix: 'hljs language-', // CSS 클래스 호환성을 위함
+        });
+    }
+
     const loadHeader = fetch('./template/header.html').then(res => res.text()).then(html => document.querySelector('header').innerHTML = html);
     const loadFooter = fetch('./template/footer.html').then(res => res.text()).then(html => document.querySelector('footer').innerHTML = html);
 

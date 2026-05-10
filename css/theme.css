@@ -210,6 +210,71 @@
 .post-body h4 {
     color: green;
 }
+
+/* Post content image styles */
+.post-body img {
+    max-width: 100%; /* 이미지가 부모 요소의 너비를 초과하지 않도록 설정 */
+    height: auto; /* 이미지의 종횡비를 유지 */
+    display: block; /* 이미지를 블록 요소로 만들어 중앙 정렬 등을 쉽게 적용 */
+}
+
+/* Code block styles */
+.post-body pre {
+    background-color: #282c34; /* atom-one-dark 테마 배경색 */
+    color: #abb2bf; /* atom-one-dark 테마 기본 텍스트 색상 */
+    border-radius: 5px;
+    padding: 1em;
+    line-height: 1.6;
+    white-space: pre-wrap;   /* 긴 코드 줄바꿈 허용 */
+    word-break: break-all;   /* 매우 긴 단어(URL 등) 강제 줄바꿈 */
+}
+
+/* highlight.js 테마와 충돌을 피하고 <pre> 태그 스타일과 조화롭게 만들기 위해 <code> 태그의 스타일을 일부 초기화합니다. */
+.post-body pre code.hljs {
+    padding: 0;
+    background-color: transparent;
+}
+
+.post-body code {
+    font-family: 'D2Coding', 'Courier New', Courier, monospace;
+}
+
+/* 인라인 코드 블록 스타일 */
+.post-body :not(pre) > code {
+    background-color: #e7e7e7;
+    color: #c7254e;
+    padding: 2px 4px;
+    border-radius: 4px;
+    font-size: 0.9em;
+}
+
+/* 게시물 컨텐츠 표 스타일 */
+.post-body table {
+    /* width: 100%; */ /* 테이블 너비를 내용에 맞게 자동 조정하도록 설정 제거 */
+    border-collapse: separate; /* 'collapse'는 둥근 모서리를 지원하지 않으므로 'separate'로 변경합니다. */
+    border-spacing: 0;
+    margin: 2em 0;
+    border-radius: 8px; /* 테이블의 모서리를 둥글게 합니다. */
+    border: 1px solid #ddd;
+    overflow: hidden; /* 셀이 둥근 모서리를 넘어가지 않도록 합니다. */
+}
+
+.post-body th,
+.post-body td {
+    padding: 8px 12px;
+    text-align: left; /* 가독성을 위해 기본 텍스트 정렬을 왼쪽으로 변경 */
+    border-bottom: 1px solid #ddd; /* 내부 가로선 */
+    border-right: 1px solid #ddd;  /* 내부 세로선 */
+}
+
+.post-body thead th {
+    font-weight: bold;
+}
+
+/* 마지막 열과 행의 테두리를 제거하여 이중 테두리가 생기는 것을 방지합니다. */
+.post-body tr > *:last-child { border-right: none; }
+.post-body tbody tr:last-child > *,
+.post-body thead:last-child tr:last-child > * { border-bottom: none; }
 /* Post content summary color */
 #post-container .summary {
     color: #777;
