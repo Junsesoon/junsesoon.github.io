@@ -1,9 +1,34 @@
-# OS / editor
+# 🐍 local artifacts
+__pycache__/
+*.pyc
+
+# 📦 의존성 (가장 중요)
+node_modules/
+
+# 🚀 Next.js 빌드 및 캐시 폴더
+/.next/
+/out/
+/build
+
+# 🔐 환경 변수 (보안)
+.env
+.env*.local
+
+# 📝 로그 파일
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# 🍏 OS 및 에디터 찌꺼기
 .DS_Store
 Thumbs.db
+*.pem
 .vscode/
 .idea/
 
-# local artifacts
-__pycache__/
-*.pyc
+# 🛠️ TypeScript 캐시
+*.tsbuildinfo
+
+# ☁️ Vercel 배포 관련
+.vercel
