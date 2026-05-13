@@ -1,3 +1,5 @@
+import GNB from '../components/GNB';
+
 export default function RootLayout({
   children,
 }: {
@@ -5,7 +7,10 @@ export default function RootLayout({
 }) {
   return (
     <html lang="ko">
-      <body>{children}</body>
+      <body>
+        <GNB />
+        {children}
+      </body>
     </html>
   )
 }
