@@ -11,7 +11,12 @@ interface Post {
   excerpt: string;
 }
 
-const getPosts = (): Post[] => {
+// frontmatter를 포함한 게시물 내부 처리용 타입
+interface PostWithFrontmatter extends Post {
+  category1?: string | string[];
+}
+
+const getPosts = (mode: string = 'blog'): Post[] => {
   const postsBaseDirectory = path.join(process.cwd(), 'public', 'posts');
 
   // Helper function to recursively get all markdown files and their slugs
@@ -38,29 +43,44 @@ const getPosts = (): Post[] => {
     return results;
   }
 
-const allMarkdownFiles = getAllMarkdownFiles(postsBaseDirectory, postsBaseDirectory);
+  const allMarkdownFiles = getAllMarkdownFiles(postsBaseDirectory, postsBaseDirectory);
 
-const posts = allMarkdownFiles.map(({ filePath, slug }) => {
+  let posts: PostWithFrontmatter[] = allMarkdownFiles.map(({ filePath, slug }) => {
     const fileContents = fs.readFileSync(filePath, 'utf8');
     const { data } = matter(fileContents);
 
     // 슬러그의 마지막 부분을 기반으로 제목을 생성합니다 (예: 'knowledge/docker' -> 'Docker')
     const title = slug.split('/').pop()?.split('-').map((word) => word.charAt(0).toUpperCase() + word.slice(1)).join(' ') || slug;
 
-    return {
+    return { // This object will be filtered later, so it needs category2
       slug,
       title,
       excerpt: data.summary || '', // frontmatter에 summary가 없는 경우를 대비
       date: data['start date'] || '', // frontmatter에 'start date'가 없는 경우를 대비
+      category1: data.category1,
     };
   }).filter(post => post.date); // 날짜가 없는 게시물은 목록에서 제외합니다.
 
+  // 'blog' 모드일 때 category1에 'knowledge'가 포함된 게시물만 필터링합니다.
+  if (mode === 'blog') {
+    posts = posts.filter(post => {
+      if (Array.isArray(post.category1)) {
+        return post.category1.includes('knowledge');
+      }
+      return post.category1 === 'knowledge';
+    });
+  }
+
   // 최신 날짜 순으로 정렬합니다.
-  return posts.sort((a, b) => (new Date(b.date) > new Date(a.date) ? 1 : -1));
+  const sortedPosts = posts.sort((a, b) => (new Date(b.date) > new Date(a.date) ? 1 : -1));
+
+  // 최종적으로 반환하기 전에 frontmatter 필터링에 사용된 category1 속성을 제거합니다.
+  return sortedPosts.map(({ category1, ...rest }) => rest);
 };
 
-export default function Home() {
-  const posts = getPosts();
+export default function Home({ searchParams }: { searchParams?: { mode?: string } }) {
+  const mode = searchParams?.mode || 'blog';
+  const posts = getPosts(mode);
   return (
     <main style={{ padding: '2rem', maxWidth: '800px', margin: '0 auto', fontFamily: 'sans-serif' }}>
       <header style={{ borderBottom: '1px solid #eaeaea', paddingBottom: '1rem', marginBottom: '2rem', textAlign: 'center' }}>

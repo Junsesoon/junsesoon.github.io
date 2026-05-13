@@ -1,16 +1,17 @@
 'use client';
 
 import Link from 'next/link';
-import React, { useState } from 'react';
-import { usePathname } from 'next/navigation';
+import React from 'react';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import styles from './GNB.module.css';
 
 // 개발자 제어 영역: 모드 전환 버튼의 가시성을 제어합니다.
 const ENABLE_MODE_TOGGLE = true; // 이 값을 false로 바꾸면 버튼이 사라집니다.
 
 const GNB: React.FC = () => {
-  const [mode, setMode] = useState<'blog' | 'portfolio'>('blog');
-
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const mode = searchParams.get('mode') || 'blog';
   const pathname = usePathname();
   const blogLinks = [
     { href: '/cs', text: 'CS' },
@@ -55,14 +56,14 @@ const GNB: React.FC = () => {
             {mode !== 'blog' && (
               <button
                 className={styles.toggleButton}
-                onClick={() => setMode('blog')}>
+                onClick={() => router.push('/?mode=blog')}>
                 Blog
               </button>
             )}
             {mode !== 'portfolio' && (
               <button
                 className={styles.toggleButton}
-                onClick={() => setMode('portfolio')}>
+                onClick={() => router.push('/?mode=portfolio')}>
                 Portfolio
               </button>
             )}
