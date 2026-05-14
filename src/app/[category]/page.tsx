@@ -126,7 +126,7 @@ export default async function CategoryPage({ params }: { params: Promise<{ categ
           <ul style={{ listStyle: 'none', padding: 0 }}>
             {posts.map((post) => (
               <li key={post.slug} style={{ marginBottom: '2.5rem' }}>
-                <Link href={`/blog/${post.slug}`} style={{ textDecoration: 'none' }}>
+                <Link href={`/${post.slug}`} style={{ textDecoration: 'none' }}>
                   <h3 style={{ fontSize: '1.5rem', color: '#0070f3', marginBottom: '0.5rem' }}>
                     {post.title}
                   </h3>

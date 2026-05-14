@@ -112,7 +112,9 @@ export default async function Home({ searchParams }: { searchParams?: Promise<{ 
   return (
     <main style={{ padding: '2rem', maxWidth: '800px', margin: '0 auto', fontFamily: 'sans-serif' }}>
       <header style={{ borderBottom: '1px solid #eaeaea', paddingBottom: '1rem', marginBottom: '2rem', textAlign: 'center' }}>
-        <h1 style={{ fontSize: '3rem' }}>Junseo's Blog 🚀</h1>
+        <h1 style={{ fontSize: '3rem' }}>
+          {mode === 'portfolio' ? "Junseo's Portfolio 🚀" : "Junseo's Blog 🚀"}
+        </h1>
         <p style={{ color: '#666', fontSize: '1.2rem' }}>What are you looking for?</p>
       </header>
       <section>
@@ -120,7 +122,7 @@ export default async function Home({ searchParams }: { searchParams?: Promise<{ 
         <ul style={{ listStyle: 'none', padding: 0 }}>
           {posts.map((post) => (
             <li key={post.slug} style={{ marginBottom: '2.5rem' }}>
-              <Link href={`/blog/${post.slug}`} style={{ textDecoration: 'none' }}>
+              <Link href={`/${post.slug}`} style={{ textDecoration: 'none' }}>
                 <h3 style={{ fontSize: '1.5rem', color: '#0070f3', marginBottom: '0.5rem' }}>{post.title}</h3>
                 <p style={{ color: '#666', margin: '0.5rem 0' }}>
                   {new Date(post.date).toLocaleDateString('ko-KR')}
