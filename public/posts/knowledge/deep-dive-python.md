@@ -5,7 +5,7 @@ project:
 category1:
   - knowledge
 category2:
-  - Programming Language
+  - language
 category3:
   - python
 category4:

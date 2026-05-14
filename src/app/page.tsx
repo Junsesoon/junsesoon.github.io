@@ -14,9 +14,15 @@ interface Post {
 // frontmatter를 포함한 게시물 내부 처리용 타입
 interface PostWithFrontmatter extends Post {
   category1?: string | string[];
+  category2?: string | string[];
 }
 
-const getPosts = (mode: string = 'blog'): Post[] => {
+interface PostFilterOptions {
+  category1?: string;
+  category2?: string;
+}
+
+const getPosts = (mode: string = 'blog', filters: PostFilterOptions = {}): Post[] => {
   const postsBaseDirectory = path.join(process.cwd(), 'public', 'posts');
 
   // Helper function to recursively get all markdown files and their slugs
@@ -58,28 +64,50 @@ const getPosts = (mode: string = 'blog'): Post[] => {
       excerpt: data.summary || '', // frontmatter에 summary가 없는 경우를 대비
       date: data['start date'] || '', // frontmatter에 'start date'가 없는 경우를 대비
       category1: data.category1,
+      category2: data.category2,
     };
   }).filter(post => post.date); // 날짜가 없는 게시물은 목록에서 제외합니다.
 
-  // 'blog' 모드일 때 category1에 'knowledge'가 포함된 게시물만 필터링합니다.
+  // 'blog' 모드일 때 category1에 'knowledge' 또는 'skill'이 포함된 게시물만 필터링합니다.
   if (mode === 'blog') {
     posts = posts.filter(post => {
+      const targetCategories = ['knowledge', 'skill'];
       if (Array.isArray(post.category1)) {
-        return post.category1.includes('knowledge');
+        return post.category1.some(cat => targetCategories.includes(cat));
       }
-      return post.category1 === 'knowledge';
+      return targetCategories.includes(post.category1);
+    });
+  }
+
+  // 전달된 필터 옵션에 따라 필터링합니다.
+  if (filters.category1) {
+    posts = posts.filter(post => {
+      if (Array.isArray(post.category1)) {
+        return post.category1.includes(filters.category1);
+      }
+      return post.category1 === filters.category1;
+    });
+  }
+
+  if (filters.category2) {
+    posts = posts.filter(post => {
+      if (Array.isArray(post.category2)) {
+        return post.category2.includes(filters.category2);
+      }
+      return post.category2 === filters.category2;
     });
   }
 
   // 최신 날짜 순으로 정렬합니다.
   const sortedPosts = posts.sort((a, b) => (new Date(b.date) > new Date(a.date) ? 1 : -1));
 
-  // 최종적으로 반환하기 전에 frontmatter 필터링에 사용된 category1 속성을 제거합니다.
-  return sortedPosts.map(({ category1, ...rest }) => rest);
+  // 최종적으로 반환하기 전에 frontmatter 필터링에 사용된 category 속성들을 제거합니다.
+  return sortedPosts.map(({ category1, category2, ...rest }) => rest);
 };
 
-export default function Home({ searchParams }: { searchParams?: { mode?: string } }) {
-  const mode = searchParams?.mode || 'blog';
+export default async function Home({ searchParams }: { searchParams?: Promise<{ mode?: string }> }) {
+  const params = await searchParams;
+  const mode = params?.mode || 'blog';
   const posts = getPosts(mode);
   return (
     <main style={{ padding: '2rem', maxWidth: '800px', margin: '0 auto', fontFamily: 'sans-serif' }}>
