@@ -16,7 +16,14 @@ interface PostWithFrontmatter extends Post {
   category2?: string | string[];
 }
 
-const getCategoryPosts = (category: string): Post[] => {
+const normalizeCategoryValue = (value: string) =>
+  value
+    .toString()
+    .trim()
+    .toLowerCase()
+    .replace(/[-_\s]+/g, '');
+
+const getCategoryPosts = (category: string, mode: string = 'blog'): Post[] => {
   const postsBaseDirectory = path.join(process.cwd(), 'public', 'posts');
 
   // Helper function to recursively get all markdown files and their slugs
@@ -60,15 +67,25 @@ const getCategoryPosts = (category: string): Post[] => {
         slug,
         title,
         excerpt: data.summary || '',
-        date: data['start date'] || '',
+        date: data['start date'] || data.date || '',
         category1: data.category1,
         category2: data.category2,
       };
     })
     .filter((post) => post.date);
 
-  // 해당 category2와 매칭되는 포스트만 필터링
+  // portfolio 모드에서는 category1 기준으로, 그 외에는 category2 기준으로 필터링
+  const normalizedCategory = normalizeCategoryValue(category);
+
   posts = posts.filter((post) => {
+    if (mode === 'portfolio') {
+      const category1Values = Array.isArray(post.category1) ? post.category1 : [post.category1].filter(Boolean);
+      return category1Values.some(cat => {
+        const normalizedCat = normalizeCategoryValue(cat);
+        return normalizedCat.includes(normalizedCategory);
+      });
+    }
+
     const hasCategory2Match = Array.isArray(post.category2)
       ? post.category2.includes(category)
       : post.category2 === category;
@@ -82,9 +99,11 @@ const getCategoryPosts = (category: string): Post[] => {
   return sortedPosts.map(({ category1, category2, ...rest }) => rest);
 };
 
-export default async function CategoryPage({ params }: { params: Promise<{ category: string }> }) {
+export default async function CategoryPage({ params, searchParams }: { params: Promise<{ category: string }> ; searchParams?: Promise<{ mode?: string }> }) {
   const { category } = await params;
-  const posts = getCategoryPosts(category);
+  const searchParamsResolved = await searchParams;
+  const mode = searchParamsResolved?.mode || 'blog';
+  const posts = getCategoryPosts(category, mode);
 
   // 카테고리명을 포맷팅합니다 (예: 'cs' -> 'CS', 'trouble-shotting' -> 'Trouble Shotting')
   const formattedCategoryName = category

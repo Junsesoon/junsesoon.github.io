@@ -1,6 +1,7 @@
 ---
 project title: "junseo-tech-blog"
-category1: "project overview"
+category1: "project"
+category2: "overview"
 start date: 2026-01-01
 end date: 2026-01-01
 플랫폼: [web]
