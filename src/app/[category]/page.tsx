@@ -16,7 +16,7 @@ interface PostWithFrontmatter extends Post {
   category2?: string | string[];
 }
 
-const getInfraPosts = (): Post[] => {
+const getCategoryPosts = (category: string): Post[] => {
   const postsBaseDirectory = path.join(process.cwd(), 'public', 'posts');
 
   // Helper function to recursively get all markdown files and their slugs
@@ -67,17 +67,13 @@ const getInfraPosts = (): Post[] => {
     })
     .filter((post) => post.date);
 
-  // category1이 'knowledge'이고 category2가 'infra'인 포스트만 필터링
+  // 해당 category2와 매칭되는 포스트만 필터링
   posts = posts.filter((post) => {
-    const hasCategory1Knowledge = Array.isArray(post.category1)
-      ? post.category1.includes('knowledge')
-      : post.category1 === 'knowledge';
+    const hasCategory2Match = Array.isArray(post.category2)
+      ? post.category2.includes(category)
+      : post.category2 === category;
 
-    const hasCategory2Infra = Array.isArray(post.category2)
-      ? post.category2.includes('infra')
-      : post.category2 === 'infra';
-
-    return hasCategory1Knowledge && hasCategory2Infra;
+    return hasCategory2Match;
   });
 
   // 최신 날짜 순으로 정렬
@@ -86,8 +82,15 @@ const getInfraPosts = (): Post[] => {
   return sortedPosts.map(({ category1, category2, ...rest }) => rest);
 };
 
-export default function InfraPage() {
-  const posts = getInfraPosts();
+export default async function CategoryPage({ params }: { params: Promise<{ category: string }> }) {
+  const { category } = await params;
+  const posts = getCategoryPosts(category);
+
+  // 카테고리명을 포맷팅합니다 (예: 'cs' -> 'CS', 'trouble-shotting' -> 'Trouble Shotting')
+  const formattedCategoryName = category
+    .split('-')
+    .map((word) => word.toUpperCase())
+    .join(' ');
 
   return (
     <main style={{ padding: '2rem', maxWidth: '800px', margin: '0 auto', fontFamily: 'sans-serif' }}>
@@ -98,14 +101,14 @@ export default function InfraPage() {
           marginBottom: '2rem',
         }}
       >
-        <h1 style={{ fontSize: '2.5rem', marginBottom: '0.5rem' }}>Infra</h1>
-        <p style={{ color: '#666', fontSize: '1rem' }}>Infrastructure & DevOps 관련 포스트</p>
+        <h1 style={{ fontSize: '2.5rem', marginBottom: '0.5rem' }}>{formattedCategoryName}</h1>
+        <p style={{ color: '#666', fontSize: '1rem' }}>{formattedCategoryName} 관련 포스트</p>
       </header>
 
       {posts.length === 0 ? (
         <section>
           <p style={{ color: '#999', fontSize: '1.1rem', textAlign: 'center' }}>
-            아직 작성된 포스트가 없습니다.
+            게시물이 없습니다.
           </p>
         </section>
       ) : (

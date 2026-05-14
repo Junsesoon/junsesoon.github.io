@@ -68,13 +68,14 @@ const getPosts = (mode: string = 'blog', filters: PostFilterOptions = {}): Post[
     };
   }).filter(post => post.date); // 날짜가 없는 게시물은 목록에서 제외합니다.
 
-  // 'blog' 모드일 때 category1에 'knowledge'가 포함된 게시물만 필터링합니다.
+  // 'blog' 모드일 때 category1에 'knowledge' 또는 'skill'이 포함된 게시물만 필터링합니다.
   if (mode === 'blog') {
     posts = posts.filter(post => {
+      const targetCategories = ['knowledge', 'skill'];
       if (Array.isArray(post.category1)) {
-        return post.category1.includes('knowledge');
+        return post.category1.some(cat => targetCategories.includes(cat));
       }
-      return post.category1 === 'knowledge';
+      return targetCategories.includes(post.category1);
     });
   }
 
