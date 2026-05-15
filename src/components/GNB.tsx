@@ -6,7 +6,7 @@ import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import styles from './GNB.module.css';
 
 // 개발자 제어 영역: 모드 전환 버튼의 가시성을 제어합니다.
-const ENABLE_MODE_TOGGLE = false; // 이 값을 false로 바꾸면 버튼이 사라집니다.
+const ENABLE_MODE_TOGGLE = true; // 이 값을 false로 바꾸면 버튼이 사라집니다.
 
 const GNBContent: React.FC = () => {
   const router = useRouter();
