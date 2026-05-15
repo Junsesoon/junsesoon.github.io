@@ -4,6 +4,8 @@ import matter from 'gray-matter';
 import { remark } from 'remark';
 import remarkHtml from 'remark-html';
 import remarkSlug from 'remark-slug';
+import TOC from '../../../components/TOC';
+import { collectTocHeadings, type TocHeading } from '../../../utils/parser';
 
 interface PostData {
   title: string;
@@ -24,26 +26,6 @@ function formatKoreanDate(value?: string) {
   const mm = String(date.getMonth() + 1).padStart(2, '0');
   const dd = String(date.getDate()).padStart(2, '0');
   return `${yyyy}. ${mm}. ${dd}.`;
-}
-
-function extractHeadings(content: string): Array<{ level: number; text: string; id: string }> {
-  const headingRegex = /^#{1,6}\s+(.+)$/gm;
-  const headings: Array<{ level: number; text: string; id: string }> = [];
-  let match;
-
-  while ((match = headingRegex.exec(content)) !== null) {
-    const level = match[0].length - match[1].length - 1; // #의 개수
-    const text = match[1].trim();
-    const id = text
-      .toLowerCase()
-      .replace(/[^\w\s-]/g, '') // 특수문자 제거
-      .replace(/\s+/g, '-') // 공백을 -로
-      .replace(/-+/g, '-'); // 연속된 -를 하나로
-
-    headings.push({ level, text, id });
-  }
-
-  return headings;
 }
 
 export default async function PostPage({
@@ -67,36 +49,28 @@ export default async function PostPage({
   const fileContents = fs.readFileSync(filePath, 'utf8');
   const { data, content } = matter(fileContents);
 
-  // TOC 생성
-  const headings = extractHeadings(content);
+  const headings: TocHeading[] = [];
 
-  // HTML 생성 시 헤딩에 ID 추가
+  // HTML 생성 시 헤딩에 ID를 추가하고, 같은 ID를 TOC에서도 사용합니다.
   const processedContent = await remark()
-    .use(remarkSlug)
-    .use(remarkHtml)
+    .use(remarkSlug as any)
+    .use(collectTocHeadings(headings))
+    .use(remarkHtml, { sanitize: false })
     .process(content);
   const contentHtml = processedContent.toString();
 
   const postData = data as PostData;
 
   return (
-    <>
-      <style dangerouslySetInnerHTML={{
-        __html: `
-          .toc-link:hover {
-            background-color: #e3f2fd !important;
-          }
-        `
-      }} />
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: '1fr 300px',
-        gap: '2rem',
-        maxWidth: '1200px',
-        margin: '0 auto',
-        padding: '2rem',
-        fontFamily: 'sans-serif'
-      }}>
+    <div style={{
+      display: 'grid',
+      gridTemplateColumns: '1fr 200px',
+      gap: '2rem',
+      maxWidth: '1200px',
+      margin: '0 auto',
+      padding: '2rem',
+      fontFamily: 'sans-serif'
+    }}>
       <main style={{ minWidth: 0 }}>
         <article>
           <header style={{ marginBottom: '2rem' }}>
@@ -145,57 +119,7 @@ export default async function PostPage({
         </article>
       </main>
 
-      {headings.length > 0 && (
-        <aside style={{
-          position: 'sticky',
-          top: '2rem',
-          height: 'fit-content',
-          background: '#f9f9f9',
-          padding: '1rem',
-          borderRadius: '8px',
-          border: '1px solid #e1e1e1'
-        }}>
-          <h3 style={{
-            margin: '0 0 1rem 0',
-            fontSize: '1.1rem',
-            fontWeight: 'bold',
-            color: '#333'
-          }}>
-            Table of Contents
-          </h3>
-          <nav>
-            <ul style={{
-              listStyle: 'none',
-              padding: 0,
-              margin: 0,
-              fontSize: '0.9rem'
-            }}>
-              {headings.map((heading, index) => (
-                <li key={index} style={{
-                  marginBottom: '0.5rem',
-                  paddingLeft: `${(heading.level - 1) * 1}rem`
-                }}>
-                  <a
-                    href={`#${heading.id}`}
-                    style={{
-                      color: '#0070f3',
-                      textDecoration: 'none',
-                      display: 'block',
-                      padding: '0.25rem 0',
-                      borderRadius: '4px',
-                      transition: 'background-color 0.2s'
-                    }}
-                    className="toc-link"
-                  >
-                    {heading.text}
-                  </a>
-                </li>
-              ))}
-            </ul>
-          </nav>
-        </aside>
-      )}
+      <TOC headings={headings} />
     </div>
-    </>
   );
 }
