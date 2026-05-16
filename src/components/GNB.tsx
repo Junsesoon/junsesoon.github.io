@@ -8,9 +8,25 @@ import { PORTFOLIO_MENU, BLOG_MENU, ENABLE_MODE_TOGGLE } from '@/constants';
 const GNBContent: React.FC = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const mode = searchParams.get('mode') || 'blog';
   const pathname = usePathname();
 
+  const getMode = () => {
+    const queryMode = searchParams.get('mode');
+    if (queryMode === 'blog' || queryMode === 'portfolio') {
+      return queryMode;
+    }
+
+    // Infer from pathname if query parameter is missing
+    const isPortfolioPath = PORTFOLIO_MENU.some((item) => {
+      const itemPath = item.href.split('?')[0];
+      // Ensure we don't match on '/' for portfolio
+      return itemPath !== '/' && pathname.startsWith(itemPath);
+    });
+
+    return isPortfolioPath ? 'portfolio' : 'blog';
+  };
+
+  const mode = getMode();
   const currentMenu = mode === 'blog' ? BLOG_MENU : PORTFOLIO_MENU;
 
   const handleModeSwitch = (newMode: 'blog' | 'portfolio') => {
