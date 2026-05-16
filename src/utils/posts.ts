@@ -2,6 +2,12 @@ import fs from 'fs';
 import path from 'path';
 import { Dirent } from 'fs';
 import matter from 'gray-matter';
+import { unified } from 'unified';
+import remarkParse from 'remark-parse';
+import remarkGfm from 'remark-gfm';
+import remarkRehype from 'remark-rehype';
+import rehypeHighlight from 'rehype-highlight';
+import rehypeStringify from 'rehype-stringify';
 import { Post, PostWithFrontmatter, PostFilterOptions } from '../types/blog';
 
 export const getAllPosts = (mode: string = 'blog', filters: PostFilterOptions = {}): Post[] => {
@@ -85,4 +91,49 @@ export const getAllPosts = (mode: string = 'blog', filters: PostFilterOptions = 
 
   // 최종적으로 반환하기 전에 frontmatter 필터링에 사용된 category 속성들을 제거합니다.
   return sortedPosts.map(({ category1, category2, ...rest }) => rest);
+};
+
+export const getPostData = async (id: string) => {
+  try {
+    const filePath = path.join(process.cwd(), 'public', 'posts', `${id}.md`);
+
+    if (!fs.existsSync(filePath)) {
+      throw new Error(`Post not found: ${id}`);
+    }
+
+    const fileContents = fs.readFileSync(filePath, 'utf8');
+    const { data: frontmatter, content } = matter(fileContents);
+
+    // Process markdown with syntax highlighting
+    const processedContent = await unified()
+      .use(remarkParse)
+      .use(remarkGfm)
+      .use(remarkRehype)
+      .use(rehypeHighlight)
+      .use(rehypeStringify)
+      .process(content);
+
+    const htmlContent = String(processedContent);
+
+    return {
+      id,
+      htmlContent,
+      metadata: {
+        parentId: frontmatter.parentId || null,
+        startDate: frontmatter['start date'] || null,
+        endDate: frontmatter['end date'] || null,
+        project: frontmatter.project || [],
+        category1: frontmatter.category1 || [],
+        category2: frontmatter.category2 || [],
+        category3: frontmatter.category3 || [],
+        category4: frontmatter.category4 || [],
+        summary: frontmatter.summary || '',
+        tags: frontmatter.tags || [],
+        docVer: frontmatter['doc-ver'] || [],
+        ...frontmatter,
+      },
+    };
+  } catch (error) {
+    throw new Error(`Failed to load post data for id "${id}": ${error instanceof Error ? error.message : 'Unknown error'}`);
+  }
 };

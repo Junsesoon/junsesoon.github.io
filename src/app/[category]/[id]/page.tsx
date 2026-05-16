@@ -1,11 +1,16 @@
 import fs from 'fs';
 import path from 'path';
 import matter from 'gray-matter';
-import { remark } from 'remark';
-import remarkHtml from 'remark-html';
+import { unified } from 'unified';
+import remarkParse from 'remark-parse';
+import remarkGfm from 'remark-gfm';
 import remarkSlug from 'remark-slug';
+import remarkRehype from 'remark-rehype';
+import rehypeHighlight from 'rehype-highlight';
+import rehypeStringify from 'rehype-stringify';
 import TOC from '../../../components/TOC';
 import { collectTocHeadings, type TocHeading } from '../../../utils/parser';
+import '../../../styles/component.css';
 
 interface PostData {
   title: string;
@@ -51,13 +56,17 @@ export default async function PostPage({
 
   const headings: TocHeading[] = [];
 
-  // HTML 생성 시 헤딩에 ID를 추가하고, 같은 ID를 TOC에서도 사용합니다.
-  const processedContent = await remark()
+  // Markdown to HTML with syntax highlighting
+  const processedContent = await unified()
+    .use(remarkParse)
+    .use(remarkGfm)
     .use(remarkSlug as any)
     .use(collectTocHeadings(headings))
-    .use(remarkHtml, { sanitize: false })
+    .use(remarkRehype)
+    .use(rehypeHighlight)
+    .use(rehypeStringify)
     .process(content);
-  const contentHtml = processedContent.toString();
+  const contentHtml = String(processedContent);
 
   const postData = data as PostData;
 
@@ -114,6 +123,7 @@ export default async function PostPage({
 
           <div
             style={{ lineHeight: '1.6', fontSize: '1rem' }}
+             className="post-body"
             dangerouslySetInnerHTML={{ __html: contentHtml }}
           />
         </article>
