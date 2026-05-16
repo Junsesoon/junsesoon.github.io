@@ -3,81 +3,90 @@
 import Link from 'next/link';
 import React, { Suspense } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import styles from './GNB.module.css';
-
-// 개발자 제어 영역: 모드 전환 버튼의 가시성을 제어합니다.
-const ENABLE_MODE_TOGGLE = true; // 이 값을 false로 바꾸면 버튼이 사라집니다.
+import { PORTFOLIO_MENU, BLOG_MENU, ENABLE_MODE_TOGGLE } from '@/constants';
 
 const GNBContent: React.FC = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const mode = searchParams.get('mode') || 'blog';
   const pathname = usePathname();
-  const blogLinks = [
-    { href: '/cs', text: 'CS' },
-    { href: '/language', text: 'Language' },
-    { href: '/infra', text: 'Infra' },
-    { href: '/data', text: 'Data' },
-    { href: '/tools', text: 'Tools' },
-  ];
 
-  const portfolioLinks = [
-    { href: '/about', text: 'About' },
-    { href: '/project', text: 'Project' },
-    { href: '/skill', text: 'Skill' },
-    { href: '/trouble-shotting', text: 'Trouble shotting' },
-    { href: '/decision', text: 'Decision' },
-  ];
+  const currentMenu = mode === 'blog' ? BLOG_MENU : PORTFOLIO_MENU;
 
-  const currentLinks = mode === 'blog' ? blogLinks : portfolioLinks;
-  const linksWithMode = currentLinks.map(link => ({
-    ...link,
-    href: mode === 'portfolio' ? `${link.href}?mode=portfolio` : link.href,
-  }));
+  const handleModeSwitch = (newMode: 'blog' | 'portfolio') => {
+    router.push(`/?mode=${newMode}`);
+  };
 
-  const homeHref = mode === 'portfolio' ? '/?mode=portfolio' : '/';
+  const isLinkActive = (href: string, exact?: boolean) => {
+    const linkPath = href.split('?')[0];
+
+    if (exact) {
+      return pathname === linkPath;
+    }
+
+    if (linkPath === '/') {
+      return pathname === linkPath;
+    }
+
+    return pathname === linkPath || pathname.startsWith(linkPath + '/');
+  };
 
   return (
-    <nav className={styles.nav}>
-      <div className={styles.navLeft}>
-        <Link href={homeHref} className={styles.logo}>
-          home
-        </Link>
-      </div>
-      <div className={styles.navLinks}>
-        {linksWithMode.map(link => {
-          const linkPath = link.href.split('?')[0];
-          return (
-            <Link
-              key={link.href}
-              href={link.href}
-              className={`${styles.link} ${pathname === linkPath ? styles.active : ''}`}
-            >
-              {link.text}
-            </Link>
-          );
-        })}
-      </div>
-      <div className={styles.navRight}>
-        {/* ENABLE_MODE_TOGGLE 값에 따라 모드 전환 버튼 그룹 렌더링 */}
-        {ENABLE_MODE_TOGGLE && (
-          <>
-            {mode !== 'blog' && (
-              <button
-                className={styles.toggleButton}
-                onClick={() => router.push('/?mode=blog')}>
-                Blog
-              </button>
-            )}
-            {mode !== 'portfolio' && (
-              <button
-                className={styles.toggleButton}
-                onClick={() => router.push('/?mode=portfolio')}>
-                Portfolio
-              </button>
-            )}
-          </>
-        )}
+    <nav className="fixed top-0 left-0 right-0 z-50 bg-gray-900 border-b border-gray-700">
+      <div className="grid grid-cols-3 items-center px-8 py-4 font-sans">
+        {/* Left: Logo */}
+        <div className="justify-self-start">
+          <Link
+            href={mode === 'portfolio' ? '/?mode=portfolio' : '/'}
+            className="text-white text-2xl font-bold no-underline transition-opacity duration-200 hover:opacity-80"
+          >
+            home
+          </Link>
+        </div>
+
+        {/* Center: Navigation Links */}
+        <div className="justify-self-center flex gap-10">
+          {currentMenu.map((item) => {
+            const isActive = isLinkActive(item.href, item.exact);
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                className={`no-underline text-base font-medium transition-colors duration-200 ${
+                  isActive
+                    ? 'text-white font-bold'
+                    : 'text-gray-200 hover:text-white'
+                }`}
+              >
+                {item.text}
+              </Link>
+            );
+          })}
+        </div>
+
+        {/* Right: Mode Toggle Buttons */}
+        <div className="justify-self-end flex items-center gap-3">
+          {ENABLE_MODE_TOGGLE && (
+            <>
+              {mode !== 'blog' && (
+                <button
+                  onClick={() => handleModeSwitch('blog')}
+                  className="bg-gray-700 text-gray-200 px-4 py-2 cursor-pointer font-sans text-sm rounded-md font-semibold transition-colors duration-200 hover:bg-gray-600"
+                >
+                  Blog
+                </button>
+              )}
+              {mode !== 'portfolio' && (
+                <button
+                  onClick={() => handleModeSwitch('portfolio')}
+                  className="bg-gray-700 text-gray-200 px-4 py-2 cursor-pointer font-sans text-sm rounded-md font-semibold transition-colors duration-200 hover:bg-gray-600"
+                >
+                  Portfolio
+                </button>
+              )}
+            </>
+          )}
+        </div>
       </div>
     </nav>
   );
@@ -85,7 +94,7 @@ const GNBContent: React.FC = () => {
 
 const GNB: React.FC = () => {
   return (
-    <Suspense fallback={<nav>Loading...</nav>}>
+    <Suspense fallback={<nav className="bg-gray-900">Loading...</nav>}>
       <GNBContent />
     </Suspense>
   );

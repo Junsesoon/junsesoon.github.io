@@ -112,47 +112,34 @@ export default async function CategoryPage({ params, searchParams }: { params: P
     .join(' ');
 
   return (
-    <main style={{ padding: '2rem', maxWidth: '800px', margin: '0 auto', fontFamily: 'sans-serif' }}>
-      <header
-        style={{
-          borderBottom: '1px solid #eaeaea',
-          paddingBottom: '1rem',
-          marginBottom: '2rem',
-        }}
-      >
-        <h1 style={{ fontSize: '2.5rem', marginBottom: '0.5rem' }}>{formattedCategoryName}</h1>
-        <p style={{ color: '#666', fontSize: '1rem' }}>{formattedCategoryName} 관련 포스트</p>
+    <main className="mx-auto max-w-3xl p-8 font-sans">
+      <header className="mb-8 border-b border-gray-200 pb-4">
+        <h1 className="mb-2 text-4xl">{formattedCategoryName}</h1>
+        <p className="text-base text-gray-600">{formattedCategoryName} 관련 포스트</p>
       </header>
 
       {posts.length === 0 ? (
         <section>
-          <p style={{ color: '#999', fontSize: '1.1rem', textAlign: 'center' }}>
+          <p className="text-center text-lg text-gray-400">
             게시물이 없습니다.
           </p>
         </section>
       ) : (
         <section>
-          <h2
-            style={{
-              fontSize: '1.5rem',
-              borderBottom: '1px solid #eaeaea',
-              paddingBottom: '0.5rem',
-              marginBottom: '1.5rem',
-            }}
-          >
+          <h2 className="mb-6 border-b border-gray-200 pb-2 text-2xl">
             포스트 목록 ({posts.length})
           </h2>
-          <ul style={{ listStyle: 'none', padding: 0 }}>
+          <ul className="list-none p-0">
             {posts.map((post) => (
-              <li key={post.slug} style={{ marginBottom: '2.5rem' }}>
-                <Link href={`/${post.slug}`} style={{ textDecoration: 'none' }}>
-                  <h3 style={{ fontSize: '1.5rem', color: '#0070f3', marginBottom: '0.5rem' }}>
+              <li key={post.slug} className="mb-10">
+                <Link href={`/${post.slug}`} className="no-underline">
+                  <h3 className="mb-2 text-2xl text-blue-600">
                     {post.title}
                   </h3>
-                  <p style={{ color: '#666', margin: '0.5rem 0' }}>
+                  <p className="my-2 text-gray-600">
                     {new Date(post.date).toLocaleDateString('ko-KR')}
                   </p>
-                  <p style={{ color: '#333' }}>{post.excerpt}</p>
+                  <p className="text-gray-800">{post.excerpt}</p>
                 </Link>
               </li>
             ))}

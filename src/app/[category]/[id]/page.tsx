@@ -10,7 +10,6 @@ import rehypeHighlight from 'rehype-highlight';
 import rehypeStringify from 'rehype-stringify';
 import TOC from '../../../components/TOC';
 import { collectTocHeadings, type TocHeading } from '../../../utils/parser';
-import '../../../styles/component.css';
 
 interface PostData {
   title: string;
@@ -44,7 +43,7 @@ export default async function PostPage({
 
   if (!fs.existsSync(filePath)) {
     return (
-      <main style={{ padding: '2rem', maxWidth: '800px', margin: '0 auto' }}>
+      <main className="mx-auto max-w-3xl p-8">
         <h1>Post not found</h1>
         <p>The requested post could not be found.</p>
       </main>
@@ -71,48 +70,33 @@ export default async function PostPage({
   const postData = data as PostData;
 
   return (
-    <div style={{
-      display: 'grid',
-      gridTemplateColumns: '1fr 200px',
-      gap: '2rem',
-      maxWidth: '1200px',
-      margin: '0 auto',
-      padding: '2rem',
-      fontFamily: 'sans-serif'
-    }}>
-      <main style={{ minWidth: 0 }}>
+    <div className="mx-auto grid max-w-6xl grid-cols-[minmax(0,1fr)_200px] gap-8 p-8 font-sans">
+      <main className="min-w-0">
         <article>
-          <header style={{ marginBottom: '2rem' }}>
-            <h1 style={{ fontSize: '2.5rem', marginBottom: '0.5rem' }}>
+          <header className="mb-8">
+            <h1 className="mb-2 text-4xl">
               {postData.title || id.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}
             </h1>
-            <div style={{ color: '#666', margin: '0.5rem 0', lineHeight: '1.6' }}>
-              <p style={{ margin: 0 }}>
+            <div className="my-2 text-gray-600">
+              <p>
                 작성일: {formatKoreanDate(postData['start date']) ?? '정보 없음'}
               </p>
-              <p style={{ margin: 0 }}>
+              <p>
                 수정일: {formatKoreanDate(postData['end date']) ?? '정보 없음'}
               </p>
             </div>
             {postData.summary && (
-              <p style={{ fontSize: '1.1rem', color: '#333', margin: '1rem 0' }}>
+              <p className="my-4 text-lg text-gray-800">
                 {postData.summary}
               </p>
             )}
             {postData.tags && postData.tags.length > 0 && (
-              <div style={{ marginTop: '1rem' }}>
+              <div className="mt-4">
                 <strong>Tags:</strong>{' '}
                 {postData.tags.map((tag: string) => (
                   <span
                     key={tag}
-                    style={{
-                      display: 'inline-block',
-                      background: '#f0f0f0',
-                      padding: '0.2rem 0.5rem',
-                      margin: '0.2rem',
-                      borderRadius: '4px',
-                      fontSize: '0.9rem'
-                    }}
+                    className="m-1 inline-block rounded bg-gray-100 px-2 py-1 text-sm"
                   >
                     {tag}
                   </span>
@@ -122,8 +106,7 @@ export default async function PostPage({
           </header>
 
           <div
-            style={{ lineHeight: '1.6', fontSize: '1rem' }}
-             className="post-body"
+            className="post-body text-base leading-relaxed"
             dangerouslySetInnerHTML={{ __html: contentHtml }}
           />
         </article>

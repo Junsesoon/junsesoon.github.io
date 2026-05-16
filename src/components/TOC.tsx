@@ -8,54 +8,21 @@ export default function TOC({ headings }: TOCProps) {
   if (headings.length === 0) return null;
 
   return (
-    <>
-      <style dangerouslySetInnerHTML={{
-        __html: `
-          .toc-link:hover {
-            background-color: #e3f2fd !important;
-          }
-        `
-      }} />
-      <aside style={{
-        position: 'sticky',
-        top: '2rem',
-        height: 'fit-content',
-        background: '#f9f9f9',
-        padding: '1rem',
-        borderRadius: '8px',
-        border: '1px solid #e1e1e1'
-      }}>
-        <h3 style={{
-          margin: '0 0 1rem 0',
-          fontSize: '1.1rem',
-          fontWeight: 'bold',
-          color: '#333'
-        }}>
+      <aside className="sticky top-8 h-fit rounded-lg border border-gray-200 bg-gray-50 p-4">
+        <h3 className="mb-4 text-lg font-bold text-gray-800">
           Table of Contents
         </h3>
         <nav>
-          <ul style={{
-            listStyle: 'none',
-            padding: 0,
-            margin: 0,
-            fontSize: '0.9rem'
-          }}>
+          <ul className="m-0 list-none p-0 text-sm">
             {headings.map((heading, index) => (
-              <li key={index} style={{
-                marginBottom: '0.5rem',
-                paddingLeft: `${(heading.level - 1) * 1}rem`
-              }}>
+              <li
+                key={index}
+                className="mb-2"
+                style={{ paddingLeft: `${(heading.level - 1) * 1}rem` }}
+              >
                 <a
                   href={`#${heading.id}`}
-                  style={{
-                    color: '#0070f3',
-                    textDecoration: 'none',
-                    display: 'block',
-                    padding: '0.25rem 0',
-                    borderRadius: '4px',
-                    transition: 'background-color 0.2s'
-                  }}
-                  className="toc-link"
+                  className="block rounded px-1 py-1 text-blue-600 no-underline transition-colors hover:bg-blue-50"
                 >
                   {heading.text}
                 </a>
@@ -64,6 +31,5 @@ export default function TOC({ headings }: TOCProps) {
           </ul>
         </nav>
       </aside>
-    </>
   );
 }
