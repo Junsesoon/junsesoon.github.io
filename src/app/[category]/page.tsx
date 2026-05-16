@@ -113,7 +113,7 @@ export default async function CategoryPage({ params, searchParams }: { params: P
 
   return (
     <main className="mx-auto max-w-3xl p-8 font-sans">
-      <header className="mb-8 border-b border-gray-200 pb-4">
+      <header className="mb-12 flex min-h-40 flex-col justify-center gap-4 border-b border-gray-200 py-10">
         <h1 className="mb-2 text-4xl">{formattedCategoryName}</h1>
         <p className="text-base text-gray-600">{formattedCategoryName} 관련 포스트</p>
       </header>

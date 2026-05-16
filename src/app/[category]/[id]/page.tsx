@@ -73,7 +73,7 @@ export default async function PostPage({
     <div className="mx-auto grid max-w-6xl grid-cols-[minmax(0,1fr)_200px] gap-8 p-8 font-sans">
       <main className="min-w-0">
         <article>
-          <header className="mb-8">
+          <header className="mb-12 flex min-h-40 flex-col justify-center gap-4 border-b border-gray-200 py-10">
             <h1 className="mb-2 text-4xl">
               {postData.title || id.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}
             </h1>

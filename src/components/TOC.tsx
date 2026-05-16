@@ -8,7 +8,7 @@ export default function TOC({ headings }: TOCProps) {
   if (headings.length === 0) return null;
 
   return (
-      <aside className="sticky top-8 h-fit rounded-lg border border-gray-200 bg-gray-50 p-4">
+      <aside className="sticky top-40 h-fit rounded-lg border border-gray-200 bg-gray-50 p-4">
         <h3 className="mb-4 text-lg font-bold text-gray-800">
           Table of Contents
         </h3>
