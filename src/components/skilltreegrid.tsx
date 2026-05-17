@@ -13,12 +13,34 @@ interface SkillNode {
   frontmatter: Record<string, any>;
 }
 
-export default async function SkillTreeGrid() {
-  // /public/posts/skilltree 디렉토리에서 파일 목록 읽기
-  const dirPath = path.join(process.cwd(), 'public', 'posts', 'skilltree');
+interface SkillTreeGridProps {
+  title?: string;
+  description?: string;
+  matchCategory2: string;
+}
+
+export default async function SkillTreeGrid({ title, description, matchCategory2 }: SkillTreeGridProps) {
+  // /public/posts/skilltree 하위의 모든 마크다운 파일을 재귀적으로 읽기
+  const baseDirPath = path.join(process.cwd(), 'public', 'posts', 'skilltree');
   let files: string[] = [];
+
+  const getAllMarkdownFiles = (dir: string): string[] => {
+    let results: string[] = [];
+    if (!fs.existsSync(dir)) return [];
+    const entries = fs.readdirSync(dir, { withFileTypes: true });
+    for (const entry of entries) {
+      const fullPath = path.join(dir, entry.name);
+      if (entry.isDirectory()) {
+        results = results.concat(getAllMarkdownFiles(fullPath));
+      } else if (entry.isFile() && entry.name.endsWith('.md')) {
+        results.push(fullPath);
+      }
+    }
+    return results;
+  };
+
   try {
-    files = fs.readdirSync(dirPath).filter(file => file.endsWith('.md'));
+    files = getAllMarkdownFiles(baseDirPath);
   } catch (error) {
     console.error('Failed to read directory:', error);
   }
@@ -28,9 +50,8 @@ export default async function SkillTreeGrid() {
   const nodes = new Map<string, SkillNode>();
 
   // 1. 파일들을 순회하며 노드 맵 생성
-  files.forEach(file => {
+  files.forEach(filePath => {
     try {
-      const filePath = path.join(dirPath, file);
       const fileContents = fs.readFileSync(filePath, 'utf8');
       const { data, content } = matter(fileContents);
 
@@ -38,6 +59,14 @@ export default async function SkillTreeGrid() {
       if (data.category4) {
         return;
       }
+
+      // frontmatter의 category2가 일치하는 포스트만 해당 그리드에 포함
+      const cat2 = data.category2;
+      if (!cat2) return;
+      
+      const categories = Array.isArray(cat2) ? cat2 : [cat2];
+      const isMatch = categories.some(cat => String(cat).toLowerCase() === matchCategory2.toLowerCase());
+      if (!isMatch) return;
 
       const serializedData = JSON.parse(JSON.stringify(data));
 
@@ -54,9 +83,10 @@ export default async function SkillTreeGrid() {
         yearStr = match ? match[0] : startStr;
       }
 
-      const nodeName = path.parse(file).name;
+      const fileName = path.basename(filePath);
+      const nodeName = path.parse(fileName).name;
       nodes.set(nodeName, {
-        file,
+        file: fileName,
         hasCat3: !!data.category3,
         parents: parents.map(p => path.parse(String(p)).name), // 확장자 제거
         year: yearStr,
@@ -64,7 +94,7 @@ export default async function SkillTreeGrid() {
         frontmatter: serializedData,
       });
     } catch (err) {
-      console.error(`Failed to parse file: ${file}`, err);
+      console.error(`Failed to parse file: ${filePath}`, err);
     }
   });
 
@@ -136,10 +166,18 @@ export default async function SkillTreeGrid() {
   });
 
   return (
-    <SkillTreeInteractive 
-      columnsData={columnsData} 
-      nodes={nodesRecord} 
-      COLUMNS={COLUMNS} 
-    />
+    <div className="w-full">
+      {(title || description) && (
+        <header className="mb-2 px-4">
+          {title && <h2 className="text-3xl font-bold text-gray-800">{title}</h2>}
+          {description && <p className="text-sm text-gray-500 mt-2">{description}</p>}
+        </header>
+      )}
+      <SkillTreeInteractive 
+        columnsData={columnsData} 
+        nodes={nodesRecord} 
+        COLUMNS={COLUMNS} 
+      />
+    </div>
   );
 }

@@ -101,7 +101,7 @@ export default function SkillTreeInteractive({ columnsData, nodes, COLUMNS }: Pr
       onMouseLeave={() => setIsDragging(false)}
       onMouseUp={() => setIsDragging(false)}
       onMouseMove={onMouseMove}
-      className={`w-full max-w-[1000px] mx-auto py-10 px-4 overflow-x-auto relative bg-gray-50 rounded-2xl shadow-[inset_0px_0px_80px_rgba(0,0,0,0.15)] border border-gray-200 my-10 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none'] ${isDragging ? 'cursor-grabbing' : 'cursor-grab'}`}
+      className={`w-full max-w-[1000px] mx-auto py-10 px-4 overflow-x-auto relative bg-gray-50 rounded-2xl shadow-[inset_0px_0px_80px_rgba(0,0,0,0.15)] border border-gray-200 mt-4 mb-10 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none'] ${isDragging ? 'cursor-grabbing' : 'cursor-grab'}`}
     >
       <div className="relative w-max mx-auto">
         {/* SVG layer for connecting lines */}
