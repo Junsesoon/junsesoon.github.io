@@ -38,37 +38,87 @@ export default function SkillTreeInteractive({ columnsData, nodes, COLUMNS }: Pr
     setIsDrawerOpen(false);
   };
 
-  return (
-    <div className="w-full flex justify-center py-10 overflow-x-auto relative">
-      <div 
-        className="grid gap-x-[20px] gap-y-[20px] w-max"
-        style={{ gridTemplateColumns: `repeat(${COLUMNS}, 60px)` }}
-      >
-        {gridCells.map((index) => {
-          const colIndex = index % COLUMNS;
-          const rowIndex = Math.floor(index / COLUMNS);
-          const file = rowIndex < columnsData[colIndex].length ? columnsData[colIndex][rowIndex] : null;
-          
-          const displayName = file ? file.replace(/\.[^/.]+$/, "") : null;
-          const nodeInfo = displayName ? nodes[displayName] : null;
+  // Calculate positions for skill nodes (col, row)
+  const nodePositions: Record<string, { col: number; row: number }> = {};
+  columnsData.forEach((colFiles, colIndex) => {
+    colFiles.forEach((file, rowIndex) => {
+      const name = file.replace(/\.[^/.]+$/, "");
+      nodePositions[name] = { col: colIndex, row: rowIndex };
+    });
+  });
 
-          return (
-            <div
-              key={index}
-              onClick={() => handleNodeClick(nodeInfo || null)}
-              className={`
-                h-[50px] rounded-md transition-all duration-300 flex flex-col items-center justify-center text-[10px] text-center overflow-hidden break-all px-1
-                ${file 
-                  ? 'bg-white/10 backdrop-blur-md border border-white/20 text-black shadow-[0_0_10px_rgba(0,123,255,0.2)] cursor-pointer hover:bg-white/20 hover:scale-105'
-                  : 'bg-white/5 border border-dashed border-white/10 opacity-20 hover:opacity-40'
-                }
-              `}
-            >
-              {displayName && <span>{displayName}</span>}
-              {nodeInfo?.year && <span className="text-[8px] opacity-70">{nodeInfo.year}</span>}
-            </div>
-          );
-        })}
+  // Generate lines between parents and children
+  const lines: Array<{ id: string; x1: number; y1: number; x2: number; y2: number }> = [];
+  Object.entries(nodes).forEach(([childName, childNode]) => {
+    if (childNode.parents && childNode.parents.length > 0) {
+      const childPos = nodePositions[childName];
+      if (childPos) {
+        childNode.parents.forEach((parentName) => {
+          const parentPos = nodePositions[parentName];
+          if (parentPos) {
+            lines.push({
+              id: `${parentName}-${childName}`,
+              x1: parentPos.col * 100 + 80, // Right center of parent
+              y1: parentPos.row * 70 + 25, // Middle Y of parent
+              x2: childPos.col * 100,       // Left center of child
+              y2: childPos.row * 70 + 25,  // Middle Y of child
+            });
+          }
+        });
+      }
+    }
+  });
+
+  return (
+    <div className="w-full max-w-[1000px] mx-auto py-10 px-4 overflow-x-auto relative">
+      <div className="relative w-max mx-auto">
+        {/* SVG layer for connecting lines */}
+        <svg 
+          className="absolute top-0 left-0 w-full h-full pointer-events-none" 
+          style={{ zIndex: 0, overflow: 'visible' }}
+        >
+          {lines.map((line) => (
+            <path
+              key={line.id}
+              d={`M ${line.x1} ${line.y1} L ${(line.x1 + line.x2) / 2} ${line.y1} L ${(line.x1 + line.x2) / 2} ${line.y2} L ${line.x2} ${line.y2}`}
+              // d={`M ${line.x1} ${line.y1} C ${line.x1 + 30} ${line.y1}, ${line.x2 - 30} ${line.y2}, ${line.x2} ${line.y2}`} // 베지어 곡선 style
+              stroke="rgb(190, 215, 255)" // skill tree card 연결선 색상 설정 영역
+              strokeWidth="1.5"
+              fill="none"
+            />
+          ))}
+        </svg>
+
+        <div 
+          className="grid gap-x-[20px] gap-y-[20px] w-max relative z-10"
+          style={{ gridTemplateColumns: `repeat(${COLUMNS}, 80px)` }} // 열 간격과 셀 크기 설정 영역
+        >
+          {gridCells.map((index) => {
+            const colIndex = index % COLUMNS;
+            const rowIndex = Math.floor(index / COLUMNS);
+            const file = rowIndex < columnsData[colIndex].length ? columnsData[colIndex][rowIndex] : null;
+            
+            const displayName = file ? file.replace(/\.[^/.]+$/, "") : null;
+            const nodeInfo = displayName ? nodes[displayName] : null;
+
+            return (
+              <div
+                key={index}
+                onClick={() => handleNodeClick(nodeInfo || null)}
+                className={`
+                  h-[50px] rounded-md transition-all duration-300 flex flex-col items-center justify-center text-[10px] text-center overflow-hidden break-all px-1
+                  ${file 
+                    ? 'bg-white/10 backdrop-blur-md border border-white/20 text-black shadow-[0_0_10px_rgba(0,123,255,0.2)] cursor-pointer hover:bg-white/20 hover:scale-105'
+                    : 'bg-white/5 border border-dashed border-white/10 opacity-20 hover:opacity-40'
+                  }
+                `}
+              >
+                {displayName && <span>{displayName}</span>}
+                {nodeInfo?.year && <span className="text-[8px] opacity-70">{nodeInfo.year}</span>}
+              </div>
+            );
+          })}
+        </div>
       </div>
 
       {/* Side Drawer */}

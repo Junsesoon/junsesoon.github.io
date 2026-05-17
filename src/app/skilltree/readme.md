@@ -26,13 +26,13 @@
 
 ## 4. 그리드 UI 렌더링 및 인터랙션 (Client Component 분리)
 - **서버-클라이언트 연동**: 파일 시스템(`fs`) 기반 마크다운 파싱(`gray-matter`)은 서버 컴포넌트(`skilltreegrid.tsx`)에서 수행한 뒤, 추출한 `frontmatter`와 `content`를 직렬화하여 클라이언트 컴포넌트(`SkillTreeInteractive.tsx`)로 전달한다.
+- **SVG 연결선 시각화**: 각 노드의 그리드 상의 좌표(`col`, `row`)를 수학적으로 계산하여(`x, y` 픽셀 도출), 부모 스킬 카드의 우측 중앙(`Right center edge`)에서 시작해 두 카드 사이 중간 지점에서 직각으로 꺾여 자식 스킬 카드의 좌측 중앙(`Left center edge`)으로 이어지는 계단형 직선(Stepped Line)을 SVG를 이용해 렌더링한다.
 - **사이드 드로어(Side Drawer)**: 렌더링된 스킬 셀을 클릭하면, 우측에서 사이드 패널(Drawer)이 슬라이드되어 나타나 해당 스킬의 모든 프론트매터 정보와 본문 내용을 보여준다.
 - **동적 행(Row) 조절**: 12개의 열 중 가장 파일이 많은 열의 길이를 기준으로 그리드의 전체 행(Row) 개수를 동적으로 계산한다(최소 10행 보장).
 - **셀 매핑 및 레이아웃**: 
-  - 전체 그리드는 Tailwind CSS의 `grid` 클래스와 인라인 스타일(`gridTemplateColumns: repeat(12, 60px)`)을 조합하여 12열 고정 너비(60px) 셀을 구성한다.
+  - 전체 그리드는 Tailwind CSS의 `grid` 클래스와 인라인 스타일(`gridTemplateColumns: repeat(12, 80px)`)을 조합하여 12열 고정 너비(80px) 셀을 구성한다.
   - 셀의 1차원 인덱스(`index`)를 이용해 현재 행과 열(`index % COLUMNS`, `Math.floor(index / COLUMNS)`)을 도출하고, 그에 맞는 배열 데이터를 매핑하여 화면에 출력한다.
 
 ## 추후 개선 포인트 (TODO)
 - 아크 메뉴형 인터랙션으로 메뉴 버튼 추가(현재 임시 제외 처리된 `category4` 데이터를 활용)
-- 그리드 노드 좌표(`row`, `col`)를 기반으로 부모 스킬과 자식 스킬을 이어주는 SVG 연결선(Arrow/Line) 시각화
 - Drawer 내 마크다운 렌더러(예: `react-markdown`) 적용을 통한 Content 본문 포맷팅
