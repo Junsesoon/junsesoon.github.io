@@ -1,6 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import matter from 'gray-matter';
+import SkillTreeInteractive from './SkillTreeInteractive';
 
 interface SkillNode {
   file: string;
@@ -8,6 +9,8 @@ interface SkillNode {
   parents: string[];
   colIndex?: number;
   year?: string;
+  content: string;
+  frontmatter: Record<string, any>;
 }
 
 export default async function SkillTreeGrid() {
@@ -29,12 +32,14 @@ export default async function SkillTreeGrid() {
     try {
       const filePath = path.join(dirPath, file);
       const fileContents = fs.readFileSync(filePath, 'utf8');
-      const { data } = matter(fileContents);
+      const { data, content } = matter(fileContents);
 
       // category4까지 있는 포스트는 나중에 따로 처리하기 위해 제외
       if (data.category4) {
         return;
       }
+
+      const serializedData = JSON.parse(JSON.stringify(data));
 
       let parents: string[] = [];
       const parentSkill = data['parent skill'];
@@ -55,6 +60,8 @@ export default async function SkillTreeGrid() {
         hasCat3: !!data.category3,
         parents: parents.map(p => path.parse(String(p)).name), // 확장자 제거
         year: yearStr,
+        content,
+        frontmatter: serializedData,
       });
     } catch (err) {
       console.error(`Failed to parse file: ${file}`, err);
@@ -123,49 +130,16 @@ export default async function SkillTreeGrid() {
     });
   });
 
-  const maxRows = Math.max(10, ...columnsData.map(col => col.length));
-  const INITIAL_ROWS = maxRows; // 각 열 중 가장 파일이 많은 열에 맞춰 행 수 자동 조절
-  const TOTAL_CELLS = COLUMNS * INITIAL_ROWS;
-
-  // 전체 셀 배열 생성
-  const gridCells = Array.from({ length: TOTAL_CELLS }, (_, i) => i);
+  const nodesRecord: Record<string, SkillNode> = {};
+  nodes.forEach((value, key) => {
+    nodesRecord[key] = value;
+  });
 
   return (
-    <div className="w-full flex justify-center py-10 overflow-x-auto">
-      {/* Grid Container
-        - grid-cols-[repeat(12,60px)]: 60px 너비의 12개 컬럼 생성
-        - gap-x-[20px] gap-y-[20px]: 간격 적용
-      */}
-      <div 
-        className="grid gap-x-[20px] gap-y-[20px] w-max" // cell 간격 조정 영역
-        style={{ gridTemplateColumns: `repeat(${COLUMNS}, 60px)` }}
-      >
-        {gridCells.map((index) => {
-          // 현재 셀의 열과 행 인덱스 계산
-          const colIndex = index % COLUMNS;
-          const rowIndex = Math.floor(index / COLUMNS);
-          const file = rowIndex < columnsData[colIndex].length ? columnsData[colIndex][rowIndex] : null;
-          const displayName = file ? path.parse(file).name : null;
-          const nodeInfo = displayName ? nodes.get(displayName) : null;
-
-          return (
-            <div
-              key={index}
-              className={`
-                h-[50px] rounded-md transition-all duration-300 flex flex-col items-center justify-center text-[10px] text-center overflow-hidden break-all px-1
-                ${file 
-                  ? 'bg-white/10 backdrop-blur-md border border-white/20 text-black shadow-[0_0_10px_rgba(0,123,255,0.2)]' // 활성 상태 (글래스모피즘 + 테크 블루 글로우)
-                  : 'bg-white/5 border border-dashed border-white/10 opacity-20 hover:opacity-40' // 비활성 상태 (투명도 조절)
-                }
-              `}
-            >
-              {/* 셀 위치에 맞춰 파일명 노출 */}
-              {displayName && <span>{displayName}</span>}
-              {nodeInfo?.year && <span className="text-[8px] opacity-70">{nodeInfo.year}</span>}
-            </div>
-          );
-        })}
-      </div>
-    </div>
+    <SkillTreeInteractive 
+      columnsData={columnsData} 
+      nodes={nodesRecord} 
+      COLUMNS={COLUMNS} 
+    />
   );
 }
