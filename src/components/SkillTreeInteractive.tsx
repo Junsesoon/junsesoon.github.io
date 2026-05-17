@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 
 interface SkillNode {
   file: string;
@@ -22,12 +22,37 @@ export default function SkillTreeInteractive({ columnsData, nodes, COLUMNS }: Pr
   const [selectedNode, setSelectedNode] = useState<SkillNode | null>(null);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
-  const maxRows = Math.max(10, ...columnsData.map(col => col.length));
+  // 마우스 드래그(Pan) 스크롤 처리를 위한 상태 및 Ref
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const [isDragging, setIsDragging] = useState(false);
+  const startX = useRef(0);
+  const scrollLeft = useRef(0);
+  const isDragged = useRef(false);
+
+  const maxRows = Math.max(3, ...columnsData.map(col => col.length)); // grid 높이 최소 3행 출력, 3행 초과시 최대 행 수에 맞춰 grid 높이 확장
   const INITIAL_ROWS = maxRows;
   const TOTAL_CELLS = COLUMNS * INITIAL_ROWS;
   const gridCells = Array.from({ length: TOTAL_CELLS }, (_, i) => i);
 
+  const onMouseDown = (e: React.MouseEvent) => {
+    isDragged.current = false;
+    setIsDragging(true);
+    if (!scrollRef.current) return;
+    startX.current = e.pageX - scrollRef.current.offsetLeft;
+    scrollLeft.current = scrollRef.current.scrollLeft;
+  };
+
+  const onMouseMove = (e: React.MouseEvent) => {
+    if (!isDragging || !scrollRef.current) return;
+    e.preventDefault();
+    const x = e.pageX - scrollRef.current.offsetLeft;
+    const walk = (x - startX.current) * 1.5; // 드래그 속도 조절
+    if (Math.abs(walk) > 5) isDragged.current = true; // 일정 거리 이상 이동 시 드래그로 판정
+    scrollRef.current.scrollLeft = scrollLeft.current - walk;
+  };
+
   const handleNodeClick = (node: SkillNode | null) => {
+    if (isDragged.current) return; // 드래그 시 클릭 이벤트 무시
     if (node) {
       setSelectedNode(node);
       setIsDrawerOpen(true);
@@ -70,7 +95,14 @@ export default function SkillTreeInteractive({ columnsData, nodes, COLUMNS }: Pr
   });
 
   return (
-    <div className="w-full max-w-[1000px] mx-auto py-10 px-4 overflow-x-auto relative">
+    <div 
+      ref={scrollRef}
+      onMouseDown={onMouseDown}
+      onMouseLeave={() => setIsDragging(false)}
+      onMouseUp={() => setIsDragging(false)}
+      onMouseMove={onMouseMove}
+      className={`w-full max-w-[1000px] mx-auto py-10 px-4 overflow-x-auto relative bg-gray-50 rounded-2xl shadow-[inset_0px_0px_80px_rgba(0,0,0,0.15)] border border-gray-200 my-10 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none'] ${isDragging ? 'cursor-grabbing' : 'cursor-grab'}`}
+    >
       <div className="relative w-max mx-auto">
         {/* SVG layer for connecting lines */}
         <svg 
@@ -82,7 +114,7 @@ export default function SkillTreeInteractive({ columnsData, nodes, COLUMNS }: Pr
               key={line.id}
               d={`M ${line.x1} ${line.y1} L ${(line.x1 + line.x2) / 2} ${line.y1} L ${(line.x1 + line.x2) / 2} ${line.y2} L ${line.x2} ${line.y2}`}
               // d={`M ${line.x1} ${line.y1} C ${line.x1 + 30} ${line.y1}, ${line.x2 - 30} ${line.y2}, ${line.x2} ${line.y2}`} // 베지어 곡선 style
-              stroke="rgb(190, 215, 255)" // skill tree card 연결선 색상 설정 영역
+              stroke="rgba(156, 163, 175, 0.6)" // skill tree card 연결선 색상 설정 영역
               strokeWidth="1.5"
               fill="none"
             />
@@ -106,10 +138,10 @@ export default function SkillTreeInteractive({ columnsData, nodes, COLUMNS }: Pr
                 key={index}
                 onClick={() => handleNodeClick(nodeInfo || null)}
                 className={`
-                  h-[50px] rounded-md transition-all duration-300 flex flex-col items-center justify-center text-[10px] text-center overflow-hidden break-all px-1
+                  h-[50px] rounded-md transition-all duration-300 flex flex-col items-center justify-center text-[11px] text-center overflow-hidden break-all px-1 select-none
                   ${file 
-                    ? 'bg-white/10 backdrop-blur-md border border-white/20 text-black shadow-[0_0_10px_rgba(0,123,255,0.2)] cursor-pointer hover:bg-white/20 hover:scale-105'
-                    : 'bg-white/5 border border-dashed border-white/10 opacity-20 hover:opacity-40'
+                    ? 'bg-white border border-gray-200 text-gray-800 font-semibold shadow-md cursor-pointer hover:bg-blue-50 hover:border-blue-300 hover:text-blue-600 hover:scale-105'
+                    : 'bg-transparent pointer-events-none'
                   }
                 `}
               >
