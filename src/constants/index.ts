@@ -8,7 +8,7 @@ export const PORTFOLIO_MENU = [
 ] as const;
 
 export const BLOG_MENU = [
-//{ href: '/', text: 'Home', exact: true }, 버튼 중복
+  { href: '/skilltree', text: 'Skill_Tree' },
   { href: '/cs', text: 'CS' },
   { href: '/data', text: 'Data' },
   { href: '/language', text: 'Language' },
