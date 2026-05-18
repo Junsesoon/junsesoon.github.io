@@ -114,7 +114,7 @@ export default function SkillTreeInteractive({ columnsData, nodes, COLUMNS }: Pr
               key={line.id}
               d={`M ${line.x1} ${line.y1} L ${(line.x1 + line.x2) / 2} ${line.y1} L ${(line.x1 + line.x2) / 2} ${line.y2} L ${line.x2} ${line.y2}`}
               // d={`M ${line.x1} ${line.y1} C ${line.x1 + 30} ${line.y1}, ${line.x2 - 30} ${line.y2}, ${line.x2} ${line.y2}`} // 베지어 곡선 style
-              stroke="rgba(156, 163, 175, 0.6)" // skill tree card 연결선 색상 설정 영역
+              stroke="rgb(179, 185, 196)" // skill tree card 연결선 색상 설정 영역
               strokeWidth="1.5"
               fill="none"
             />
