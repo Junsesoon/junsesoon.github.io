@@ -20,7 +20,7 @@ const GNBContent: React.FC = () => {
     const isPortfolioPath = PORTFOLIO_MENU.some((item) => {
       const itemPath = item.href.split('?')[0];
       // Ensure we don't match on '/' for portfolio
-      return itemPath !== '/' && pathname.startsWith(itemPath);
+      return itemPath !== '/' && (pathname === itemPath || pathname.startsWith(itemPath + '/'));
     });
 
     return isPortfolioPath ? 'portfolio' : 'blog';
