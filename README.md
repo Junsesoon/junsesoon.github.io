@@ -33,6 +33,11 @@
 - Sustainability: 꾸준한 기술 포스팅
 
 
+## DB test code
+```bash
+npx tsx src/infra/db-test.ts
+```
+
 ## version history
 ### junseo tech blog 2.0.0
 - distribution 2026-05-15
