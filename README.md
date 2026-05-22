@@ -33,13 +33,16 @@
 - Sustainability: 꾸준한 기술 포스팅
 
 
-## DB test code
+
 ```bash
+# DB test code
 npx tsx src/infra/db-test.ts
-```
-## DB migration code
-```bash
+
+# DB migration code
 npx tsx src/infra/init-db.ts
+
+# Manual code to parse posts and send them to the database
+npm run db:import-posts:write
 ```
 
 ## version history
