@@ -1,7 +1,7 @@
 import { Pool } from 'pg';
 
 // ⚠️ .env 파일에서 DATABASE_URL 설정 확인
-const pool = new Pool({
+export const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
 });
 

@@ -37,6 +37,10 @@
 ```bash
 npx tsx src/infra/db-test.ts
 ```
+## DB migration code
+```bash
+npx tsx src/infra/init-db.ts
+```
 
 ## version history
 ### junseo tech blog 2.0.0
