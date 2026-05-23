@@ -1,5 +1,7 @@
 import SkillTreeGrid from '@/components/skilltreegrid';
 
+export const dynamic = 'force-dynamic';
+
 export default function SkillTreePage() {
   return (
     <main className="mx-auto max-w-5xl p-8 font-sans">

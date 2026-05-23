@@ -1,139 +1,262 @@
-import fs from 'fs';
-import path from 'path';
-import { Dirent } from 'fs';
-import matter from 'gray-matter';
 import { unified } from 'unified';
 import remarkParse from 'remark-parse';
 import remarkGfm from 'remark-gfm';
 import remarkRehype from 'remark-rehype';
 import rehypeHighlight from 'rehype-highlight';
 import rehypeStringify from 'rehype-stringify';
-import { Post, PostWithFrontmatter, PostFilterOptions } from '../types/blog';
+import { query } from '../infra/db';
+import { Post, PostFilterOptions } from '../types/blog';
+import { Frontmatter, titleFromSlug } from './parser';
 
-export const getAllPosts = (mode: string = 'blog', filters: PostFilterOptions = {}): Post[] => {
-  const postsBaseDirectory = path.join(process.cwd(), 'public', 'posts');
+export interface DbPost {
+  slug: string;
+  content: string;
+  metadata: Frontmatter;
+}
 
-  // Helper function to recursively get all markdown files and their slugs
-  function getAllMarkdownFiles(dir: string, baseDir: string): { filePath: string; slug: string }[] {
-    let results: { filePath: string; slug: string }[] = [];
-    // 디렉터리가 존재하지 않으면 빈 배열을 반환하여 오류를 방지합니다.
-    if (!fs.existsSync(dir)) {
-      console.error(`Directory not found: ${dir}`);
-      return [];
-    }
-    const files: Dirent[] = fs.readdirSync(dir, { withFileTypes: true });
+interface DbPostRow {
+  slug: string;
+  content: string;
+  title: string | null;
+  posted_at: Date | string | null;
+  modified_at: Date | string | null;
+  summary: string | null;
+  tags: string[] | null;
+  project_name: string | null;
+  category1: string | null;
+  category2: string | null;
+  category3: string | null;
+  category4: string | null;
+  doc_ver: string | null;
+  completion: boolean | null;
+  tech_start: Date | string | null;
+  parent_skill: string | null;
+  child_skill: string | null;
+  familiar: number | null;
+  contribute: string | null;
+  my_role: string | null;
+  tech_platform: string | null;
+  tech_language: string | null;
+  tech_server: string | null;
+  tech_framework: string | null;
+  tech_db: string | null;
+  tech_ide: string | null;
+  tech_api: string | null;
+  tech_library: string | null;
+}
 
-    for (const file of files) {
-      const fullPath = path.join(dir, file.name);
-      if (file.isDirectory()) {
-        results = results.concat(getAllMarkdownFiles(fullPath, baseDir));
-      } else if (file.isFile() && file.name.endsWith('.md')) {
-        const relativePath = path.relative(baseDir, fullPath);
-        // Windows 경로 구분자(\)를 /로 통일합니다.
-        const slug = relativePath.replace(/\\/g, '/').replace(/\.md$/, '');
-        results.push({ filePath: fullPath, slug });
-      }
-    }
-    return results;
+const POST_SELECT = `
+  SELECT
+    p.slug,
+    p.content,
+    p.title,
+    p.posted_at,
+    p.modified_at,
+    p.summary,
+    p.tags,
+    p.project_name,
+    p.category1,
+    p.category2,
+    p.category3,
+    p.category4,
+    p.doc_ver,
+    ts.completion,
+    st.tech_start,
+    st.parent_skill,
+    st.child_skill,
+    ms.familiar,
+    pr.contribute,
+    pr.my_role,
+    pr.tech_platform,
+    pr.tech_language,
+    pr.tech_server,
+    pr.tech_framework,
+    pr.tech_db,
+    pr.tech_ide,
+    pr.tech_api,
+    pr.tech_library
+  FROM posts p
+  LEFT JOIN trouble_shooting ts ON ts.post_id = p.post_id
+  LEFT JOIN skill_tree st ON st.post_id = p.post_id
+  LEFT JOIN my_skill ms ON ms.post_id = p.post_id
+  LEFT JOIN project pr ON pr.post_id = p.post_id
+`;
+
+function dateString(value: Date | string | null): string {
+  if (!value) return '';
+  if (value instanceof Date) {
+    const year = value.getFullYear();
+    const month = String(value.getMonth() + 1).padStart(2, '0');
+    const day = String(value.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
   }
+  return String(value).slice(0, 10);
+}
 
-  const allMarkdownFiles = getAllMarkdownFiles(postsBaseDirectory, postsBaseDirectory);
+function normalizeCategoryValue(value: string) {
+  return value
+    .toString()
+    .trim()
+    .toLowerCase()
+    .replace(/[-_\s]+/g, '');
+}
 
-  let posts: PostWithFrontmatter[] = allMarkdownFiles.map(({ filePath, slug }) => {
-    const fileContents = fs.readFileSync(filePath, 'utf8');
-    const { data } = matter(fileContents);
+function rowToMetadata(row: DbPostRow): Frontmatter {
+  const metadata: Frontmatter = {
+    title: row.title || titleFromSlug(row.slug),
+    parentId: null,
+    'start date': dateString(row.posted_at) || null,
+    'end date': dateString(row.modified_at) || null,
+    project: row.project_name || null,
+    category1: row.category1 || null,
+    category2: row.category2 || null,
+    category3: row.category3 || null,
+    category4: row.category4 || null,
+    summary: row.summary || '',
+    tags: row.tags || [],
+    'doc-ver': row.doc_ver || null,
+  };
 
-    // 슬러그의 마지막 부분을 기반으로 제목을 생성합니다 (예: 'knowledge/docker' -> 'Docker')
-    const title = slug.split('/').pop()?.split('-').map((word) => word.charAt(0).toUpperCase() + word.slice(1)).join(' ') || slug;
+  if (row.completion !== null) metadata.COMPLETION = row.completion;
+  if (row.tech_start) metadata['tech start'] = dateString(row.tech_start);
+  if (row.parent_skill) metadata['parent skill'] = row.parent_skill;
+  if (row.child_skill) metadata['child skill'] = row.child_skill;
+  if (row.familiar !== null) metadata.familiar = row.familiar;
+  if (row.contribute) metadata.contribute = row.contribute;
+  if (row.my_role) metadata.role = row.my_role;
+  if (row.tech_platform) metadata.platform = row.tech_platform;
+  if (row.tech_language) metadata.language = row.tech_language;
+  if (row.tech_server) metadata.server = row.tech_server;
+  if (row.tech_framework) metadata.framework = row.tech_framework;
+  if (row.tech_db) metadata.db = row.tech_db;
+  if (row.tech_ide) metadata.ide = row.tech_ide;
+  if (row.tech_api) metadata.api = row.tech_api;
+  if (row.tech_library) metadata.library = row.tech_library;
 
-    return { // This object will be filtered later, so it needs category2
-      slug,
-      title,
-      excerpt: data.summary || '', // frontmatter에 summary가 없는 경우를 대비
-      date: data['start date'] || '', // frontmatter에 'start date'가 없는 경우를 대비
-      category1: data.category1,
-      category2: data.category2,
-    };
-  }).filter(post => post.date); // 날짜가 없는 게시물은 목록에서 제외합니다.
+  return metadata;
+}
 
-  // 'blog' 모드일 때 category1에 'knowledge' 또는 'skill'이 포함된 게시물만 필터링합니다.
+function rowToPost(row: DbPostRow): Post {
+  return {
+    slug: row.slug,
+    title: row.title || titleFromSlug(row.slug),
+    excerpt: row.summary || '',
+    date: dateString(row.posted_at),
+  };
+}
+
+function hasCategory(value: string | null, category: string) {
+  if (!value) return false;
+  return value === category;
+}
+
+function hasNormalizedCategory(value: string | null, category: string) {
+  if (!value) return false;
+  return normalizeCategoryValue(value).includes(normalizeCategoryValue(category));
+}
+
+export const getAllPosts = async (
+  mode: string = 'blog',
+  filters: PostFilterOptions = {},
+): Promise<Post[]> => {
+  const result = await query<DbPostRow>(`
+    ${POST_SELECT}
+    WHERE p.posted_at IS NOT NULL
+    ORDER BY p.posted_at DESC NULLS LAST, p.slug ASC
+  `);
+
+  let rows = result.rows;
+
   if (mode === 'blog') {
-    posts = posts.filter(post => {
-      const targetCategories = ['knowledge', 'skill'];
-      if (Array.isArray(post.category1)) {
-        return post.category1.some(cat => targetCategories.includes(cat));
-      }
-      return targetCategories.includes(post.category1);
-    });
+    rows = rows.filter((row) => ['knowledge', 'skill'].includes(row.category1 || ''));
   }
 
-  // 전달된 필터 옵션에 따라 필터링합니다.
   if (filters.category1) {
-    posts = posts.filter(post => {
-      if (Array.isArray(post.category1)) {
-        return post.category1.includes(filters.category1);
-      }
-      return post.category1 === filters.category1;
-    });
+    rows = rows.filter((row) => hasCategory(row.category1, filters.category1!));
   }
 
   if (filters.category2) {
-    posts = posts.filter(post => {
-      if (Array.isArray(post.category2)) {
-        return post.category2.includes(filters.category2);
-      }
-      return post.category2 === filters.category2;
-    });
+    rows = rows.filter((row) => hasCategory(row.category2, filters.category2!));
   }
 
-  // 최신 날짜 순으로 정렬합니다.
-  const sortedPosts = posts.sort((a, b) => (new Date(b.date) > new Date(a.date) ? 1 : -1));
+  return rows.map(rowToPost);
+};
 
-  // 최종적으로 반환하기 전에 frontmatter 필터링에 사용된 category 속성들을 제거합니다.
-  return sortedPosts.map(({ category1, category2, ...rest }) => rest);
+export const getCategoryPosts = async (category: string, mode: string = 'blog'): Promise<Post[]> => {
+  const result = await query<DbPostRow>(`
+    ${POST_SELECT}
+    WHERE p.posted_at IS NOT NULL
+    ORDER BY p.posted_at DESC NULLS LAST, p.slug ASC
+  `);
+
+  const rows = result.rows.filter((row) => {
+    if (mode === 'portfolio') {
+      return hasNormalizedCategory(row.category1, category);
+    }
+
+    return hasCategory(row.category2, category);
+  });
+
+  return rows.map(rowToPost);
+};
+
+export const getDbPostBySlug = async (slug: string): Promise<DbPost | null> => {
+  const result = await query<DbPostRow>(
+    `
+      ${POST_SELECT}
+      WHERE p.slug = $1
+      LIMIT 1
+    `,
+    [slug],
+  );
+
+  const [row] = result.rows;
+  if (!row) return null;
+
+  return {
+    slug: row.slug,
+    content: row.content,
+    metadata: rowToMetadata(row),
+  };
+};
+
+export const getSkillTreePosts = async (matchCategory2: string): Promise<DbPost[]> => {
+  const result = await query<DbPostRow>(
+    `
+      ${POST_SELECT}
+      WHERE p.category1 = 'skill tree'
+        AND LOWER(p.category2) = LOWER($1)
+        AND p.category4 IS NULL
+      ORDER BY p.posted_at ASC NULLS LAST, p.title ASC
+    `,
+    [matchCategory2],
+  );
+
+  return result.rows.map((row) => ({
+    slug: row.slug,
+    content: row.content,
+    metadata: rowToMetadata(row),
+  }));
 };
 
 export const getPostData = async (id: string) => {
-  try {
-    const filePath = path.join(process.cwd(), 'public', 'posts', `${id}.md`);
+  const post = await getDbPostBySlug(id);
 
-    if (!fs.existsSync(filePath)) {
-      throw new Error(`Post not found: ${id}`);
-    }
-
-    const fileContents = fs.readFileSync(filePath, 'utf8');
-    const { data: frontmatter, content } = matter(fileContents);
-
-    // Process markdown with syntax highlighting
-    const processedContent = await unified()
-      .use(remarkParse)
-      .use(remarkGfm)
-      .use(remarkRehype)
-      .use(rehypeHighlight)
-      .use(rehypeStringify)
-      .process(content);
-
-    const htmlContent = String(processedContent);
-
-    return {
-      id,
-      htmlContent,
-      metadata: {
-        parentId: frontmatter.parentId || null,
-        startDate: frontmatter['start date'] || null,
-        endDate: frontmatter['end date'] || null,
-        project: frontmatter.project || [],
-        category1: frontmatter.category1 || [],
-        category2: frontmatter.category2 || [],
-        category3: frontmatter.category3 || [],
-        category4: frontmatter.category4 || [],
-        summary: frontmatter.summary || '',
-        tags: frontmatter.tags || [],
-        docVer: frontmatter['doc-ver'] || [],
-        ...frontmatter,
-      },
-    };
-  } catch (error) {
-    throw new Error(`Failed to load post data for id "${id}": ${error instanceof Error ? error.message : 'Unknown error'}`);
+  if (!post) {
+    throw new Error(`Post not found: ${id}`);
   }
+
+  const processedContent = await unified()
+    .use(remarkParse)
+    .use(remarkGfm)
+    .use(remarkRehype)
+    .use(rehypeHighlight)
+    .use(rehypeStringify)
+    .process(post.content);
+
+  return {
+    id,
+    htmlContent: String(processedContent),
+    metadata: post.metadata,
+  };
 };

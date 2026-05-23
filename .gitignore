@@ -32,3 +32,6 @@ Thumbs.db
 
 # ☁️ Vercel 배포 관련
 .vercel
+
+# 🧪 Local Post
+/public/posts/

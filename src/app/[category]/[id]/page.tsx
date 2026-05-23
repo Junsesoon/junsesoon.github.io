@@ -1,6 +1,3 @@
-import fs from 'fs';
-import path from 'path';
-import matter from 'gray-matter';
 import { unified } from 'unified';
 import remarkParse from 'remark-parse';
 import remarkGfm from 'remark-gfm';
@@ -10,6 +7,9 @@ import rehypeHighlight from 'rehype-highlight';
 import rehypeStringify from 'rehype-stringify';
 import TOC from '../../../components/TOC';
 import { collectTocHeadings, type TocHeading } from '../../../utils/parser';
+import { getDbPostBySlug } from '../../../utils/posts';
+
+export const dynamic = 'force-dynamic';
 
 interface PostData {
   title: string;
@@ -38,10 +38,10 @@ export default async function PostPage({
   params: Promise<{ category: string; id: string }>;
 }) {
   const { category, id } = await params;
+  const slug = `${category}/${id}`;
+  const post = await getDbPostBySlug(slug);
 
-  const filePath = path.join(process.cwd(), 'public', 'posts', category, `${id}.md`);
-
-  if (!fs.existsSync(filePath)) {
+  if (!post) {
     return (
       <main className="mx-auto max-w-3xl p-8">
         <h1>Post not found</h1>
@@ -49,9 +49,6 @@ export default async function PostPage({
       </main>
     );
   }
-
-  const fileContents = fs.readFileSync(filePath, 'utf8');
-  const { data, content } = matter(fileContents);
 
   const headings: TocHeading[] = [];
 
@@ -64,10 +61,10 @@ export default async function PostPage({
     .use(remarkRehype)
     .use(rehypeHighlight)
     .use(rehypeStringify)
-    .process(content);
+    .process(post.content);
   const contentHtml = String(processedContent);
 
-  const postData = data as PostData;
+  const postData = post.metadata as PostData;
 
   return (
     <div className="mx-auto grid max-w-6xl grid-cols-[minmax(0,1fr)_200px] gap-8 p-8 font-sans">

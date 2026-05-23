@@ -1,7 +1,6 @@
-import fs from 'fs';
 import path from 'path';
-import matter from 'gray-matter';
 import SkillTreeInteractive from './SkillTreeInteractive';
+import { getSkillTreePosts } from '../utils/posts';
 
 interface SkillNode {
   file: string;
@@ -20,81 +19,40 @@ interface SkillTreeGridProps {
 }
 
 export default async function SkillTreeGrid({ title, description, matchCategory2 }: SkillTreeGridProps) {
-  // /public/posts/skilltree 하위의 모든 마크다운 파일을 재귀적으로 읽기
-  const baseDirPath = path.join(process.cwd(), 'public', 'posts', 'skilltree');
-  let files: string[] = [];
-
-  const getAllMarkdownFiles = (dir: string): string[] => {
-    let results: string[] = [];
-    if (!fs.existsSync(dir)) return [];
-    const entries = fs.readdirSync(dir, { withFileTypes: true });
-    for (const entry of entries) {
-      const fullPath = path.join(dir, entry.name);
-      if (entry.isDirectory()) {
-        results = results.concat(getAllMarkdownFiles(fullPath));
-      } else if (entry.isFile() && entry.name.endsWith('.md')) {
-        results.push(fullPath);
-      }
-    }
-    return results;
-  };
-
-  try {
-    files = getAllMarkdownFiles(baseDirPath);
-  } catch (error) {
-    console.error('Failed to read directory:', error);
-  }
-
   const COLUMNS = 12;
-  
   const nodes = new Map<string, SkillNode>();
+  const posts = await getSkillTreePosts(matchCategory2);
 
-  // 1. 파일들을 순회하며 노드 맵 생성
-  files.forEach(filePath => {
+  // 1. DB 게시물을 순회하며 노드 맵 생성
+  posts.forEach(post => {
     try {
-      const fileContents = fs.readFileSync(filePath, 'utf8');
-      const { data, content } = matter(fileContents);
-
-      // category4까지 있는 포스트는 나중에 따로 처리하기 위해 제외
-      if (data.category4) {
-        return;
-      }
-
-      // frontmatter의 category2가 일치하는 포스트만 해당 그리드에 포함
-      const cat2 = data.category2;
-      if (!cat2) return;
-      
-      const categories = Array.isArray(cat2) ? cat2 : [cat2];
-      const isMatch = categories.some(cat => String(cat).toLowerCase() === matchCategory2.toLowerCase());
-      if (!isMatch) return;
-
-      const serializedData = JSON.parse(JSON.stringify(data));
+      const serializedData = JSON.parse(JSON.stringify(post.metadata));
 
       let parents: string[] = [];
-      const parentSkill = data['parent skill'];
+      const parentSkill = post.metadata['parent skill'];
       if (parentSkill) {
         parents = Array.isArray(parentSkill) ? parentSkill : [parentSkill];
       }
 
       let yearStr = '';
-      if (data['tech start']) {
-        const startStr = String(data['tech start']);
+      if (post.metadata['tech start']) {
+        const startStr = String(post.metadata['tech start']);
         const match = startStr.match(/\d{4}/);
         yearStr = match ? match[0] : startStr;
       }
 
-      const fileName = path.basename(filePath);
-      const nodeName = path.parse(fileName).name;
+      const nodeName = path.basename(post.slug);
+      const fileName = `${nodeName}.md`;
       nodes.set(nodeName, {
         file: fileName,
-        hasCat3: !!data.category3,
+        hasCat3: !!post.metadata.category3,
         parents: parents.map(p => path.parse(String(p)).name), // 확장자 제거
         year: yearStr,
-        content,
+        content: post.content,
         frontmatter: serializedData,
       });
     } catch (err) {
-      console.error(`Failed to parse file: ${filePath}`, err);
+      console.error(`Failed to parse skill tree post: ${post.slug}`, err);
     }
   });
 

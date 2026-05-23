@@ -3,10 +3,11 @@
 - 주요 구현은 `src/components/skilltreegrid.tsx` 파일에 있음
 
 ## 1. 데이터 파싱 및 노드 생성
-- `/public/posts/skilltree` 디렉토리 내의 모든 마크다운(`.md`) 파일을 읽어온다
-- `gray-matter`를 사용하여 각 파일의 프론트매터(Frontmatter)를 파싱한다
-- **필터링**: 프론트매터에 `category4`가 존재하는 포스트는 현재 그리드 렌더링 대상에서 제외한다
-- **노드 정보 추출**: 파싱된 데이터에서 다음 정보를 추출해 노드 맵(`nodes Map`)을 구성한다
+- 기존 방식은 `/public/posts/skilltree` 디렉토리의 마크다운 파일을 읽고 `gray-matter`로 프론트매터를 파싱했다
+- 현재 방식은 `src/utils/posts.ts`의 `getSkillTreePosts(matchCategory2)`를 통해 DB에서 스킬트리 포스트를 조회한다
+- DB에는 마크다운 본문이 `posts.content`에 저장되어 있고, 프론트매터에 해당하던 값은 `posts`, `skill_tree`, `my_skill` 등의 테이블 컬럼에서 재구성된다
+- **필터링**: DB 조회 시 `category1 = 'skilltree'`, `category2 = matchCategory2`, `category4 IS NULL` 조건을 적용해 현재 그리드 렌더링 대상만 가져온다
+- **노드 정보 추출**: DB에서 재구성된 metadata에서 다음 정보를 추출해 노드 맵(`nodes Map`)을 구성한다
   - `hasCat3`: `category3` 속성 존재 여부 (기본 배치 열 결정에 사용)
   - `parents`: `parent skill` 속성을 배열 형태로 정규화
   - `year`: `tech start` 속성에서 정규식을 통해 4자리 연도(YYYY)만 추출
@@ -25,7 +26,7 @@
 - **예외 처리**: 연도 정보가 없거나 파싱 불가능한 경우 제일 밑으로 배치되며, 연도가 동일한 경우 파일명 기준 알파벳 순으로 정렬한다
 
 ## 4. 그리드 UI 렌더링 및 인터랙션 (Client Component 분리)
-- **서버-클라이언트 연동**: 파일 시스템(`fs`) 기반 마크다운 파싱(`gray-matter`)은 서버 컴포넌트(`skilltreegrid.tsx`)에서 수행한 뒤, 추출한 `frontmatter`와 `content`를 직렬화하여 클라이언트 컴포넌트(`SkillTreeInteractive.tsx`)로 전달한다.
+- **서버-클라이언트 연동**: 서버 컴포넌트(`skilltreegrid.tsx`)에서 DB 조회를 수행한 뒤, 재구성된 `frontmatter` 형태의 metadata와 `content`를 직렬화하여 클라이언트 컴포넌트(`SkillTreeInteractive.tsx`)로 전달한다.
 - **SVG 연결선 시각화**: 각 노드의 그리드 상의 좌표(`col`, `row`)를 수학적으로 계산하여(`x, y` 픽셀 도출), 부모 스킬 카드의 우측 중앙(`Right center edge`)에서 시작해 두 카드 사이 중간 지점에서 직각으로 꺾여 자식 스킬 카드의 좌측 중앙(`Left center edge`)으로 이어지는 계단형 직선(Stepped Line)을 SVG를 이용해 렌더링한다.
 - **사이드 드로어(Side Drawer)**: 렌더링된 스킬 셀을 클릭하면, 우측에서 사이드 패널(Drawer)이 슬라이드되어 나타나 해당 스킬의 모든 프론트매터 정보와 본문 내용을 보여준다.
 - **동적 행(Row) 조절**: 12개의 열 중 가장 파일이 많은 열의 길이를 기준으로 그리드의 전체 행(Row) 개수를 동적으로 계산한다(최소 3행 보장).

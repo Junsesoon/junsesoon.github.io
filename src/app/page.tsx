@@ -1,11 +1,12 @@
 import Link from 'next/link';
 import { getAllPosts } from '../utils/posts';
-import { Post } from '../types/blog';
+
+export const dynamic = 'force-dynamic';
 
 export default async function Home({ searchParams }: { searchParams?: Promise<{ mode?: string }> }) {
   const params = await searchParams;
   const mode = params?.mode || 'blog';
-  const posts = getAllPosts(mode);
+  const posts = await getAllPosts(mode);
   return (
     <main className="mx-auto max-w-3xl p-8 font-sans">
       <header className="mb-0 flex min-h-80 flex-col items-center justify-center gap-6 py-10 text-center">
