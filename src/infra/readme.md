@@ -11,5 +11,5 @@
 Maintain Decoupling: Keep infrastructure-related code (DB configurations, external API clients, etc.) isolated from the business logic (app/ or utils/).
 
 # Post DB Runtime Notes
-- `DATABASE_URL` must be available in environments that render the Next.js server components.
+- `DB_ENV` (local/remote), `LOCAL_DB_*` (HOST, PORT, USER, PASSWORD, DATABASE, SSL), and `REMOTE_DB_*` variables must be available in environments that render the Next.js server components.
 - App and component code should not call `pg` directly. Use `src/utils/posts.ts` for post retrieval so the DB schema remains isolated from rendering code.

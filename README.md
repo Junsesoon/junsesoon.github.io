@@ -12,13 +12,13 @@
 - Domain: 개인 도메인 확보 및 연결
 - Prepare for costs: 구글 애드센스 승인을 위한 데이터 수집 장치(GA4) 파이프라인 구축
 
-### Phase 3(switch to hybrid site)👈(now!)
+### Phase 3(switch to hybrid site)
 - ❗️Github Pages의 서버 부재로 인한 동적 배포 보류(로컬에서 완전한 동적 시스템 구현에 집중)❗️
 - Engine change: Next.js 15 + React + TypeScript 기반 핵심 아키텍처 변경
 - Architecture: App router 기반의 역할 중심 폴더 구조로 개편(app, components, utils 등)
 - Core Concept: blog home 에 post category를 기반으로 한 기술 계보도(skill tree page) 구현
 
-### Phase 4(local data integration)🚀(NEXT!)
+### Phase 4(local data integration)👈(now!)
 - Data decoupling: Post를 Project repo에서 DB로 이관
 - DB connection: 클라우드(가상) 서버 도입 전, 로컬 개발 환경에 serverless DB 원격 연동 테스트
 - Backend logic add: 사용자 인터랙션을 위한 게시물 속성 DB화, 조회수 카운팅, 댓글 등 동적 백엔드 로직을 로컬에서 검증
@@ -61,3 +61,12 @@ npm run db:import-posts:write
 - none
 #### Modified
 - applying styles to code block & table
+
+### junseo tech blog 2.2.0
+- distribution 2026-05-24
+#### New
+- Local & Remote(Neon) DB connection environments setup
+#### Refactoring
+- Post parsing logic & data migration scripts (markdown to PostgreSQL)
+#### Modified
+- Update project phase: Phase 3 -> Phase 4 (Local Data Integration)

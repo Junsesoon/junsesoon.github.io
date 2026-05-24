@@ -18,4 +18,4 @@ export const BLOG_MENU = [
 
 export type MenuItem = (typeof PORTFOLIO_MENU)[number] | (typeof BLOG_MENU)[number];
 
-export const ENABLE_MODE_TOGGLE = true;
+export const ENABLE_MODE_TOGGLE = false;
