@@ -1,0 +1,128 @@
+@import "tailwindcss";
+
+@layer base {
+  body {
+    line-height: 1.6;
+    letter-spacing: -0.005em;
+  }
+
+  p {
+    margin-top: 0;
+    margin-bottom: 0;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    margin: 0;
+    padding: 0;
+    font-weight: bold;
+  }
+}
+
+@layer components {
+  .post-body pre {
+    background-color: #282c34;
+    color: #abb2bf;
+    border-radius: 5px;
+    padding: 1em;
+    line-height: 1.6;
+    white-space: pre-wrap;
+    word-break: break-all;
+  }
+
+  .post-body pre code.hljs {
+    padding: 0;
+    background-color: transparent;
+  }
+
+  .post-body code {
+    font-family: 'D2Coding', 'Courier New', Courier, monospace;
+  }
+
+  /* Inline code block style */
+  .post-body :not(pre) > code {
+    background-color: #e7e7e7;
+    color: #c7254e;
+    padding: 2px 4px;
+    border-radius: 4px;
+    font-size: 0.9em;
+  }
+
+  /* Post content heading styles */
+  .post-body h1 {
+    font-size: 2em;
+    margin-top: 20px;
+    margin-bottom: 0;
+    color: red;
+    scroll-margin-top: 100px;
+  }
+
+  .post-body h2 {
+    font-size: 1.7em;
+    margin-top: 5px;
+    margin-bottom: 0;
+    color: orange;
+    scroll-margin-top: 100px;
+  }
+
+  .post-body h3 {
+    font-size: 1.2em;
+    margin-top: 5px;
+    margin-bottom: 0;
+    color: blue;
+    scroll-margin-top: 100px;
+  }
+
+  .post-body h4 {
+    font-size: 1em;
+    margin-top: 0;
+    margin-bottom: 0;
+    color: green;
+    scroll-margin-top: 100px;
+  }
+
+  .post-body h5 {
+    font-size: 0.9em;
+  }
+
+  .post-body h6 {
+    font-size: 0.8em;
+  }
+
+  /* Post content image styles */
+  .post-body img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+  }
+
+  /* Table styles */
+  .post-body table {
+    border-collapse: separate;
+    border-spacing: 0;
+    margin: 2em 0;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+    overflow: hidden;
+  }
+
+  .post-body th,
+  .post-body td {
+    padding: 8px 12px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+    border-right: 1px solid #ddd;
+  }
+
+  .post-body thead th {
+    font-weight: bold;
+  }
+
+  .post-body tr > *:last-child {
+    border-right: none;
+  }
+
+  .post-body tbody tr:last-child > *,
+  .post-body thead:last-child tr:last-child > * {
+    border-bottom: none;
+  }
+}
