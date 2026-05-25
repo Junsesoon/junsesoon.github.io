@@ -18,12 +18,12 @@
 - Architecture: App router 기반의 역할 중심 폴더 구조로 개편(app, components, utils 등)
 - Core Concept: blog home 에 post category를 기반으로 한 기술 계보도(skill tree page) 구현
 
-### Phase 4(local data integration)👈(now!)
+### Phase 4(local data integration)
 - Data decoupling: Post를 Project repo에서 DB로 이관
 - DB connection: 클라우드(가상) 서버 도입 전, 로컬 개발 환경에 serverless DB 원격 연동 테스트
 - Backend logic add: 사용자 인터랙션을 위한 게시물 속성 DB화, 조회수 카운팅, 댓글 등 동적 백엔드 로직을 로컬에서 검증
 
-### Phase 5(switch to dynamic site)
+### Phase 5(switch to dynamic site)👈(now!)
 - Cloud infra migration: VPS/AWS 기반으로 자체 인프라 구축(github pages 탈출!)
 - Deployment: 로컬 검증 완료된 코드들을 자체 서버에 정식 배포
 - Optimization: 구글 애드센스를 통한 유지비용 최소화
@@ -41,8 +41,11 @@ npx tsx src/infra/db-test.ts
 # DB migration code
 npx tsx src/infra/init-db.ts
 
-# Manual code to parse posts and send them to the database
-npm run db:import-posts:write
+# 로컬 마크다운 게시물(public/upload-posts)을 DB로 업로드
+npx tsx --env-file=.env src/scripts/upload-posts.ts --write
+
+# DB의 게시물 데이터를 로컬 마크다운 파일(public/import-posts)로 가져오기
+npx tsx --env-file=.env src/scripts/import-posts.ts
 ```
 
 ## version history

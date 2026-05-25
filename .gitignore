@@ -33,5 +33,12 @@ Thumbs.db
 # ☁️ Vercel 배포 관련
 .vercel
 
-# 🧪 Local Post
-/public/posts/
+# 🧪 게시물 데이터
+/public/import-posts/*
+!/public/import-posts/.gitkeep
+
+# upload-posts는 추가예정
+/public/upload-posts/*
+!/public/upload-posts/.gitkeep
+
+/public/posts/*
