@@ -1,18 +1,19 @@
-# src 폴더 설명
-This folder contains the core source code of the blog project being migrated to Next.js
+# src folder readme
+수정일: 2026-05-27
+이 폴더는 Next.js로 마이그레이션 중인 블로그 프로젝트의 핵심 소스 코드를 포함하고 있습니다
 
-## 폴더 구조
-- `app/`: Next.js App Router-related files are located here. They include page routing, layouts, UI components, and more
-- `components/`: Manage UI components (e.g., cards, buttons, tags) that are reused throughout the blog
-- `constants/`: Manage constants. Single Source of Truth (SSOT) for DOM IDs, GA, and Tokens
-- `data/`: Mock/Seed data for testing UI during build time
-- `infra/`: Infrastructure layer. Manages connections to external services and resources, such as database configurations (db.ts) and external API clients. It acts as the gateway to the outside world.
-- `js/`: It contains client-side logic used in existing static sites (vanilla JS). It includes `parser.js`, `render.js`, `main.js`, etc., and currently, only parts of it can be referenced during the Next.js migration process
-- `styles/`: Manages style-related files such as global CSS (`globals.css`) and code block highlighting theme (`atom-one-dark.css`)
-- `types/`: Defines TypeScript types used throughout the project (e.g., the `Post` type)
-- `utils/`: Manages utility functions used throughout the project. Runtime post retrieval is now DB-backed through `utils/posts.ts`, while Markdown parsing in `utils/parser.ts` is used for import/migration workflows
+## Folder structure
+- `app/`: Next.js App Router 관련 파일들이 위치합니다. 페이지 라우팅, 레이아웃, UI 컴포넌트 등을 포함합니다
+- `components/`: 블로그 전반에서 재사용되는 UI 컴포넌트(예: 카드, 버튼, 태그)를 관리합니다
+- `constants/`: 프로젝트 상수를 관리합니다. DOM ID, GA 추적 코드, API 토큰 등을 위한 단일 진실 공급원(SSOT) 역할을 합니다
+- `data/`: 빌드 시점이나 UI 테스트 시 사용되는 Mock/Seed 데이터입니다
+- `infra/`: 인프라 계층입니다. 데이터베이스 설정(`db.ts`) 및 외부 API 클라이언트 등 외부 서비스 및 리소스와의 연결을 관리하며, 외부 환경과의 관문 역할을 합니다
+- `js/`: 기존 정적 사이트(Vanilla JS)에서 사용되던 클라이언트 사이드 로직을 포함합니다. `parser.js`, `render.js`, `main.js` 등이 있으며, 현재 Next.js 마이그레이션 과정에서는 일부 로직만 참고용으로 사용됩니다
+- `styles/`: 전역 CSS(`globals.css`) 및 코드 블록 하이라이팅 테마(`atom-one-dark.css`) 등 스타일 관련 파일을 관리합니다
+- `types/`: 프로젝트 전반에서 사용되는 TypeScript 타입(예: `Post` 타입)을 정의합니다
+- `utils/`: 자주 사용되는 유틸리티 함수들을 관리합니다. 현재 런타임 게시물 조회는 `utils/posts.ts`를 통해 DB 기반으로 이루어지며, `utils/parser.ts`의 마크다운 파싱 로직은 데이터 업로드/마이그레이션 과정에서 주로 사용됩니다
 
-## Post Data Flow
-- Traditional method: Markdown files under `public/posts/...` were parsed at render time and routed directly to pages
-- Current method: Markdown frontmatter and content are imported into PostgreSQL first. App routes call `utils/posts.ts`, which reads from the DB, reconstructs the metadata shape expected by the UI, and renders posts dynamically
-- DB-backed pages are marked as dynamic so list, detail, and skill tree views fetch current database content instead of relying on deleted local Markdown files
+## 게시물 데이터 흐름
+- **기존 방식:** `public/posts/...` 폴더 아래의 마크다운 파일들을 렌더링 시점에 파싱하여 페이지로 직접 라우팅했습니다
+- **현재 방식:** 마크다운 프론트매터(frontmatter)와 콘텐츠를 먼저 PostgreSQL 데이터베이스로 가져옵니다. App 라우트에서는 `utils/posts.ts`를 호출하여 DB 데이터를 읽고, UI가 기대하는 형태의 메타데이터 구조로 재구성한 뒤 게시물을 동적으로 렌더링합니다
+- **동적 렌더링:** 데이터베이스 기반의 페이지들은 동적(`force-dynamic`)으로 렌더링되도록 설정되어 있어, 삭제된 로컬 마크다운 파일에 의존하지 않고 목록, 상세 페이지, 스킬 트리 뷰 등에서 항상 최신 데이터베이스 콘텐츠를 가져옵니다
