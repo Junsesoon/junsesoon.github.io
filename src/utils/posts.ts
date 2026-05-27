@@ -5,45 +5,8 @@ import remarkRehype from 'remark-rehype';
 import rehypeHighlight from 'rehype-highlight';
 import rehypeStringify from 'rehype-stringify';
 import { query } from '../infra/db';
-import { Post, PostFilterOptions } from '../types/blog';
-import { Frontmatter, titleFromSlug } from './parser';
-
-export interface DbPost {
-  slug: string;
-  content: string;
-  metadata: Frontmatter;
-}
-
-interface DbPostRow {
-  slug: string;
-  content: string;
-  title: string | null;
-  posted_at: Date | string | null;
-  modified_at: Date | string | null;
-  summary: string | null;
-  tags: string[] | null;
-  project_name: string | null;
-  category1: string | null;
-  category2: string | null;
-  category3: string | null;
-  category4: string | null;
-  doc_ver: string | null;
-  completion: boolean | null;
-  tech_start: Date | string | null;
-  parent_skill: string | null;
-  child_skill: string | null;
-  familiar: number | null;
-  contribute: string | null;
-  my_role: string | null;
-  tech_platform: string | null;
-  tech_language: string | null;
-  tech_server: string | null;
-  tech_framework: string | null;
-  tech_db: string | null;
-  tech_ide: string | null;
-  tech_api: string | null;
-  tech_library: string | null;
-}
+import { Post, PostFilterOptions, FrontMatter, DbPost, DbPostRow } from '../types/blog';
+import { titleFromSlug, parseMultilineArray } from './parser';
 
 const POST_SELECT = `
   SELECT
@@ -101,12 +64,12 @@ function normalizeCategoryValue(value: string) {
     .replace(/[-_\s]+/g, '');
 }
 
-function rowToMetadata(row: DbPostRow): Frontmatter {
-  const metadata: Frontmatter = {
+function rowToMetadata(row: DbPostRow): FrontMatter {
+  const metadata: FrontMatter = {
     title: row.title || titleFromSlug(row.slug),
     parentId: null,
-    'start date': dateString(row.posted_at) || null,
-    'end date': dateString(row.modified_at) || null,
+    startDate: dateString(row.posted_at) || null,
+    endDate: dateString(row.modified_at) || null,
     project: row.project_name || null,
     category1: row.category1 || null,
     category2: row.category2 || null,
@@ -114,13 +77,13 @@ function rowToMetadata(row: DbPostRow): Frontmatter {
     category4: row.category4 || null,
     summary: row.summary || '',
     tags: row.tags || [],
-    'doc-ver': row.doc_ver || null,
+    docVer: row.doc_ver || null,
   };
 
-  if (row.completion !== null) metadata.COMPLETION = row.completion;
-  if (row.tech_start) metadata['tech start'] = dateString(row.tech_start);
-  if (row.parent_skill) metadata['parent skill'] = row.parent_skill;
-  if (row.child_skill) metadata['child skill'] = row.child_skill;
+  if (row.completion !== null) metadata.completion = row.completion;
+  if (row.tech_start) metadata.techStart = dateString(row.tech_start);
+  if (row.parent_skill) metadata.parentSkill = parseMultilineArray(row.parent_skill);
+  if (row.child_skill) metadata.childSkill = parseMultilineArray(row.child_skill);
   if (row.familiar !== null) metadata.familiar = row.familiar;
   if (row.contribute) metadata.contribute = row.contribute;
   if (row.my_role) metadata.role = row.my_role;

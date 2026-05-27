@@ -11,18 +11,7 @@ import { getDbPostBySlug } from '../../../utils/posts';
 
 export const dynamic = 'force-dynamic';
 
-interface PostData {
-  title: string;
-  summary?: string;
-  tags?: string[];
-  category1?: string[];
-  category2?: string[];
-  'start date'?: string;
-  'end date'?: string;
-  [key: string]: any;
-}
-
-function formatKoreanDate(value?: string) {
+function formatKoreanDate(value?: string | null) {
   if (!value) return null;
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return null;
@@ -64,7 +53,7 @@ export default async function PostPage({
     .process(post.content);
   const contentHtml = String(processedContent);
 
-  const postData = post.metadata as PostData;
+  const postData = post.metadata;
 
   return (
     <div className="mx-auto grid max-w-6xl grid-cols-[minmax(0,1fr)_200px] gap-8 p-8 font-sans">
@@ -76,10 +65,10 @@ export default async function PostPage({
             </h1>
             <div className="my-2 text-gray-600">
               <p>
-                작성일: {formatKoreanDate(postData['start date']) ?? '정보 없음'}
+                작성일: {formatKoreanDate(postData.startDate) ?? '정보 없음'}
               </p>
               <p>
-                수정일: {formatKoreanDate(postData['end date']) ?? '정보 없음'}
+                수정일: {formatKoreanDate(postData.endDate) ?? '정보 없음'}
               </p>
             </div>
             {postData.summary && (

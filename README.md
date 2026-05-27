@@ -44,8 +44,8 @@ npx tsx src/infra/init-db.ts
 # 로컬 마크다운 게시물(public/upload-posts)을 DB로 업로드
 npx tsx --env-file=.env src/scripts/upload-posts.ts --write
 
-# DB의 게시물 데이터를 로컬 마크다운 파일(public/import-posts)로 가져오기
-npx tsx --env-file=.env src/scripts/import-posts.ts
+# DB의 게시물 데이터를 로컬 마크다운 파일(public/download-posts)로 다운로드하기
+npx tsx --env-file=.env src/scripts/download-posts.ts
 ```
 
 ## version history

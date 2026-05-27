@@ -39,9 +39,9 @@ function readUploadOptions(): UploadOptions {
 
 async function upsertPost(post: MarkdownPost): Promise<string> {
   const { frontmatter } = post;
-  const tags = toStringArray(frontmatter.tags ?? frontmatter.tag);
-  const projectName = firstString(frontmatter.project, frontmatter['project title']);
-  const title = firstString(frontmatter.title, frontmatter['project title']) || titleFromSlug(post.slug);
+  const tags = toStringArray(frontmatter.tags);
+  const projectName = firstString(frontmatter.project);
+  const title = firstString(frontmatter.title) || titleFromSlug(post.slug);
 
   const result = await pool.query<{ post_id: string }>(
     `
@@ -81,8 +81,8 @@ async function upsertPost(post: MarkdownPost): Promise<string> {
       post.slug,
       post.content,
       title,
-      dateValue(frontmatter['start date']),
-      dateValue(frontmatter['end date']),
+      dateValue(frontmatter.startDate),
+      dateValue(frontmatter.endDate),
       textValue(frontmatter.summary),
       tags,
       projectName,
@@ -90,7 +90,7 @@ async function upsertPost(post: MarkdownPost): Promise<string> {
       firstString(frontmatter.category2),
       firstString(frontmatter.category3),
       firstString(frontmatter.category4),
-      firstString(frontmatter['doc-ver']),
+      firstString(frontmatter.docVer),
     ],
   );
 
@@ -108,7 +108,7 @@ async function insertPostDetails(postId: string, frontmatter: Frontmatter) {
   if (hasCategory(frontmatter, 'trouble shooting')) {
     await pool.query(
       'INSERT INTO trouble_shooting (post_id, completion) VALUES ($1, $2)',
-      [postId, booleanValue(frontmatter.COMPLETION) ?? false],
+      [postId, booleanValue(frontmatter.completion) ?? false],
     );
   }
 
@@ -125,9 +125,9 @@ async function insertPostDetails(postId: string, frontmatter: Frontmatter) {
       `,
       [
         postId,
-        dateValue(frontmatter['tech start']),
-        firstString(frontmatter['parent skill']),
-        textValue(frontmatter['child skill']),
+        dateValue(frontmatter.techStart),
+        firstString(frontmatter.parentSkill),
+        textValue(frontmatter.childSkill),
       ],
     );
   }
@@ -160,15 +160,15 @@ async function insertPostDetails(postId: string, frontmatter: Frontmatter) {
       [
         postId,
         textValue(frontmatter.contribute),
-        firstString(frontmatter.role, frontmatter['담당역할']),
-        textValue(frontmatter.platform ?? frontmatter['플랫폼']),
-        textValue(frontmatter.language ?? frontmatter['언어']),
-        textValue(frontmatter.server ?? frontmatter['서버']),
-        textValue(frontmatter.framework ?? frontmatter['프레임워크']),
-        textValue(frontmatter.db ?? frontmatter.DB),
-        textValue(frontmatter.ide ?? frontmatter.IDE),
-        textValue(frontmatter.api ?? frontmatter.API),
-        textValue(frontmatter.library ?? frontmatter['라이브러리']),
+        firstString(frontmatter.role),
+        textValue(frontmatter.platform),
+        textValue(frontmatter.language),
+        textValue(frontmatter.server),
+        textValue(frontmatter.framework),
+        textValue(frontmatter.db),
+        textValue(frontmatter.ide),
+        textValue(frontmatter.api),
+        textValue(frontmatter.library),
       ],
     );
   }
