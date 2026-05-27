@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useRef } from 'react';
+import Link from 'next/link';
 
 interface SkillNode {
   file: string;
@@ -10,6 +11,7 @@ interface SkillNode {
   year?: string;
   content: string;
   frontmatter: Record<string, any>;
+  slug: string;
 }
 
 interface Props {
@@ -194,6 +196,15 @@ export default function SkillTreeInteractive({ columnsData, nodes, COLUMNS }: Pr
                     {selectedNode.content || <span className="text-gray-400 italic">No content</span>}
                   </pre>
                 </div>
+              </div>
+
+              <div className="mt-8 flex justify-end">
+                <Link
+                  href={`/${selectedNode.slug}`}
+                  className="bg-blue-600 text-white px-5 py-2.5 rounded-lg shadow-md hover:bg-blue-700 transition-colors text-sm font-semibold"
+                >
+                  게시물 자세히 보기 &rarr;
+                </Link>
               </div>
             </div>
           )}

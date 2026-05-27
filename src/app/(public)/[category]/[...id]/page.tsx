@@ -5,11 +5,20 @@ import remarkSlug from 'remark-slug';
 import remarkRehype from 'remark-rehype';
 import rehypeHighlight from 'rehype-highlight';
 import rehypeStringify from 'rehype-stringify';
-import TOC from '../../../components/TOC';
-import { collectTocHeadings, type TocHeading } from '../../../utils/parser';
-import { getDbPostBySlug } from '../../../utils/posts';
+import TOC from '../../../../components/TOC';
+import { collectTocHeadings, type TocHeading } from '../../../../utils/parser';
+import { getDbPostBySlug, getAllPosts } from '../../../../utils/posts';
 
-export const dynamic = 'force-dynamic';
+export async function generateStaticParams() {
+  const posts = await getAllPosts('all');
+  return posts.map((post) => {
+    const parts = post.slug.split('/');
+    return {
+      category: parts[0] || 'uncategorized',
+      id: parts.length > 1 ? parts.slice(1) : [parts[0]],
+    };
+  });
+}
 
 function formatKoreanDate(value?: string | null) {
   if (!value) return null;
@@ -24,10 +33,11 @@ function formatKoreanDate(value?: string | null) {
 export default async function PostPage({
   params,
 }: {
-  params: Promise<{ category: string; id: string }>;
+  params: Promise<{ category: string; id: string | string[] }>;
 }) {
   const { category, id } = await params;
-  const slug = `${category}/${id}`;
+  const idString = Array.isArray(id) ? id.join('/') : id;
+  const slug = `${category}/${idString}`;
   const post = await getDbPostBySlug(slug);
 
   if (!post) {
@@ -61,7 +71,7 @@ export default async function PostPage({
         <article>
           <header className="mb-12 flex min-h-40 flex-col justify-center gap-4 border-b border-gray-200 py-10">
             <h1 className="mb-2 text-4xl">
-              {postData.title || id.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}
+              {postData.title || idString.split(/[-/]+/).map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}
             </h1>
             <div className="my-2 text-gray-600">
               <p>

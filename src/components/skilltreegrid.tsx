@@ -10,6 +10,7 @@ interface SkillNode {
   year?: string;
   content: string;
   frontmatter: Record<string, any>;
+  slug: string;
 }
 
 interface SkillTreeGridProps {
@@ -29,14 +30,14 @@ export default async function SkillTreeGrid({ title, description, matchCategory2
       const serializedData = JSON.parse(JSON.stringify(post.metadata));
 
       let parents: string[] = [];
-      const parentSkill = post.metadata['parent skill'];
+      const parentSkill = post.metadata.parentSkill;
       if (parentSkill) {
         parents = Array.isArray(parentSkill) ? parentSkill : [parentSkill];
       }
 
       let yearStr = '';
-      if (post.metadata['tech start']) {
-        const startStr = String(post.metadata['tech start']);
+      if (post.metadata.techStart) {
+        const startStr = String(post.metadata.techStart);
         const match = startStr.match(/\d{4}/);
         yearStr = match ? match[0] : startStr;
       }
@@ -50,6 +51,7 @@ export default async function SkillTreeGrid({ title, description, matchCategory2
         year: yearStr,
         content: post.content,
         frontmatter: serializedData,
+        slug: post.slug,
       });
     } catch (err) {
       console.error(`Failed to parse skill tree post: ${post.slug}`, err);
