@@ -4,19 +4,22 @@ import React from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import PostEditor, { PostFormData } from '@/components/PostEditor';
+import { createPostAction } from '../../../../components/actions';
 
 export default function WritePostPage() {
   const router = useRouter();
 
   const handleSave = async (formData: PostFormData) => {
-    // TODO: 추후 실제 DB(PostgreSQL)에 데이터를 저장하는 API 또는 Server Action 호출 로직이 들어갑니다.
-    console.log('Saving new post:', formData);
-    
-    // 저장이 진행되는 것처럼 보이도록 1초 대기 (시뮬레이션)
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-
-    alert('게시물이 성공적으로 임시 작성되었습니다! (콘솔을 확인하세요)');
-    router.push('/admin'); // 작성 완료 후 관리자 대시보드로 복귀
+    try {
+      // 1. 방금 구현한 서버 액션을 호출하여 실제 DB에 저장
+      await createPostAction(formData);
+      
+      alert('게시물이 성공적으로 작성 및 저장되었습니다!');
+      router.push('/admin'); // 2. 저장 완료 후 관리자 대시보드로 복귀 (revalidatePath에 의해 자동으로 최신 목록이 반영됩니다)
+    } catch (error) {
+      console.error('Save failed:', error);
+      alert('게시물 저장 중 오류가 발생했습니다. (콘솔 확인)');
+    }
   };
 
   return (
