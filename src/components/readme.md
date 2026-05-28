@@ -9,6 +9,8 @@
 - `Footer.tsx`: 모든 페이지 하단에 공통으로 노출되며, 관리자 페이지로 이동할 수 있는 링크를 포함하는 푸터 컴포넌트입니다.
 - `skilltreegrid.tsx`: 마크다운 파일 대신 `getSkillTreePosts()`를 통해 DB에서 스킬 트리 게시물을 불러오는 서버 컴포넌트입니다.
 - `SkillTreeInteractive.tsx`: `skilltreegrid.tsx`로부터 데이터를 전달받아 스킬 트리 UI를 시각적으로 렌더링하고 사용자 상호작용(드래그, 사이드바 등)을 처리하는 클라이언트 컴포넌트입니다.
+- `GNB.tsx`: 블로그와 포트폴리오 모드 전환 및 관리자 로그인 상태에 따른 토글 버튼을 제공하는 글로벌 내비게이션 바(Global Navigation Bar) 컴포넌트입니다.
+- `TOC.tsx`: 게시물의 마크다운 헤딩(`h1~h6`)을 파싱하여 화면 우측에 표시해 주는 반응형 목차(Table of Contents) 컴포넌트입니다.
 
 ## Data Boundary
 - 컴포넌트는 게시물 콘텐츠 조회를 위해 파일 시스템에 직접 접근해서는 안 됩니다

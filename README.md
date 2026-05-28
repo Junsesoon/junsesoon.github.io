@@ -82,3 +82,13 @@ npx tsx --env-file=.env src/scripts/download-posts.ts
 #### Modified
 - Update project phase: Phase 3 -> Phase 4 (Local Data Integration)
 
+### junseo tech blog 2.3.0
+- distribution 2026-05-28
+#### New
+- JWT-based authentication system using `jose` library
+- Rate limiting for admin login to prevent brute-force attacks
+#### Refactoring
+- Refactored Skill Tree grid placement algorithm for stricter parent-child relationships
+#### Modified
+- Improved responsive design for Table of Contents (TOC) sidebar
+- Added distinct Red color theme for Portfolio mode GNB

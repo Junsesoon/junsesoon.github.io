@@ -2,25 +2,14 @@
 
 import React, { useState, useRef } from 'react';
 import Link from 'next/link';
-
-interface SkillNode {
-  file: string;
-  hasCat3: boolean;
-  parents: string[];
-  colIndex?: number;
-  year?: string;
-  content: string;
-  frontmatter: Record<string, any>;
-  slug: string;
-}
+import { SkillNode } from './skilltreegrid';
 
 interface Props {
-  columnsData: string[][];
   nodes: Record<string, SkillNode>;
   COLUMNS: number;
 }
 
-export default function SkillTreeInteractive({ columnsData, nodes, COLUMNS }: Props) {
+export default function SkillTreeInteractive({ nodes, COLUMNS }: Props) {
   const [selectedNode, setSelectedNode] = useState<SkillNode | null>(null);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
@@ -31,10 +20,9 @@ export default function SkillTreeInteractive({ columnsData, nodes, COLUMNS }: Pr
   const scrollLeft = useRef(0);
   const isDragged = useRef(false);
 
-  const maxRows = Math.max(3, ...columnsData.map(col => col.length)); // grid 높이 최소 3행 출력, 3행 초과시 최대 행 수에 맞춰 grid 높이 확장
-  const INITIAL_ROWS = maxRows;
-  const TOTAL_CELLS = COLUMNS * INITIAL_ROWS;
-  const gridCells = Array.from({ length: TOTAL_CELLS }, (_, i) => i);
+  const nodesArray = Object.values(nodes);
+  const maxCols = nodesArray.length > 0 ? Math.max(COLUMNS, ...nodesArray.map(n => n.col + 1)) : COLUMNS;
+  const maxRows = nodesArray.length > 0 ? Math.max(3, ...nodesArray.map(n => n.row + 1)) : 3;
 
   const onMouseDown = (e: React.MouseEvent) => {
     isDragged.current = false;
@@ -65,26 +53,18 @@ export default function SkillTreeInteractive({ columnsData, nodes, COLUMNS }: Pr
     setIsDrawerOpen(false);
   };
 
-  // Calculate positions for skill nodes (col, row)
-  const nodePositions: Record<string, { col: number; row: number }> = {};
-  columnsData.forEach((colFiles, colIndex) => {
-    colFiles.forEach((file, rowIndex) => {
-      const name = file.replace(/\.[^/.]+$/, "");
-      nodePositions[name] = { col: colIndex, row: rowIndex };
-    });
-  });
-
   // Generate lines between parents and children
   const lines: Array<{ id: string; x1: number; y1: number; x2: number; y2: number }> = [];
-  Object.entries(nodes).forEach(([childName, childNode]) => {
+  nodesArray.forEach((childNode) => {
     if (childNode.parents && childNode.parents.length > 0) {
-      const childPos = nodePositions[childName];
+      const childPos = { col: childNode.col, row: childNode.row };
       if (childPos) {
         childNode.parents.forEach((parentName) => {
-          const parentPos = nodePositions[parentName];
+          const parentNode = nodes[parentName];
+          const parentPos = parentNode ? { col: parentNode.col, row: parentNode.row } : null;
           if (parentPos) {
             lines.push({
-              id: `${parentName}-${childName}`,
+              id: `${parentName}-${childNode.file.replace(/\.[^/.]+$/, "")}`,
               x1: parentPos.col * 100 + 80, // Right center of parent
               y1: parentPos.row * 70 + 25, // Middle Y of parent
               x2: childPos.col * 100,       // Left center of child
@@ -124,30 +104,29 @@ export default function SkillTreeInteractive({ columnsData, nodes, COLUMNS }: Pr
         </svg>
 
         <div 
-          className="grid gap-x-[20px] gap-y-[20px] w-max relative z-10"
-          style={{ gridTemplateColumns: `repeat(${COLUMNS}, 80px)` }} // 열 간격과 셀 크기 설정 영역
+          className="grid w-max relative z-10"
+          style={{
+            gridTemplateColumns: `repeat(${maxCols}, 80px)`,
+            gridTemplateRows: `repeat(${maxRows}, 50px)`,
+            gap: '20px',
+          }}
         >
-          {gridCells.map((index) => {
-            const colIndex = index % COLUMNS;
-            const rowIndex = Math.floor(index / COLUMNS);
-            const file = rowIndex < columnsData[colIndex].length ? columnsData[colIndex][rowIndex] : null;
-            
-            const displayName = file ? file.replace(/\.[^/.]+$/, "") : null;
-            const nodeInfo = displayName ? nodes[displayName] : null;
-
+          {nodesArray.map((nodeInfo) => {
+            const displayName = nodeInfo.title;
             return (
               <div
-                key={index}
-                onClick={() => handleNodeClick(nodeInfo || null)}
+                key={nodeInfo.file}
+                onClick={() => handleNodeClick(nodeInfo)}
+                style={{
+                  gridColumnStart: nodeInfo.col + 1,
+                  gridRowStart: nodeInfo.row + 1,
+                }}
                 className={`
                   h-[50px] rounded-md transition-all duration-300 flex flex-col items-center justify-center text-[11px] text-center overflow-hidden break-all px-1 select-none
-                  ${file 
-                    ? 'bg-white border border-gray-200 text-gray-800 font-semibold shadow-md cursor-pointer hover:bg-blue-50 hover:border-blue-300 hover:text-blue-600 hover:scale-105'
-                    : 'bg-transparent pointer-events-none'
-                  }
+                  bg-white border border-gray-200 text-gray-800 font-semibold shadow-md cursor-pointer hover:bg-blue-50 hover:border-blue-300 hover:text-blue-600 hover:scale-105'
                 `}
               >
-                {displayName && <span>{displayName}</span>}
+                <span>{displayName}</span>
                 {nodeInfo?.year && <span className="text-[8px] opacity-70">{nodeInfo.year}</span>}
               </div>
             );
@@ -172,7 +151,7 @@ export default function SkillTreeInteractive({ columnsData, nodes, COLUMNS }: Pr
           {selectedNode && (
             <div className="mt-8 text-black flex-1">
               <h2 className="text-2xl font-bold mb-6 border-b border-gray-200 pb-3">
-                {selectedNode.file.replace(/\.[^/.]+$/, "")}
+                {selectedNode.title}
               </h2>
               
               <div className="mb-6 bg-gray-50 p-4 rounded-lg border border-gray-100 shadow-inner">
