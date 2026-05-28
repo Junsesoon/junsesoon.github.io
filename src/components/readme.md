@@ -1,11 +1,14 @@
 # components folder readme
 수정일: 2026-05-28
-- 재사용 가능한 UI 컴포넌트 (Cards, Buttons, Tags)
+- 재사용 가능한 UI 컴포넌트 및 클라이언트/서버 액션 관리 (Cards, Buttons, Tags, Forms 등)
 
-## Updated Components
-- `actions.ts`: 폼 제출 시 컴포넌트에서 호출하는 Next.js Server Actions(데이터베이스 저장 로직 등)를 모아둔 파일입니다.
-- `skilltreegrid.tsx`: 이제 `public/posts/skilltree`에서 마크다운 파일을 읽는 대신, `getSkillTreePosts()`를 통해 DB에서 스킬 트리 게시물을 불러오는 서버 컴포넌트입니다
-- `SkillTreeInteractive.tsx`: `skilltreegrid.tsx`로부터 직렬화된 프론트매터(frontmatter) 형태의 메타데이터와 마크다운 콘텐츠를 전달받아 기존과 동일하게 상호작용 및 UI 계층을 렌더링하는 클라이언트 컴포넌트입니다
+## Files
+- `actions.ts`: 폼 제출 시 컴포넌트에서 호출하는 Next.js Server Actions(게시물 생성, 수정, 삭제 등의 DB 조작 로직)를 모아둔 파일입니다.
+- `EditClient.tsx`: 기존 게시물의 데이터를 불러와 폼에 채워주고, `updatePostAction`을 호출하여 게시물 수정을 처리하는 클라이언트 컴포넌트입니다.
+- `PostEditor.tsx`: 게시물 작성(Create) 및 수정(Edit)을 모두 담당하는 재사용 가능한 순수 폼(Form) UI 컴포넌트입니다.
+- `Footer.tsx`: 모든 페이지 하단에 공통으로 노출되며, 관리자 페이지로 이동할 수 있는 링크를 포함하는 푸터 컴포넌트입니다.
+- `skilltreegrid.tsx`: 마크다운 파일 대신 `getSkillTreePosts()`를 통해 DB에서 스킬 트리 게시물을 불러오는 서버 컴포넌트입니다.
+- `SkillTreeInteractive.tsx`: `skilltreegrid.tsx`로부터 데이터를 전달받아 스킬 트리 UI를 시각적으로 렌더링하고 사용자 상호작용(드래그, 사이드바 등)을 처리하는 클라이언트 컴포넌트입니다.
 
 ## Data Boundary
 - 컴포넌트는 게시물 콘텐츠 조회를 위해 파일 시스템에 직접 접근해서는 안 됩니다

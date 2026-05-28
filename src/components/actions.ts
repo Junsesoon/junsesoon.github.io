@@ -59,6 +59,48 @@ export async function createPostAction(data: PostFormData) {
   }
 }
 
+export async function updatePostAction(originalSlug: string, data: PostFormData) {
+  const cleanSlugPart = (str: string) =>
+    str.trim().toLowerCase().replace(/[^a-z0-9가-힣]+/g, '-').replace(/(^-|-$)+/g, '');
+
+  const slugParts = [];
+  if (data.category1) slugParts.push(cleanSlugPart(data.category1));
+  if (data.category2) slugParts.push(cleanSlugPart(data.category2));
+  if (data.category3) slugParts.push(cleanSlugPart(data.category3));
+  if (data.category4) slugParts.push(cleanSlugPart(data.category4));
+
+  const titleSlug = cleanSlugPart(data.title) || `post-${Date.now()}`;
+  slugParts.push(titleSlug);
+
+  const newSlug = slugParts.join('/');
+
+  try {
+    await query(
+      `UPDATE posts
+       SET slug = $1, title = $2, content = $3, category1 = $4, category2 = $5, category3 = $6, category4 = $7, summary = $8, tags = $9, updated_at = NOW()
+       WHERE slug = $10`,
+      [
+        newSlug,
+        data.title,
+        data.content,
+        data.category1 || null,
+        data.category2 || null,
+        data.category3 || null,
+        data.category4 || null,
+        data.summary || null,
+        data.tags,
+        originalSlug
+      ]
+    );
+
+    revalidatePath('/admin');
+    revalidatePath('/');
+  } catch (error) {
+    console.error('Failed to update post:', error);
+    throw new Error('Database query failed.');
+  }
+}
+
 export async function deletePostAction(slug: string) {
   try {
     await query('DELETE FROM posts WHERE slug = $1', [slug]);

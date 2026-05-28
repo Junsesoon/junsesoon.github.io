@@ -66,7 +66,7 @@ export default async function AdminDashboardPage() {
                   </td>
                   <td className="px-6 py-4 text-gray-500">{new Date(post.date).toLocaleDateString('ko-KR')}</td>
                   <td className="px-6 py-4 text-right">
-                    <button className="mr-4 font-medium text-blue-600 transition-colors hover:text-blue-800">Edit</button>
+                    <Link href={`/admin/edit/${post.slug}`} className="mr-4 font-medium text-blue-600 transition-colors hover:text-blue-800">Edit</Link>
                     <form action={deletePostAction.bind(null, post.slug)} className="inline">
                       <button type="submit" className="font-medium text-red-600 transition-colors hover:text-red-800">Delete</button>
                     </form>
