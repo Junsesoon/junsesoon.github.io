@@ -2,6 +2,7 @@ import GNB from '@/components/GNB';
 import '@/styles/globals.css';
 import '@/styles/atom-one-dark.css';
 import Script from 'next/script';
+import Footer from '@/components/footer';
 
 export const metadata = {
   title: 'Junseo Blog',
@@ -40,6 +41,7 @@ export default function RootLayout({
         <div className="pt-16 flex-1">
           {children}
         </div>
+        <Footer />
       </body>
     </html>
   );
