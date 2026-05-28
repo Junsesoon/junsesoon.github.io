@@ -3,6 +3,8 @@
 import { query } from '../infra/db';
 import { PostFormData } from '@/components/PostEditor';
 import { revalidatePath } from 'next/cache';
+import { cookies } from 'next/headers';
+import { redirect } from 'next/navigation';
 
 export async function createPostAction(data: PostFormData) {
   // 1. 작성된 카테고리와 제목을 기반으로 URL 슬러그 생성
@@ -57,6 +59,29 @@ export async function createPostAction(data: PostFormData) {
     console.error('Failed to create post:', error);
     throw new Error('Database query failed.');
   }
+}
+
+export async function loginAction(password: string) {
+  const adminPassword = process.env.ADMIN_PASSWORD;
+
+  if (!adminPassword || password !== adminPassword) {
+    return { success: false, message: '비밀번호가 올바르지 않습니다.' };
+  }
+
+  (await cookies()).set('admin_auth', 'authenticated', {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
+    path: '/',
+    maxAge: 60 * 60 * 24, // 쿠키 유효기간 1일
+  });
+
+  return { success: true };
+}
+
+export async function logoutAction() {
+  (await cookies()).delete('admin_auth');
+  redirect('/');
 }
 
 export async function updatePostAction(originalSlug: string, data: PostFormData) {

@@ -1,7 +1,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { query } from '../../../infra/db';
-import { deletePostAction } from '../../../components/actions';
+import { deletePostAction, logoutAction } from '../../../components/actions';
 
 export default async function AdminDashboardPage() {
   const { rows: posts } = await query('SELECT slug, title, COALESCE(posted_at, created_at) AS date FROM posts ORDER BY created_at DESC');
@@ -13,12 +13,19 @@ export default async function AdminDashboardPage() {
           <h1 className="text-3xl font-bold text-gray-800">Admin Dashboard</h1>
           <p className="mt-2 text-gray-500">Welcome to the Junseo Blog admin area.</p>
         </div>
-        <Link
-          href="/"
-          className="inline-flex items-center justify-center rounded-md bg-gray-100 px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-200"
-        >
-          ← Back to Home
-        </Link>
+        <div className="flex items-center gap-3">
+          <Link
+            href="/"
+            className="inline-flex items-center justify-center rounded-md bg-gray-100 px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-200"
+          >
+            ← Back to Home
+          </Link>
+          <form action={logoutAction}>
+            <button type="submit" className="inline-flex items-center justify-center rounded-md bg-red-50 px-4 py-2 text-sm font-medium text-red-600 transition-colors hover:bg-red-100">
+              Logout
+            </button>
+          </form>
+        </div>
       </header>
 
       {/* 1. Stats Layer */}
