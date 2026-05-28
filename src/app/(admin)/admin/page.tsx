@@ -1,7 +1,10 @@
 import React from 'react';
 import Link from 'next/link';
+import { query } from '../../../infra/db';
 
-export default function AdminDashboardPage() {
+export default async function AdminDashboardPage() {
+  const { rows: posts } = await query('SELECT slug, title, COALESCE(posted_at, created_at) AS date FROM posts ORDER BY created_at DESC');
+
   return (
     <div className="mx-auto max-w-7xl p-8 font-sans">
       <header className="mb-8 flex flex-col sm:flex-row sm:items-start justify-between border-b border-gray-200 pb-4 gap-4">
@@ -22,7 +25,7 @@ export default function AdminDashboardPage() {
         {/* 통계 카드 1: 전체 게시물 수 */}
         <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
           <h2 className="mb-2 text-lg font-semibold text-gray-700">Total Posts</h2>
-          <p className="text-4xl font-bold text-blue-600">0</p>
+          <p className="text-4xl font-bold text-blue-600">{posts.length}</p>
         </div>
 
         {/* 통계 카드 2: 임시 저장 (Drafts) */}
@@ -52,18 +55,26 @@ export default function AdminDashboardPage() {
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-200 bg-white">
-            {/* 더미 데이터 Row */}
-            <tr className="transition-colors hover:bg-gray-50">
-              <td className="px-6 py-4 font-medium text-gray-900">Hello World: My First Blog Post</td>
-              <td className="px-6 py-4">
-                <span className="inline-flex items-center rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-800">Published</span>
-              </td>
-              <td className="px-6 py-4 text-gray-500">2026-05-28</td>
-              <td className="px-6 py-4 text-right">
-                <button className="mr-4 font-medium text-blue-600 transition-colors hover:text-blue-800">Edit</button>
-                <button className="font-medium text-red-600 transition-colors hover:text-red-800">Delete</button>
-              </td>
-            </tr>
+            {posts.length > 0 ? (
+              posts.map((post) => (
+                <tr key={post.slug} className="transition-colors hover:bg-gray-50">
+                  <td className="px-6 py-4 font-medium text-gray-900">{post.title}</td>
+                  <td className="px-6 py-4">
+                    {/* 임시저장(Draft) 기능이 구현되기 전이므로 일괄 Published 상태로 표시합니다 */}
+                    <span className="inline-flex items-center rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-800">Published</span>
+                  </td>
+                  <td className="px-6 py-4 text-gray-500">{new Date(post.date).toLocaleDateString('ko-KR')}</td>
+                  <td className="px-6 py-4 text-right">
+                    <button className="mr-4 font-medium text-blue-600 transition-colors hover:text-blue-800">Edit</button>
+                    <button className="font-medium text-red-600 transition-colors hover:text-red-800">Delete</button>
+                  </td>
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td colSpan={4} className="px-6 py-4 text-center text-gray-500">등록된 게시물이 없습니다.</td>
+              </tr>
+            )}
           </tbody>
         </table>
         <div className="border-t border-gray-200 bg-gray-50 px-6 py-4 text-center text-sm text-gray-500">
