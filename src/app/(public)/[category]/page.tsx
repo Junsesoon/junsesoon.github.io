@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { getCategoryPosts } from '../../utils/posts';
+import { getCategoryPosts } from '../../../utils/posts';
 
 export const dynamic = 'force-dynamic';
 

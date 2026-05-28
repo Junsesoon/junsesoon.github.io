@@ -32,7 +32,15 @@
 - Stability: 시스템 안정성 모니터링 및 구글 애드센스 최적화
 - Sustainability: 꾸준한 기술 포스팅
 
-
+## Commit message prefix
+- 2026-05-27 이후부터 적용
+- **FEAT** : 새로운 기능 추가
+- **FIX** : 버그 수정
+- **DOCS** : 문서 수정 및 추가
+- **STYLE** : 코드 스타일 관련 변경(코드 포매팅, 세미콜론 누락 등)
+- **REFACTOR** : 코드 리팩토링
+- **TEST** : 테스트 코드, 리팩토링 테스트 코드 추가
+- **CHORE** : 빌드 task 수정, 패키지 매니저 수정(.gitignore 수정 같은 경우)
 
 ```bash
 # DB test code
@@ -44,8 +52,8 @@ npx tsx src/infra/init-db.ts
 # 로컬 마크다운 게시물(public/upload-posts)을 DB로 업로드
 npx tsx --env-file=.env src/scripts/upload-posts.ts --write
 
-# DB의 게시물 데이터를 로컬 마크다운 파일(public/import-posts)로 가져오기
-npx tsx --env-file=.env src/scripts/import-posts.ts
+# DB의 게시물 데이터를 로컬 마크다운 파일(public/download-posts)로 다운로드하기
+npx tsx --env-file=.env src/scripts/download-posts.ts
 ```
 
 ## version history
@@ -73,3 +81,14 @@ npx tsx --env-file=.env src/scripts/import-posts.ts
 - Post parsing logic & data migration scripts (markdown to PostgreSQL)
 #### Modified
 - Update project phase: Phase 3 -> Phase 4 (Local Data Integration)
+
+### junseo tech blog 2.3.0
+- distribution 2026-05-28
+#### New
+- JWT-based authentication system using `jose` library
+- Rate limiting for admin login to prevent brute-force attacks
+#### Refactoring
+- Refactored Skill Tree grid placement algorithm for stricter parent-child relationships
+#### Modified
+- Improved responsive design for Table of Contents (TOC) sidebar
+- Added distinct Red color theme for Portfolio mode GNB

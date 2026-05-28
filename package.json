@@ -2,7 +2,7 @@
   "name": "junseo-blog",
   "type": "module",
   "scripts": {
-    "dev": "next dev",
+    "dev": "NODE_OPTIONS=\"--max-old-space-size=2048\" next dev",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
@@ -13,6 +13,7 @@
   "dependencies": {
     "gray-matter": "^4.0.3",
     "highlight.js": "^11.11.1",
+    "jose": "^6.2.3",
     "marked": "^18.0.4",
     "next": "^16.2.6",
     "pg": "^8.21.0",

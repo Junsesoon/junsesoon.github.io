@@ -1,10 +1,17 @@
-# components readme
-- Reusable UI pieces (Cards, Buttons, Tags)
+# components folder readme
+수정일: 2026-05-28
+- 재사용 가능한 UI 컴포넌트 및 클라이언트/서버 액션 관리 (Cards, Buttons, Tags, Forms 등)
 
-## Updated Components
-- `skilltreegrid.tsx`: Server component that now loads skill tree posts from the DB through `getSkillTreePosts()` instead of reading Markdown files from `public/posts/skilltree`.
-- `SkillTreeInteractive.tsx`: Client component that continues to receive serialized `frontmatter`-like metadata and Markdown content from `skilltreegrid.tsx`, so the interaction/UI layer can render as before.
+## Files
+- `actions.ts`: 폼 제출 시 컴포넌트에서 호출하는 Next.js Server Actions(게시물 생성, 수정, 삭제 등의 DB 조작 로직)를 모아둔 파일입니다.
+- `EditClient.tsx`: 기존 게시물의 데이터를 불러와 폼에 채워주고, `updatePostAction`을 호출하여 게시물 수정을 처리하는 클라이언트 컴포넌트입니다.
+- `PostEditor.tsx`: 게시물 작성(Create) 및 수정(Edit)을 모두 담당하는 재사용 가능한 순수 폼(Form) UI 컴포넌트입니다.
+- `Footer.tsx`: 모든 페이지 하단에 공통으로 노출되며, 관리자 페이지로 이동할 수 있는 링크를 포함하는 푸터 컴포넌트입니다.
+- `skilltreegrid.tsx`: 마크다운 파일 대신 `getSkillTreePosts()`를 통해 DB에서 스킬 트리 게시물을 불러오는 서버 컴포넌트입니다.
+- `SkillTreeInteractive.tsx`: `skilltreegrid.tsx`로부터 데이터를 전달받아 스킬 트리 UI를 시각적으로 렌더링하고 사용자 상호작용(드래그, 사이드바 등)을 처리하는 클라이언트 컴포넌트입니다.
+- `GNB.tsx`: 블로그와 포트폴리오 모드 전환 및 관리자 로그인 상태에 따른 토글 버튼을 제공하는 글로벌 내비게이션 바(Global Navigation Bar) 컴포넌트입니다.
+- `TOC.tsx`: 게시물의 마크다운 헤딩(`h1~h6`)을 파싱하여 화면 우측에 표시해 주는 반응형 목차(Table of Contents) 컴포넌트입니다.
 
 ## Data Boundary
-- Components should not directly access the filesystem for post content.
-- Post and skill tree data should come through `src/utils/posts.ts`, which hides the DB schema and preserves the shape expected by the existing UI components.
+- 컴포넌트는 게시물 콘텐츠 조회를 위해 파일 시스템에 직접 접근해서는 안 됩니다
+- 게시물 및 스킬 트리 데이터는 `src/utils/posts.ts`를 통해서만 가져와야 합니다. 이 유틸리티는 DB 스키마를 캡슐화(숨김)하여 기존 UI 컴포넌트가 기대하는 데이터 구조를 그대로 유지해 줍니다

@@ -34,8 +34,8 @@ Thumbs.db
 .vercel
 
 # 🧪 게시물 데이터
-/public/import-posts/*
-!/public/import-posts/.gitkeep
+/public/download-posts/*
+!/public/download-posts/.gitkeep
 
 # upload-posts는 추가예정
 /public/upload-posts/*

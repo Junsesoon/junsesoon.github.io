@@ -8,7 +8,7 @@ export default function TOC({ headings }: TOCProps) {
   if (headings.length === 0) return null;
 
   return (
-      <aside className="sticky top-40 h-fit rounded-lg border border-gray-200 bg-gray-50 p-4">
+      <aside className="hidden lg:block sticky top-40 h-fit w-48 shrink lg:w-56 xl:w-64 rounded-lg border border-gray-200 bg-gray-50 p-4">
         <h3 className="mb-4 text-lg font-bold text-gray-800">
           Table of Contents
         </h3>
@@ -22,7 +22,8 @@ export default function TOC({ headings }: TOCProps) {
               >
                 <a
                   href={`#${heading.id}`}
-                  className="block rounded px-1 py-1 text-blue-600 no-underline transition-colors hover:bg-blue-50"
+                  className="block truncate rounded px-1 py-1 text-blue-600 no-underline transition-colors hover:bg-blue-50"
+                  title={heading.text}
                 >
                   {heading.text}
                 </a>

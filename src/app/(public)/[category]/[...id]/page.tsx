@@ -5,24 +5,22 @@ import remarkSlug from 'remark-slug';
 import remarkRehype from 'remark-rehype';
 import rehypeHighlight from 'rehype-highlight';
 import rehypeStringify from 'rehype-stringify';
-import TOC from '../../../components/TOC';
-import { collectTocHeadings, type TocHeading } from '../../../utils/parser';
-import { getDbPostBySlug } from '../../../utils/posts';
+import TOC from '../../../../components/TOC';
+import { collectTocHeadings, type TocHeading } from '../../../../utils/parser';
+import { getDbPostBySlug, getAllPosts } from '../../../../utils/posts';
 
-export const dynamic = 'force-dynamic';
-
-interface PostData {
-  title: string;
-  summary?: string;
-  tags?: string[];
-  category1?: string[];
-  category2?: string[];
-  'start date'?: string;
-  'end date'?: string;
-  [key: string]: any;
+export async function generateStaticParams() {
+  const posts = await getAllPosts('all');
+  return posts.map((post) => {
+    const parts = post.slug.split('/');
+    return {
+      category: parts[0] || 'uncategorized',
+      id: parts.length > 1 ? parts.slice(1) : [parts[0]],
+    };
+  });
 }
 
-function formatKoreanDate(value?: string) {
+function formatKoreanDate(value?: string | null) {
   if (!value) return null;
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return null;
@@ -35,10 +33,11 @@ function formatKoreanDate(value?: string) {
 export default async function PostPage({
   params,
 }: {
-  params: Promise<{ category: string; id: string }>;
+  params: Promise<{ category: string; id: string | string[] }>;
 }) {
   const { category, id } = await params;
-  const slug = `${category}/${id}`;
+  const idString = Array.isArray(id) ? id.join('/') : id;
+  const slug = `${category}/${idString}`;
   const post = await getDbPostBySlug(slug);
 
   if (!post) {
@@ -64,7 +63,7 @@ export default async function PostPage({
     .process(post.content);
   const contentHtml = String(processedContent);
 
-  const postData = post.metadata as PostData;
+  const postData = post.metadata;
 
   return (
     <div className="mx-auto grid max-w-6xl grid-cols-[minmax(0,1fr)_200px] gap-8 p-8 font-sans">
@@ -72,14 +71,14 @@ export default async function PostPage({
         <article>
           <header className="mb-12 flex min-h-40 flex-col justify-center gap-4 border-b border-gray-200 py-10">
             <h1 className="mb-2 text-4xl">
-              {postData.title || id.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}
+              {postData.title || idString.split(/[-/]+/).map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}
             </h1>
             <div className="my-2 text-gray-600">
               <p>
-                작성일: {formatKoreanDate(postData['start date']) ?? '정보 없음'}
+                작성일: {formatKoreanDate(postData.startDate) ?? '정보 없음'}
               </p>
               <p>
-                수정일: {formatKoreanDate(postData['end date']) ?? '정보 없음'}
+                수정일: {formatKoreanDate(postData.endDate) ?? '정보 없음'}
               </p>
             </div>
             {postData.summary && (

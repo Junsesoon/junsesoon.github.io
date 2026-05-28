@@ -88,9 +88,20 @@ export function loadMarkdownPosts(postsDir: string, limit?: number): ParsedMarkd
   const targetFiles = limit ? markdownFiles.slice(0, limit) : markdownFiles;
   let skippedWithoutFrontmatter = 0;
 
-  const posts = targetFiles.map(({ filePath, slug }) => {
+  const posts = targetFiles.map(({ filePath }) => {
     const fileContents = fs.readFileSync(filePath, 'utf8');
     const { data, content } = matter(fileContents);
+
+    const cat1 = firstString(data.category1);
+    const cat2 = firstString(data.category2);
+    const fileName = path.basename(filePath, '.md');
+
+    const slugParts = [];
+    if (cat1) slugParts.push(cat1.trim().toLowerCase().replace(/[\s_]+/g, '-'));
+    if (cat2) slugParts.push(cat2.trim().toLowerCase().replace(/[\s_]+/g, '-'));
+    slugParts.push(fileName.trim().toLowerCase().replace(/[\s_]+/g, '-'));
+
+    const slug = slugParts.join('/');
 
     return {
       slug,
@@ -124,6 +135,14 @@ export function toStringArray(value: unknown): string[] {
   }
 
   return [String(value).trim()].filter(Boolean);
+}
+
+export function parseMultilineArray(value: string | null | undefined): string[] {
+  if (!value) return [];
+  if (value.includes('\n')) {
+    return value.split('\n').map((v) => v.trim()).filter(Boolean);
+  }
+  return [value.trim()].filter(Boolean);
 }
 
 export function firstString(...values: unknown[]): string | null {

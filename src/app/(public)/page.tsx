@@ -1,7 +1,7 @@
 import Link from 'next/link';
-import { getAllPosts } from '../utils/posts';
+import { getAllPosts } from '../../utils/posts';
 
-export const dynamic = 'force-dynamic';
+export const revalidate = 3600; // ISR 적용 시, 게시물 수정 후 최대 1시간까지는 수정 내용이 반영되지 않을 수 있음
 
 export default async function Home({ searchParams }: { searchParams?: Promise<{ mode?: string }> }) {
   const params = await searchParams;

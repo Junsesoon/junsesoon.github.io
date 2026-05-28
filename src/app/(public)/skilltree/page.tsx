@@ -1,6 +1,6 @@
 import SkillTreeGrid from '@/components/skilltreegrid';
 
-export const dynamic = 'force-dynamic';
+export const revalidate = 3600;
 
 export default function SkillTreePage() {
   return (
@@ -16,7 +16,7 @@ export default function SkillTreePage() {
           <SkillTreeGrid 
             title="Programming Language" 
             description="Core programming languages and their related ecosystems" 
-            matchCategory2="Programming Language" // 어떤 category의 skill card post를 가져올지 지정하는 설정 영역
+            matchCategory2="Programming Language" 
           />
         </section>
 
@@ -24,7 +24,7 @@ export default function SkillTreePage() {
           <SkillTreeGrid 
             title="Operating System"
             description="OS and Infrastructure"
-            matchCategory2="Operating System" // 어떤 category의 skill card post를 가져올지 지정하는 설정 영역
+            matchCategory2="Operating System" 
           />
         </section>
       </div>
