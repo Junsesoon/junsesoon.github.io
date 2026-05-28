@@ -4,6 +4,7 @@ import '@/styles/atom-one-dark.css';
 import Script from 'next/script';
 import Footer from '@/components/footer';
 import { cookies } from 'next/headers';
+import { verifyAdminToken } from '@/utils/auth';
 
 export const metadata = {
   title: 'Junseo Blog',
@@ -16,7 +17,8 @@ export default async function RootLayout({
   children: React.ReactNode;
 }) {
   const cookieStore = await cookies();
-  const isAdmin = cookieStore.get('admin_auth')?.value === 'authenticated';
+  const token = cookieStore.get('admin_auth')?.value;
+  const isAdmin = token ? await verifyAdminToken(token) : false;
 
   return (
     <html lang="ko">

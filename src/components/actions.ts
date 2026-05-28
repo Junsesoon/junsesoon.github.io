@@ -3,8 +3,12 @@
 import { query } from '../infra/db';
 import { PostFormData } from '@/components/PostEditor';
 import { revalidatePath } from 'next/cache';
-import { cookies } from 'next/headers';
+import { cookies, headers } from 'next/headers';
 import { redirect } from 'next/navigation';
+import { signAdminToken } from '@/utils/auth';
+
+// IP별 로그인 시도 횟수와 잠금 해제 시간을 기록하는 in-memory 저장소
+const loginAttempts = new Map<string, { attempts: number; lockUntil: number }>();
 
 export async function createPostAction(data: PostFormData) {
   // 1. 작성된 카테고리와 제목을 기반으로 URL 슬러그 생성
@@ -62,13 +66,40 @@ export async function createPostAction(data: PostFormData) {
 }
 
 export async function loginAction(password: string) {
+  const headerList = await headers();
+  // Next.js에서 클라이언트 IP를 가져오는 표준적인 방법입니다.
+  const ip = headerList.get('x-forwarded-for') || 'unknown';
+  const now = Date.now();
+
+  const record = loginAttempts.get(ip) ?? { attempts: 0, lockUntil: 0 };
+
+  // 차단 시간이 아직 지나지 않았을 경우
+  if (record.lockUntil > now) {
+    const remainingSeconds = Math.ceil((record.lockUntil - now) / 1000);
+    return { success: false, message: `5회 연속 실패했습니다.\n${remainingSeconds}초 후 다시 시도해주세요.` };
+  }
+
   const adminPassword = process.env.ADMIN_PASSWORD;
 
   if (!adminPassword || password !== adminPassword) {
-    return { success: false, message: '비밀번호가 올바르지 않습니다.' };
+    record.attempts += 1;
+    
+    if (record.attempts >= 5) {
+      record.lockUntil = now + 30 * 1000; // 현재 시간 + 30초로 잠금
+      loginAttempts.set(ip, record);
+      return { success: false, message: '5회 연속 실패했습니다.\n30초 후 다시 시도해주세요.' };
+    }
+    
+    loginAttempts.set(ip, record);
+    return { success: false, message: `비밀번호가 올바르지 않습니다. (실패 횟수: ${record.attempts}/5)` };
   }
 
-  (await cookies()).set('admin_auth', 'authenticated', {
+  // 성공 시 시도 횟수 초기화 (잠금 해제)
+  loginAttempts.delete(ip);
+
+  const token = await signAdminToken();
+
+  (await cookies()).set('admin_auth', token, {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
     sameSite: 'lax',

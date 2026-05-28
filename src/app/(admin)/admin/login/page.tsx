@@ -35,7 +35,7 @@ export default function LoginPage() {
           <p className="mt-2 text-sm text-gray-500">비밀번호를 입력하세요</p>
         </div>
 
-        {error && <p className="mb-4 text-center text-sm font-medium text-red-600">{error}</p>}
+        {error && <p className="mb-4 text-center text-sm font-medium text-red-600 whitespace-pre-line">{error}</p>}
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>

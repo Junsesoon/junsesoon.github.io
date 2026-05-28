@@ -1,11 +1,12 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
+import { verifyAdminToken } from '@/utils/auth';
 
-export function middleware(request: NextRequest) {
+export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   
   const authCookie = request.cookies.get('admin_auth');
-  const isAuthenticated = authCookie?.value === 'authenticated';
+  const isAuthenticated = authCookie?.value ? await verifyAdminToken(authCookie.value) : false;
 
   // 1. 인증되지 않은 사용자가 로그인 페이지가 아닌 다른 admin 경로에 접근하려 할 때 -> 로그인 페이지로 리다이렉트
   if (pathname.startsWith('/admin') && pathname !== '/admin/login') {
