@@ -3,17 +3,21 @@ import '@/styles/globals.css';
 import '@/styles/atom-one-dark.css';
 import Script from 'next/script';
 import Footer from '@/components/footer';
+import { cookies } from 'next/headers';
 
 export const metadata = {
   title: 'Junseo Blog',
   description: 'A blog and portfolio',
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const cookieStore = await cookies();
+  const isAdmin = cookieStore.get('admin_auth')?.value === 'authenticated';
+
   return (
     <html lang="ko">
       <body className="m-0 p-0 flex flex-col min-h-screen bg-white text-gray-900">
@@ -37,7 +41,7 @@ export default function RootLayout({
             />
           </>
         )}
-        <GNB />
+        <GNB isAdmin={isAdmin} />
         <div className="pt-16 flex-1">
           {children}
         </div>
