@@ -1,6 +1,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { query } from '../../../infra/db';
+import { deletePostAction } from '../../../components/actions';
 
 export default async function AdminDashboardPage() {
   const { rows: posts } = await query('SELECT slug, title, COALESCE(posted_at, created_at) AS date FROM posts ORDER BY created_at DESC');
@@ -66,7 +67,9 @@ export default async function AdminDashboardPage() {
                   <td className="px-6 py-4 text-gray-500">{new Date(post.date).toLocaleDateString('ko-KR')}</td>
                   <td className="px-6 py-4 text-right">
                     <button className="mr-4 font-medium text-blue-600 transition-colors hover:text-blue-800">Edit</button>
-                    <button className="font-medium text-red-600 transition-colors hover:text-red-800">Delete</button>
+                    <form action={deletePostAction.bind(null, post.slug)} className="inline">
+                      <button type="submit" className="font-medium text-red-600 transition-colors hover:text-red-800">Delete</button>
+                    </form>
                   </td>
                 </tr>
               ))

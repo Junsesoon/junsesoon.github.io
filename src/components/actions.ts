@@ -58,3 +58,15 @@ export async function createPostAction(data: PostFormData) {
     throw new Error('Database query failed.');
   }
 }
+
+export async function deletePostAction(slug: string) {
+  try {
+    await query('DELETE FROM posts WHERE slug = $1', [slug]);
+    
+    revalidatePath('/admin');
+    revalidatePath('/');
+  } catch (error) {
+    console.error('Failed to delete post:', error);
+    throw new Error('Database query failed.');
+  }
+}
