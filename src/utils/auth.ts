@@ -14,7 +14,7 @@ export async function signAdminToken() {
   const token = await new SignJWT({ role: 'admin' })
     .setProtectedHeader({ alg: 'HS256' })
     .setIssuedAt()
-    .setExpirationTime('1d') // 쿠키의 maxAge와 동일하게 1일로 설정
+    .setExpirationTime('1h') // 60분간 활동이 없을 시 만료
     .sign(getJwtSecretKey());
   
   return token;
