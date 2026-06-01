@@ -101,7 +101,11 @@ npx tsx --env-file=.env src/infra/r2-test.ts
 - distribution 2026-06-01
 #### New
 - Cloudflare R2 서비스를 활용한 이미지 업로드 기능 추가
+- 관리자 페이지 템플릿 매니저 추가
+- 관리자 페이지 게시물 목록 정렬 기능 추가
 #### Refactoring
 - 목차 UX 개선(반응형 목차 및 스크롤 위치 표시 기능 추가)
+- 콜드 스타트 방지를 위한 ISR 캐싱 시간 변경
+- DB 초기화 로직을 schema/seed SQL로 분리
 #### Modified
 - 관리자 세션 만료 정책 도입
