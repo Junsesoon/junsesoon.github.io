@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 
 export interface PostFormData {
   title: string;
@@ -31,6 +31,9 @@ export default function PostEditor({ initialData, onSave }: PostEditorProps) {
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const [uploadedImages, setUploadedImages] = useState<string[]>([]);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
@@ -50,6 +53,30 @@ export default function PostEditor({ initialData, onSave }: PostEditorProps) {
         .map((tag) => tag.trim())
         .filter((tag) => tag.length > 0);
 
+      // Extract image URLs from markdown content
+      const extractImageUrls = (text: string) => {
+        const regex = /!\[.*?\]\((.*?)\)/g;
+        const urls: string[] = [];
+        let match;
+        while ((match = regex.exec(text)) !== null) {
+          urls.push(match[1]);
+        }
+        return urls;
+      };
+
+      const initialUrls = extractImageUrls(initialData?.content || '');
+      const finalUrls = extractImageUrls(formData.content);
+      const allPossibleUrls = new Set([...initialUrls, ...uploadedImages]);
+      const deletedUrls = Array.from(allPossibleUrls).filter((url) => !finalUrls.includes(url));
+
+      if (deletedUrls.length > 0) {
+        await fetch('/api/upload', {
+          method: 'DELETE',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ urls: deletedUrls }),
+        }).catch((err) => console.error('Failed to delete orphaned images:', err));
+      }
+
       await onSave({
         ...formData,
         tags: parsedTags,
@@ -57,6 +84,68 @@ export default function PostEditor({ initialData, onSave }: PostEditorProps) {
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const uploadImage = async (file: File) => {
+    setIsUploading(true);
+    const uploadData = new FormData();
+    uploadData.append('file', file);
+
+    try {
+      const res = await fetch('/api/upload', {
+        method: 'POST',
+        body: uploadData,
+      });
+
+      if (!res.ok) throw new Error('Upload failed');
+
+      const data = await res.json();
+      setUploadedImages((prev) => [...prev, data.url]);
+      insertAtCursor(`![${file.name}](${data.url})`);
+    } catch (error) {
+      console.error('Error uploading image:', error);
+      alert('Failed to upload image. Please try again.');
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const handleDragOver = (e: React.DragEvent<HTMLTextAreaElement>) => {
+    e.preventDefault();
+  };
+
+  const handleDrop = async (e: React.DragEvent<HTMLTextAreaElement>) => {
+    e.preventDefault();
+    const file = e.dataTransfer.files?.[0];
+    if (file && file.type.startsWith('image/')) {
+      await uploadImage(file);
+    }
+  };
+
+  const handlePaste = async (e: React.ClipboardEvent<HTMLTextAreaElement>) => {
+    const file = e.clipboardData.files?.[0];
+    if (file && file.type.startsWith('image/')) {
+      e.preventDefault();
+      await uploadImage(file);
+    }
+  };
+
+  const insertAtCursor = (textToInsert: string) => {
+    const textarea = textareaRef.current;
+    if (!textarea) return;
+
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const currentContent = formData.content;
+
+    const newContent = currentContent.substring(0, start) + textToInsert + currentContent.substring(end);
+    
+    setFormData((prev) => ({ ...prev, content: newContent }));
+
+    setTimeout(() => {
+      textarea.selectionStart = textarea.selectionEnd = start + textToInsert.length;
+      textarea.focus();
+    }, 0);
   };
 
   return (
@@ -136,14 +225,19 @@ export default function PostEditor({ initialData, onSave }: PostEditorProps) {
           Content (Markdown)
         </label>
         <textarea
+          ref={textareaRef}
           id="content"
           name="content"
           value={formData.content}
           onChange={handleChange}
+          onDragOver={handleDragOver}
+          onDrop={handleDrop}
+          onPaste={handlePaste}
           required
+          readOnly={isUploading}
           rows={15}
-          className="block w-full rounded-md border border-gray-300 px-4 py-2 text-gray-900 shadow-sm font-mono text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-          placeholder="Write your markdown content here..."
+          className={`block w-full rounded-md border border-gray-300 px-4 py-2 text-gray-900 shadow-sm font-mono text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 ${isUploading ? 'bg-gray-50' : ''}`}
+          placeholder={isUploading ? 'Uploading image...' : 'Write your markdown content here. Drag & drop or paste (Ctrl+V) images to upload.'}
         />
       </div>
 
@@ -151,12 +245,12 @@ export default function PostEditor({ initialData, onSave }: PostEditorProps) {
       <div className="flex justify-end pt-4">
         <button
           type="submit"
-          disabled={isSubmitting}
+          disabled={isSubmitting || isUploading}
           className={`inline-flex items-center justify-center rounded-md px-6 py-3 text-sm font-semibold text-white shadow-sm transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
-            isSubmitting ? 'bg-blue-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'
+            (isSubmitting || isUploading) ? 'bg-blue-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'
           }`}
         >
-          {isSubmitting ? 'Saving...' : 'Save Post'}
+          {isSubmitting ? 'Saving...' : isUploading ? 'Uploading Image...' : 'Save Post'}
         </button>
       </div>
     </form>

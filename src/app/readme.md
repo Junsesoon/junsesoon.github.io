@@ -12,6 +12,9 @@
 - `app/(protected)/...`: 로그인 및 인증이 필요한 사용자 전용 페이지들이 위치할 라우트 그룹입니다
 - `app/(admin)/...`: 블로그 관리자 전용 페이지(대시보드, 게시물 작성/수정 등)가 위치할 라우트 그룹입니다
 
+### api 라우트
+- `app/api/upload/route.ts`: Cloudflare R2 스토리지에 마크다운 에디터의 이미지를 업로드(POST)하거나 작성 중 취소된 불필요한 이미지를 삭제(DELETE)하는 서버리스 API 엔드포인트입니다. 로컬 파일명 노출과 중복을 방지하기 위해 UUID를 활용하여 안전한 Object Key를 생성합니다.
+
 ## 참고사항
 - App 라우트는 렌더링 시점에 더 이상 `public/posts` 폴더의 마크다운 파일을 읽어오지 않습니다
 - 렌더링 성능 최적화를 위해 `force-dynamic` 대신 ISR(`export const revalidate = 3600`) 및 SSG(`generateStaticParams`) 캐싱 전략을 적용하여 데이터베이스 커넥션 고갈을 방지합니다

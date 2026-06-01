@@ -54,6 +54,10 @@ npx tsx --env-file=.env src/scripts/upload-posts.ts --write
 
 # DB의 게시물 데이터를 로컬 마크다운 파일(public/download-posts)로 다운로드하기
 npx tsx --env-file=.env src/scripts/download-posts.ts
+
+# Image DB server connection test code
+npx tsx --env-file=.env src/infra/r2-test.ts
+
 ```
 
 ## version history
@@ -92,3 +96,12 @@ npx tsx --env-file=.env src/scripts/download-posts.ts
 #### Modified
 - Improved responsive design for Table of Contents (TOC) sidebar
 - Added distinct Red color theme for Portfolio mode GNB
+
+### junseo tech blog 2.4.0
+- distribution 2026-06-01
+#### New
+- Cloudflare R2 서비스를 활용한 이미지 업로드 기능 추가
+#### Refactoring
+- none
+#### Modified
+- none
