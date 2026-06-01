@@ -46,9 +46,14 @@ export default async function AdminDashboardPage() {
       {/* 2. Action Bar Layer */}
       <div className="mb-6 flex items-center justify-between">
         <h2 className="text-xl font-bold text-gray-800">Manage Posts</h2>
-        <Link href="/admin/write" className="inline-flex items-center justify-center rounded-md bg-blue-600 px-6 py-3 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
-          + Create New Post
-        </Link>
+        <div className="flex gap-3">
+          <Link href="/admin/template" className="inline-flex items-center justify-center rounded-md bg-white border border-gray-300 px-6 py-3 text-sm font-semibold text-gray-700 shadow-sm transition-colors hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-200 focus:ring-offset-2">
+            Manage Templates
+          </Link>
+          <Link href="/admin/write" className="inline-flex items-center justify-center rounded-md bg-blue-600 px-6 py-3 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+            + Create New Post
+          </Link>
+        </div>
       </div>
 
       {/* 3. Data Grid Layer */}
