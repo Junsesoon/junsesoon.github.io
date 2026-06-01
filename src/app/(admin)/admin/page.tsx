@@ -3,8 +3,44 @@ import Link from 'next/link';
 import { query } from '../../../infra/db';
 import { deletePostAction, logoutAction } from '../../../components/actions';
 
-export default async function AdminDashboardPage() {
-  const { rows: posts } = await query('SELECT slug, title, category1, category2, COALESCE(posted_at, created_at) AS date FROM posts ORDER BY created_at DESC');
+export default async function AdminDashboardPage({ searchParams }: { searchParams?: Promise<{ sort?: string; order?: 'asc' | 'desc' }> }) {
+  const params = await searchParams;
+  const sort = params?.sort || 'date';
+  const order = params?.order || 'desc';
+
+  const { rows: fetchedPosts } = await query('SELECT slug, title, category1, category2, COALESCE(posted_at, created_at) AS date FROM posts ORDER BY created_at DESC');
+
+  const posts = [...fetchedPosts].sort((a, b) => {
+    let valA = a[sort as keyof typeof a] ?? '';
+    let valB = b[sort as keyof typeof b] ?? '';
+
+    if (sort === 'date') {
+      valA = valA ? new Date(valA).getTime() : 0;
+      valB = valB ? new Date(valB).getTime() : 0;
+    } else {
+      valA = String(valA).toLowerCase();
+      valB = String(valB).toLowerCase();
+    }
+
+    if (valA < valB) return order === 'asc' ? -1 : 1;
+    if (valA > valB) return order === 'asc' ? 1 : -1;
+    return 0;
+  });
+
+  const renderHeader = (key: string, label: string) => {
+    const isActive = sort === key;
+    const nextOrder = isActive && order === 'asc' ? 'desc' : 'asc';
+    return (
+      <th scope="col" className="px-6 py-4 font-semibold text-gray-900 whitespace-nowrap">
+        <Link href={`/admin?sort=${key}&order=${nextOrder}`} className="group inline-flex items-center gap-1 transition-colors hover:text-blue-600">
+          {label}
+          <span className={`text-xs ${isActive ? 'text-blue-600' : 'text-gray-300 group-hover:text-blue-400'}`}>
+            {isActive ? (order === 'asc' ? '▲' : '▼') : '↕'}
+          </span>
+        </Link>
+      </th>
+    );
+  };
 
   return (
     <div className="mx-auto max-w-7xl p-8 font-sans">
@@ -61,11 +97,11 @@ export default async function AdminDashboardPage() {
         <table className="min-w-full divide-y divide-gray-200 text-left text-sm">
           <thead className="bg-gray-50">
             <tr>
-              <th scope="col" className="px-6 py-4 font-semibold text-gray-900">Title</th>
-              <th scope="col" className="px-6 py-4 font-semibold text-gray-900">Cat1</th>
-              <th scope="col" className="px-6 py-4 font-semibold text-gray-900">Cat2</th>
+              {renderHeader('title', 'Title')}
+              {renderHeader('category1', 'Cat1')}
+              {renderHeader('category2', 'Cat2')}
               <th scope="col" className="px-6 py-4 font-semibold text-gray-900">Status</th>
-              <th scope="col" className="px-6 py-4 font-semibold text-gray-900">Date</th>
+              {renderHeader('date', 'Date')}
               <th scope="col" className="px-6 py-4 text-right font-semibold text-gray-900">Actions</th>
             </tr>
           </thead>
