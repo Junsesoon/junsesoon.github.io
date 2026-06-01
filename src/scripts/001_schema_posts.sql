@@ -1,9 +1,5 @@
--- ROOT TABLE
-DROP TABLE IF EXISTS trouble_shooting CASCADE;
-DROP TABLE IF EXISTS skill_tree CASCADE;
-DROP TABLE IF EXISTS my_skill CASCADE;
-DROP TABLE IF EXISTS project CASCADE;
-DROP TABLE IF EXISTS posts CASCADE;
+-- src/scripts/01_schema_posts.sql
+-- src/scripts/001_schema_posts.sql
 
 -- posts: 테이블은 모든 게시물의 공통 속성을 포함하며, 각 게시물은 고유한 slug를 통해 식별됨
 CREATE TABLE IF NOT EXISTS posts (
@@ -46,7 +42,6 @@ CREATE TABLE IF NOT EXISTS skill_tree (
     child_skill VARCHAR(255)
 );
 
-
 -- 나의 스킬(My Skill)
 CREATE TABLE IF NOT EXISTS my_skill (
     post_id UUID REFERENCES posts(post_id) ON DELETE CASCADE,
@@ -69,9 +64,3 @@ CREATE TABLE IF NOT EXISTS project (
     tech_api VARCHAR(255),
     tech_library VARCHAR(255)
 );
-
-
--- 2. 검색 및 필터링 최적화를 위한 인덱스 생성(Index)
--- CREATE INDEX IF NOT EXISTS idx_posts_category1 ON posts(category1);
--- CREATE INDEX idx_posts_project_name ON posts(project_name);
--- CREATE INDEX idx_posts_slug ON posts(slug);

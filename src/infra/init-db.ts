@@ -7,13 +7,19 @@ async function initDatabase() {
   try {
     console.log('Starting database initialization...');
 
-    // Construct the path to the seed SQL file
-    const sqlFilePath = path.join(process.cwd(), 'src/scripts', 'seed-001.sql');
-    const sqlQuery = fs.readFileSync(sqlFilePath, 'utf8');
+    const scripts = [
+      '001_schema_posts.sql',
+      '002_schema_templates.sql',
+      '003_seed_templates.sql'
+    ];
 
-    // Execute the queries
-    await pool.query(sqlQuery);
-    
+    for (const script of scripts) {
+      const scriptPath = path.join(process.cwd(), 'src/scripts', script);
+      const query = fs.readFileSync(scriptPath, 'utf8');
+      console.log(`Executing ${script}...`);
+      await pool.query(query);
+    }
+
     console.log('Database initialized and seeded successfully!');
   } catch (error) {
     console.error('Failed to initialize database:', error);
