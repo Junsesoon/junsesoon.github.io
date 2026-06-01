@@ -23,7 +23,7 @@ export default function WritePostPage() {
   };
 
   return (
-    <div className="mx-auto max-w-5xl p-8 font-sans">
+    <div className="mx-auto max-w-7xl min-w-[1000px] p-8 font-sans">
       <header className="mb-8 flex flex-col sm:flex-row sm:items-start justify-between border-b border-gray-200 pb-4 gap-4">
         <div>
           <h1 className="text-3xl font-bold text-gray-800">Write New Post</h1>

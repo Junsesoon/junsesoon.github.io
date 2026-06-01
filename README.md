@@ -102,6 +102,6 @@ npx tsx --env-file=.env src/infra/r2-test.ts
 #### New
 - Cloudflare R2 서비스를 활용한 이미지 업로드 기능 추가
 #### Refactoring
-- none
+- 목차 UX 개선(반응형 목차 및 스크롤 위치 표시 기능 추가)
 #### Modified
-- none
+- 관리자 세션 만료 정책 도입

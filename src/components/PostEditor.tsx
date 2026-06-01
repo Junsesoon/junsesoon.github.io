@@ -3,31 +3,34 @@
 import React, { useState, useRef } from 'react';
 
 export interface PostFormData {
-  title: string;
-  summary: string;
-  category1: string;
-  category2: string;
-  category3: string;
-  category4: string;
-  tags: string[];
-  content: string;
+  [key: string]: any;
 }
 
 export interface PostEditorProps {
-  initialData?: Partial<PostFormData>;
+  initialData?: PostFormData;
   onSave: (formData: PostFormData) => Promise<void>;
 }
 
 export default function PostEditor({ initialData, onSave }: PostEditorProps) {
-  const [formData, setFormData] = useState({
-    title: initialData?.title || '',
-    summary: initialData?.summary || '',
-    category1: initialData?.category1 || '',
-    category2: initialData?.category2 || '',
-    category3: initialData?.category3 || '',
-    category4: initialData?.category4 || '',
-    tags: initialData?.tags?.join(', ') || '',
-    content: initialData?.content || '',
+  const [formData, setFormData] = useState<Record<string, any>>(() => {
+    const initial: Record<string, any> = {};
+    if (initialData) {
+      Object.entries(initialData).forEach(([key, val]) => {
+        if (key === 'content') return;
+        
+        // 미보유 prop 표기 제외
+        if (val === null || val === undefined || val === '') return;
+        if (Array.isArray(val) && val.length === 0) return;
+
+        if (Array.isArray(val)) {
+          initial[key] = val.join(', ');
+        } else {
+          initial[key] = val;
+        }
+      });
+    }
+    initial.content = initialData?.content || '';
+    return initial;
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -47,11 +50,14 @@ export default function PostEditor({ initialData, onSave }: PostEditorProps) {
     setIsSubmitting(true);
 
     try {
-      // 태그는 쉼표로 구분된 문자열을 배열로 변환하고 양끝 공백을 제거
-      const parsedTags = formData.tags
-        .split(',')
-        .map((tag) => tag.trim())
-        .filter((tag) => tag.length > 0);
+      const finalData = { ...formData };
+
+      if (typeof finalData.tags === 'string') {
+        finalData.tags = finalData.tags.split(',').map((tag: string) => tag.trim()).filter((tag: string) => tag.length > 0);
+      }
+      if (typeof finalData.parentSkill === 'string') {
+        finalData.parentSkill = finalData.parentSkill.split(',').map((s: string) => s.trim()).filter((s: string) => s.length > 0);
+      }
 
       // Extract image URLs from markdown content
       const extractImageUrls = (text: string) => {
@@ -77,10 +83,7 @@ export default function PostEditor({ initialData, onSave }: PostEditorProps) {
         }).catch((err) => console.error('Failed to delete orphaned images:', err));
       }
 
-      await onSave({
-        ...formData,
-        tags: parsedTags,
-      });
+      await onSave(finalData);
     } finally {
       setIsSubmitting(false);
     }
@@ -148,75 +151,53 @@ export default function PostEditor({ initialData, onSave }: PostEditorProps) {
     }, 0);
   };
 
+  const renderProps = Object.keys(formData).filter((k) => k !== 'content');
+  const defaultOrder = ['title', 'summary', 'category1', 'category2', 'category3', 'category4', 'tags'];
+  renderProps.sort((a, b) => {
+    const idxA = defaultOrder.indexOf(a);
+    const idxB = defaultOrder.indexOf(b);
+    if (idxA !== -1 && idxB !== -1) return idxA - idxB;
+    if (idxA !== -1) return -1;
+    if (idxB !== -1) return 1;
+    return a.localeCompare(b);
+  });
+
   return (
     <form onSubmit={handleSubmit} className="space-y-6 rounded-lg border border-gray-200 bg-white p-6 shadow-sm font-sans">
-      {/* Title */}
-      <div>
-        <label htmlFor="title" className="mb-2 block text-sm font-medium text-gray-700">
-          Title
-        </label>
-        <input
-          type="text"
-          id="title"
-          name="title"
-          value={formData.title}
-          onChange={handleChange}
-          required
-          className="block w-full rounded-md border border-gray-300 px-4 py-2 text-gray-900 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-          placeholder="Post Title"
-        />
-      </div>
-
-      {/* Summary */}
-      <div>
-        <label htmlFor="summary" className="mb-2 block text-sm font-medium text-gray-700">
-          Summary
-        </label>
-        <textarea
-          id="summary"
-          name="summary"
-          value={formData.summary}
-          onChange={handleChange}
-          rows={2}
-          className="block w-full rounded-md border border-gray-300 px-4 py-2 text-gray-900 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-          placeholder="Brief summary of the post"
-        />
-      </div>
-
-      {/* Categories (Grid Layout) */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {['category1', 'category2', 'category3', 'category4'].map((cat, index) => (
-          <div key={cat}>
-            <label htmlFor={cat} className="mb-2 block text-sm font-medium text-gray-700 capitalize">
-              Category {index + 1}
-            </label>
-            <input
-              type="text"
-              id={cat}
-              name={cat}
-              value={formData[cat as keyof typeof formData] as string}
-              onChange={handleChange}
-              className="block w-full rounded-md border border-gray-300 px-4 py-2 text-gray-900 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-              placeholder={`Category ${index + 1}`}
-            />
-          </div>
-        ))}
-      </div>
-
-      {/* Tags */}
-      <div>
-        <label htmlFor="tags" className="mb-2 block text-sm font-medium text-gray-700">
-          Tags (comma separated)
-        </label>
-        <input
-          type="text"
-          id="tags"
-          name="tags"
-          value={formData.tags}
-          onChange={handleChange}
-          className="block w-full rounded-md border border-gray-300 px-4 py-2 text-gray-900 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-          placeholder="nextjs, react, frontend"
-        />
+      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+        {renderProps.map((key) => {
+          const isTextarea = key === 'summary';
+          const isFullWidth = key === 'title' || key === 'summary' || key === 'tags';
+          return (
+            <div key={key} className={isFullWidth ? 'sm:col-span-2' : ''}>
+              <label htmlFor={key} className="mb-2 block text-sm font-medium text-gray-700 capitalize">
+                {key === 'tags' ? 'Tags (comma separated)' : key}
+              </label>
+              {isTextarea ? (
+                <textarea
+                  id={key}
+                  name={key}
+                  value={formData[key]}
+                  onChange={handleChange}
+                  rows={2}
+                  className="block w-full rounded-md border border-gray-300 px-4 py-2 text-gray-900 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                  placeholder={`Enter ${key}`}
+                />
+              ) : (
+                <input
+                  type="text"
+                  id={key}
+                  name={key}
+                  value={formData[key]}
+                  onChange={handleChange}
+                  required={key === 'title'}
+                  className="block w-full rounded-md border border-gray-300 px-4 py-2 text-gray-900 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                  placeholder={`Enter ${key}`}
+                />
+              )}
+            </div>
+          );
+        })}
       </div>
 
       {/* Content */}

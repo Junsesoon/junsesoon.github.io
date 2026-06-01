@@ -4,7 +4,7 @@ import { query } from '../../../infra/db';
 import { deletePostAction, logoutAction } from '../../../components/actions';
 
 export default async function AdminDashboardPage() {
-  const { rows: posts } = await query('SELECT slug, title, COALESCE(posted_at, created_at) AS date FROM posts ORDER BY created_at DESC');
+  const { rows: posts } = await query('SELECT slug, title, category1, category2, COALESCE(posted_at, created_at) AS date FROM posts ORDER BY created_at DESC');
 
   return (
     <div className="mx-auto max-w-7xl p-8 font-sans">
@@ -57,6 +57,8 @@ export default async function AdminDashboardPage() {
           <thead className="bg-gray-50">
             <tr>
               <th scope="col" className="px-6 py-4 font-semibold text-gray-900">Title</th>
+              <th scope="col" className="px-6 py-4 font-semibold text-gray-900">Cat1</th>
+              <th scope="col" className="px-6 py-4 font-semibold text-gray-900">Cat2</th>
               <th scope="col" className="px-6 py-4 font-semibold text-gray-900">Status</th>
               <th scope="col" className="px-6 py-4 font-semibold text-gray-900">Date</th>
               <th scope="col" className="px-6 py-4 text-right font-semibold text-gray-900">Actions</th>
@@ -66,7 +68,21 @@ export default async function AdminDashboardPage() {
             {posts.length > 0 ? (
               posts.map((post) => (
                 <tr key={post.slug} className="transition-colors hover:bg-gray-50">
-                  <td className="px-6 py-4 font-medium text-gray-900">{post.title}</td>
+                  <td className="px-6 py-4 font-medium text-gray-900 max-w-[150px] sm:max-w-[200px] md:max-w-[300px]">
+                    <Link 
+                      href={`/${post.slug}`}
+                      className="block truncate text-blue-600 transition-colors hover:text-blue-800 hover:underline"
+                      title={post.title}
+                    >
+                      {post.title}
+                    </Link>
+                  </td>
+                  <td className="px-6 py-4 text-gray-600 max-w-[150px] break-words" title={post.category1 || ''}>
+                    {post.category1 || '-'}
+                  </td>
+                  <td className="px-6 py-4 text-gray-600 max-w-[150px] break-words" title={post.category2 || ''}>
+                    {post.category2 || '-'}
+                  </td>
                   <td className="px-6 py-4">
                     {/* 임시저장(Draft) 기능이 구현되기 전이므로 일괄 Published 상태로 표시합니다 */}
                     <span className="inline-flex items-center rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-800">Published</span>
@@ -82,7 +98,7 @@ export default async function AdminDashboardPage() {
               ))
             ) : (
               <tr>
-                <td colSpan={4} className="px-6 py-4 text-center text-gray-500">등록된 게시물이 없습니다.</td>
+                <td colSpan={6} className="px-6 py-4 text-center text-gray-500">등록된 게시물이 없습니다.</td>
               </tr>
             )}
           </tbody>
