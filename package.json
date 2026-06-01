@@ -11,6 +11,7 @@
     "db:import-posts:write": "tsx src/scripts/import-posts.ts --write"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.1057.0",
     "gray-matter": "^4.0.3",
     "highlight.js": "^11.11.1",
     "jose": "^6.2.3",

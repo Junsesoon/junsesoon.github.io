@@ -1,5 +1,5 @@
 import React from 'react';
-import { query } from '../../../../../infra/db';
+import { getDbPostBySlug } from '../../../../../utils/posts';
 import EditClient from '../../../../../components/EditClient';
 
 export default async function EditPostPage({ params }: { params: Promise<{ slug: string | string[] }> }) {
@@ -9,11 +9,11 @@ export default async function EditPostPage({ params }: { params: Promise<{ slug:
   const slugParam = resolvedParams.slug;
   const originalSlug = Array.isArray(slugParam) ? slugParam.join('/') : slugParam;
   
-  const { rows } = await query('SELECT * FROM posts WHERE slug = $1', [originalSlug]);
+  const post = await getDbPostBySlug(originalSlug);
   
-  if (rows.length === 0) {
+  if (!post) {
     return <div className="p-8 text-center text-gray-500">Post not found.</div>;
   }
 
-  return <EditClient post={rows[0]} originalSlug={originalSlug} />;
+  return <EditClient post={post} originalSlug={originalSlug} />;
 }

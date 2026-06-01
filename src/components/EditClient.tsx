@@ -9,14 +9,8 @@ import { updatePostAction } from './actions';
 export default function EditClient({ post, originalSlug }: { post: any; originalSlug: string }) {
   const router = useRouter();
 
-  const initialData: Partial<PostFormData> = {
-    title: post.title || '',
-    summary: post.summary || '',
-    category1: post.category1 || '',
-    category2: post.category2 || '',
-    category3: post.category3 || '',
-    category4: post.category4 || '',
-    tags: post.tags || [],
+  const initialData: PostFormData = {
+    ...(post.metadata || post),
     content: post.content || '',
   };
 
@@ -32,7 +26,7 @@ export default function EditClient({ post, originalSlug }: { post: any; original
   };
 
   return (
-    <div className="mx-auto max-w-5xl p-8 font-sans">
+    <div className="mx-auto max-w-7xl min-w-[1000px] p-8 font-sans">
       <header className="mb-8 flex flex-col sm:flex-row sm:items-start justify-between border-b border-gray-200 pb-4 gap-4">
         <div>
           <h1 className="text-3xl font-bold text-gray-800">Edit Post</h1>

@@ -3,8 +3,44 @@ import Link from 'next/link';
 import { query } from '../../../infra/db';
 import { deletePostAction, logoutAction } from '../../../components/actions';
 
-export default async function AdminDashboardPage() {
-  const { rows: posts } = await query('SELECT slug, title, COALESCE(posted_at, created_at) AS date FROM posts ORDER BY created_at DESC');
+export default async function AdminDashboardPage({ searchParams }: { searchParams?: Promise<{ sort?: string; order?: 'asc' | 'desc' }> }) {
+  const params = await searchParams;
+  const sort = params?.sort || 'date';
+  const order = params?.order || 'desc';
+
+  const { rows: fetchedPosts } = await query('SELECT slug, title, category1, category2, COALESCE(posted_at, created_at) AS date FROM posts ORDER BY created_at DESC');
+
+  const posts = [...fetchedPosts].sort((a, b) => {
+    let valA = a[sort as keyof typeof a] ?? '';
+    let valB = b[sort as keyof typeof b] ?? '';
+
+    if (sort === 'date') {
+      valA = valA ? new Date(valA).getTime() : 0;
+      valB = valB ? new Date(valB).getTime() : 0;
+    } else {
+      valA = String(valA).toLowerCase();
+      valB = String(valB).toLowerCase();
+    }
+
+    if (valA < valB) return order === 'asc' ? -1 : 1;
+    if (valA > valB) return order === 'asc' ? 1 : -1;
+    return 0;
+  });
+
+  const renderHeader = (key: string, label: string) => {
+    const isActive = sort === key;
+    const nextOrder = isActive && order === 'asc' ? 'desc' : 'asc';
+    return (
+      <th scope="col" className="px-6 py-4 font-semibold text-gray-900 whitespace-nowrap">
+        <Link href={`/admin?sort=${key}&order=${nextOrder}`} className="group inline-flex items-center gap-1 transition-colors hover:text-blue-600">
+          {label}
+          <span className={`text-xs ${isActive ? 'text-blue-600' : 'text-gray-300 group-hover:text-blue-400'}`}>
+            {isActive ? (order === 'asc' ? '▲' : '▼') : '↕'}
+          </span>
+        </Link>
+      </th>
+    );
+  };
 
   return (
     <div className="mx-auto max-w-7xl p-8 font-sans">
@@ -46,9 +82,14 @@ export default async function AdminDashboardPage() {
       {/* 2. Action Bar Layer */}
       <div className="mb-6 flex items-center justify-between">
         <h2 className="text-xl font-bold text-gray-800">Manage Posts</h2>
-        <Link href="/admin/write" className="inline-flex items-center justify-center rounded-md bg-blue-600 px-6 py-3 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
-          + Create New Post
-        </Link>
+        <div className="flex gap-3">
+          <Link href="/admin/template" className="inline-flex items-center justify-center rounded-md bg-white border border-gray-300 px-6 py-3 text-sm font-semibold text-gray-700 shadow-sm transition-colors hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-200 focus:ring-offset-2">
+            Manage Templates
+          </Link>
+          <Link href="/admin/write" className="inline-flex items-center justify-center rounded-md bg-blue-600 px-6 py-3 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+            + Create New Post
+          </Link>
+        </div>
       </div>
 
       {/* 3. Data Grid Layer */}
@@ -56,9 +97,11 @@ export default async function AdminDashboardPage() {
         <table className="min-w-full divide-y divide-gray-200 text-left text-sm">
           <thead className="bg-gray-50">
             <tr>
-              <th scope="col" className="px-6 py-4 font-semibold text-gray-900">Title</th>
+              {renderHeader('title', 'Title')}
+              {renderHeader('category1', 'Cat1')}
+              {renderHeader('category2', 'Cat2')}
               <th scope="col" className="px-6 py-4 font-semibold text-gray-900">Status</th>
-              <th scope="col" className="px-6 py-4 font-semibold text-gray-900">Date</th>
+              {renderHeader('date', 'Date')}
               <th scope="col" className="px-6 py-4 text-right font-semibold text-gray-900">Actions</th>
             </tr>
           </thead>
@@ -66,7 +109,21 @@ export default async function AdminDashboardPage() {
             {posts.length > 0 ? (
               posts.map((post) => (
                 <tr key={post.slug} className="transition-colors hover:bg-gray-50">
-                  <td className="px-6 py-4 font-medium text-gray-900">{post.title}</td>
+                  <td className="px-6 py-4 font-medium text-gray-900 max-w-[150px] sm:max-w-[200px] md:max-w-[300px]">
+                    <Link 
+                      href={`/${post.slug}`}
+                      className="block truncate text-blue-600 transition-colors hover:text-blue-800 hover:underline"
+                      title={post.title}
+                    >
+                      {post.title}
+                    </Link>
+                  </td>
+                  <td className="px-6 py-4 text-gray-600 max-w-[150px] break-words" title={post.category1 || ''}>
+                    {post.category1 || '-'}
+                  </td>
+                  <td className="px-6 py-4 text-gray-600 max-w-[150px] break-words" title={post.category2 || ''}>
+                    {post.category2 || '-'}
+                  </td>
                   <td className="px-6 py-4">
                     {/* 임시저장(Draft) 기능이 구현되기 전이므로 일괄 Published 상태로 표시합니다 */}
                     <span className="inline-flex items-center rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-800">Published</span>
@@ -82,7 +139,7 @@ export default async function AdminDashboardPage() {
               ))
             ) : (
               <tr>
-                <td colSpan={4} className="px-6 py-4 text-center text-gray-500">등록된 게시물이 없습니다.</td>
+                <td colSpan={6} className="px-6 py-4 text-center text-gray-500">등록된 게시물이 없습니다.</td>
               </tr>
             )}
           </tbody>
