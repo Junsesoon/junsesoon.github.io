@@ -109,3 +109,8 @@ npx tsx --env-file=.env src/infra/r2-test.ts
 - DB 초기화 로직을 schema/seed SQL로 분리
 #### Modified
 - 관리자 세션 만료 정책 도입
+
+### junseo tech blog 2.5.0
+- distribution 2026-06-02
+#### New
+- 관리자 페이지 전역 속성(Property) 관리 기능 및 컴포넌트 추가

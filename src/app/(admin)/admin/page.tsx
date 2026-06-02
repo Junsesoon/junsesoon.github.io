@@ -83,6 +83,9 @@ export default async function AdminDashboardPage({ searchParams }: { searchParam
       <div className="mb-6 flex items-center justify-between">
         <h2 className="text-xl font-bold text-gray-800">Manage Posts</h2>
         <div className="flex gap-3">
+          <Link href="/admin/property" className="inline-flex items-center justify-center rounded-md bg-white border border-gray-300 px-6 py-3 text-sm font-semibold text-gray-700 shadow-sm transition-colors hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-200 focus:ring-offset-2">
+            Manage Properties
+          </Link>
           <Link href="/admin/template" className="inline-flex items-center justify-center rounded-md bg-white border border-gray-300 px-6 py-3 text-sm font-semibold text-gray-700 shadow-sm transition-colors hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-200 focus:ring-offset-2">
             Manage Templates
           </Link>
