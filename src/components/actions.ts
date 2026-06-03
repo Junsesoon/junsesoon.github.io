@@ -306,3 +306,60 @@ export async function renameGlobalPropertyAction(oldName: string, newName: strin
     return { success: false, message: 'Internal Server Error' };
   }
 }
+
+export async function getTemplatesAction() {
+  try {
+    const result = await query(`
+      SELECT tl.template_name, pl.property_name, tp.is_required
+      FROM template_list tl
+      LEFT JOIN template_property tp ON tl.template_id = tp.template_id
+      LEFT JOIN property_list pl ON tp.property_id = pl.property_id
+      ORDER BY tl.template_name ASC
+    `);
+
+    const templates: Record<string, { propertyName: string; isRequired: boolean }[]> = {};
+    result.rows.forEach((row) => {
+      if (!templates[row.template_name]) templates[row.template_name] = [];
+      if (row.property_name) {
+        templates[row.template_name].push({
+          propertyName: row.property_name,
+          isRequired: row.is_required,
+        });
+      }
+    });
+    return templates;
+  } catch (error) {
+    console.error('getTemplatesAction error:', error);
+    return {};
+  }
+}
+
+export async function togglePropertyEssentialAction(propertyName: string, isEssential: boolean) {
+  if (!propertyName) {
+    return { success: false, message: 'Property name is required.' };
+  }
+
+  try {
+    await query(
+      `INSERT INTO property_list (property_name, is_essential)
+       VALUES ($1, $2)
+       ON CONFLICT (property_name) DO UPDATE SET is_essential = EXCLUDED.is_essential`,
+      [propertyName, isEssential]
+    );
+    return { success: true };
+  } catch (error: any) {
+    console.error('togglePropertyEssentialAction error:', error);
+    return { success: false, message: 'Internal Server Error' };
+  }
+}
+
+export async function getEssentialPropertiesAction() {
+  try {
+    const result = await query('SELECT property_name FROM property_list WHERE is_essential = true');
+    // 문자열(속성명) 배열만 깔끔하게 추출해서 반환합니다.
+    return result.rows.map((row) => row.property_name);
+  } catch (error) {
+    console.error('getEssentialPropertiesAction error:', error);
+    return [];
+  }
+}

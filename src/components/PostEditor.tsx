@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 
 export interface PostFormData {
   [key: string]: any;
@@ -9,17 +9,19 @@ export interface PostFormData {
 export interface PostEditorProps {
   initialData?: PostFormData;
   onSave: (formData: PostFormData) => Promise<void>;
+  templates?: Record<string, { propertyName: string; isRequired: boolean }[]>;
+  essentialProps?: string[];
 }
 
-const FIXED_PROPS = ['title', 'category1', 'summary', 'content'];
-const PREDEFINED_PROPS = ['category2', 'category3', 'category4', 'tags', 'parentSkill', 'childSkill', 'techStart', 'project_name'];
+const FIXED_PROPS = ['title', 'content'];
+const PREDEFINED_PROPS = ['category1', 'summary', 'category2', 'category3', 'category4', 'tags', 'parentSkill', 'childSkill', 'techStart', 'project_name'];
 
-export default function PostEditor({ initialData, onSave }: PostEditorProps) {
+export default function PostEditor({ initialData, onSave, templates, essentialProps }: PostEditorProps) {
   const [formData, setFormData] = useState<Record<string, any>>(() => {
     const initial: Record<string, any> = {};
     if (initialData) {
       Object.entries(initialData).forEach(([key, val]) => {
-        if (key === 'content') return;
+        if (FIXED_PROPS.includes(key)) return;
         
         // 미보유 prop 표기 제외
         if (val === null || val === undefined || val === '') return;
@@ -32,6 +34,7 @@ export default function PostEditor({ initialData, onSave }: PostEditorProps) {
         }
       });
     }
+    initial.title = initialData?.title || '';
     initial.content = initialData?.content || '';
     return initial;
   });
@@ -64,6 +67,36 @@ export default function PostEditor({ initialData, onSave }: PostEditorProps) {
   const [isUploading, setIsUploading] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [uploadedImages, setUploadedImages] = useState<string[]>([]);
+  const [selectedTemplate, setSelectedTemplate] = useState<string>('');
+
+  // 전역 필수 속성(essentialProps) 자동 렌더링 주입 로직
+  useEffect(() => {
+    if (essentialProps && essentialProps.length > 0) {
+      setActiveProps((prev) => {
+        const newProps = [...prev];
+        let changed = false;
+        essentialProps.forEach((ep) => {
+          if (!newProps.includes(ep) && !FIXED_PROPS.includes(ep)) {
+            newProps.push(ep);
+            changed = true;
+          }
+        });
+        return changed ? newProps : prev;
+      });
+
+      setFormData((prev) => {
+        const newData = { ...prev };
+        let changed = false;
+        essentialProps.forEach((ep) => {
+          if (newData[ep] === undefined || newData[ep] === null) {
+            newData[ep] = '';
+            changed = true;
+          }
+        });
+        return changed ? newData : prev;
+      });
+    }
+  }, [essentialProps]);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
@@ -78,6 +111,25 @@ export default function PostEditor({ initialData, onSave }: PostEditorProps) {
 
     try {
       const finalData = { ...formData };
+
+      if (!finalData.title?.trim()) {
+        alert('제목(Title)은 필수 항목입니다.');
+        setIsSubmitting(false);
+        return;
+      }
+
+      // 필수 속성(essential) 미입력 시 저장 차단 (프론트엔드 검증 방어선)
+      if (essentialProps) {
+        for (const ep of essentialProps) {
+          if (FIXED_PROPS.includes(ep)) continue;
+          const val = finalData[ep];
+          if (val === undefined || val === null || val === '') {
+            alert(`전역 필수 속성인 '${ep}' 항목을 반드시 입력해 주세요.`);
+            setIsSubmitting(false);
+            return;
+          }
+        }
+      }
 
       if (typeof finalData.tags === 'string') {
         finalData.tags = finalData.tags.split(',').map((tag: string) => tag.trim()).filter((tag: string) => tag.length > 0);
@@ -197,19 +249,78 @@ export default function PostEditor({ initialData, onSave }: PostEditorProps) {
     });
   };
 
+  const handleTemplateChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const templateName = e.target.value;
+    setSelectedTemplate(templateName);
+
+    if (templateName && templates && templates[templateName]) {
+      const propsToAdd = templates[templateName];
+      const newActiveProps = [...activeProps];
+      const newFormData = { ...formData };
+      let updated = false;
+
+      propsToAdd.forEach((p) => {
+        if (!newActiveProps.includes(p.propertyName) && !FIXED_PROPS.includes(p.propertyName)) {
+          newActiveProps.push(p.propertyName);
+          updated = true;
+        }
+        if (newFormData[p.propertyName] === undefined) {
+          newFormData[p.propertyName] = '';
+          updated = true;
+        }
+      });
+
+      // 선택한 템플릿 이름을 자동으로 category1 에 기입해 줍니다.
+      if (!newFormData['category1']) {
+        newFormData['category1'] = templateName;
+        if (!newActiveProps.includes('category1')) {
+          newActiveProps.push('category1');
+        }
+        updated = true;
+      }
+
+      if (updated) {
+        setActiveProps(newActiveProps);
+        setFormData(newFormData);
+      }
+    }
+  };
+
   return (
     <form onSubmit={handleSubmit} className="space-y-6 rounded-lg border border-gray-200 bg-white p-6 shadow-sm font-sans">
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
-        {/* Title (고정 영역) */}
+        {/* Template Selector (새 글 작성 등 templates prop이 제공된 경우에만 노출) */}
+        {templates && Object.keys(templates).length > 0 && (
+          <div className="sm:col-span-2 mb-2 p-5 bg-[#f8f9fa] border border-gray-200 rounded-lg shadow-sm">
+            <label htmlFor="templateSelect" className="mb-2 block text-sm font-semibold text-gray-700">
+              Apply Template (Optional)
+            </label>
+            <p className="text-xs text-gray-500 mb-3">Selecting a template will auto-fill category1 and automatically add the required properties.</p>
+            <select
+              id="templateSelect"
+              value={selectedTemplate}
+              onChange={handleTemplateChange}
+              className="block w-full max-w-sm rounded-md border border-gray-300 px-4 py-2 text-gray-900 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 bg-white"
+            >
+              <option value="">-- Select a template --</option>
+              {Object.keys(templates).map(t => (
+                <option key={t} value={t}>{t.charAt(0).toUpperCase() + t.slice(1)}</option>
+              ))}
+            </select>
+          </div>
+        )}
+
+        {/* Title (고정 필수 영역) */}
         <div className="sm:col-span-2">
-          <label htmlFor="title" className="mb-2 block text-sm font-medium text-gray-700">
+          <label htmlFor="title" className="mb-2 flex items-center gap-1 text-sm font-medium text-gray-700">
             Title
+            <span className="text-red-500" title="Essential Property">*</span>
           </label>
           <input
             type="text"
             id="title"
             name="title"
-            value={formData.title || ''}
+            value={formData.title}
             onChange={handleChange}
             required
             className="block w-full rounded-md border border-gray-300 px-4 py-2 text-gray-900 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
@@ -217,62 +328,47 @@ export default function PostEditor({ initialData, onSave }: PostEditorProps) {
           />
         </div>
 
-        {/* Category1 (고정 영역) */}
-        <div className="sm:col-span-2">
-          <label htmlFor="category1" className="mb-2 block text-sm font-medium text-gray-700">
-            Category1
-          </label>
-          <input
-            type="text"
-            id="category1"
-            name="category1"
-            value={formData.category1 || ''}
-            onChange={handleChange}
-            required
-            className="block w-full rounded-md border border-gray-300 px-4 py-2 text-gray-900 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-            placeholder="Enter category1"
-          />
-        </div>
-
-        {/* Summary (고정 영역) */}
-        <div className="sm:col-span-2">
-          <label htmlFor="summary" className="mb-2 block text-sm font-medium text-gray-700">
-            Summary
-          </label>
-          <textarea
-            id="summary"
-            name="summary"
-            value={formData.summary || ''}
-            onChange={handleChange}
-            rows={2}
-            className="block w-full rounded-md border border-gray-300 px-4 py-2 text-gray-900 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-            placeholder="Enter summary"
-          />
-        </div>
-
         {/* 동적 추가된 프론트매터 속성들 */}
         {activeProps.map((key) => {
-          const isFullWidth = key === 'tags' || key === 'parentSkill' || key === 'childSkill';
+          const isFullWidth = ['category1', 'summary', 'tags', 'parentSkill', 'childSkill'].includes(key);
+          const isEssential = essentialProps?.includes(key);
+
           return (
             <div key={key} className={isFullWidth ? 'sm:col-span-2' : ''}>
-              <label htmlFor={key} className="mb-2 block text-sm font-medium text-gray-700 capitalize">
+              <label htmlFor={key} className="mb-2 flex items-center gap-1 text-sm font-medium text-gray-700 capitalize">
                 {key === 'tags' ? 'Tags (comma separated)' : key}
+                {isEssential && <span className="text-red-500" title="Essential Property">*</span>}
               </label>
               <div className="flex items-center gap-2">
-                <input
-                  type="text"
-                  id={key}
-                  name={key}
-                  value={formData[key] || ''}
-                  onChange={handleChange}
-                  className="block w-full rounded-md border border-gray-300 px-4 py-2 text-gray-900 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-                  placeholder={`Enter ${key}`}
-                />
+                {key === 'summary' ? (
+                  <textarea
+                    id={key}
+                    name={key}
+                    value={formData[key] || ''}
+                    onChange={handleChange}
+                    required={isEssential}
+                    rows={2}
+                    className="block w-full rounded-md border border-gray-300 px-4 py-2 text-gray-900 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                    placeholder={`Enter ${key}`}
+                  />
+                ) : (
+                  <input
+                    type="text"
+                    id={key}
+                    name={key}
+                    value={formData[key] || ''}
+                    onChange={handleChange}
+                    required={isEssential}
+                    className="block w-full rounded-md border border-gray-300 px-4 py-2 text-gray-900 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                    placeholder={`Enter ${key}`}
+                  />
+                )}
                 <button
                   type="button"
                   onClick={() => handleRemoveProp(key)}
-                  className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-md border border-transparent text-gray-400 hover:bg-red-50 hover:text-red-500 transition-colors focus:outline-none focus:ring-2 focus:ring-red-500"
-                  title={`Remove ${key}`}
+                  disabled={isEssential}
+                  className={`inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-md border border-transparent transition-colors focus:outline-none focus:ring-2 focus:ring-red-500 ${isEssential ? 'bg-gray-50 text-gray-300 cursor-not-allowed' : 'text-gray-400 hover:bg-red-50 hover:text-red-500'}`}
+                  title={isEssential ? `Cannot remove essential property` : `Remove ${key}`}
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                     <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />

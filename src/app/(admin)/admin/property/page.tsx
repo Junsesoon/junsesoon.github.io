@@ -6,10 +6,10 @@ import PropertyManager, { PropertyWithCount } from '@/components/PropertyManager
 const BASE_PROPS = ['title', 'category1', 'summary', 'content', 'category2', 'category3', 'category4', 'tags', 'parentSkill', 'childSkill', 'techStart', 'project_name'];
 
 export default async function PropertyManagementPage() {
-  const propertiesMap = new Map<string, number>();
+  const propertiesMap = new Map<string, { count: number; is_essential: boolean }>();
 
   // 1. 기본 속성 초기화
-  BASE_PROPS.forEach(prop => propertiesMap.set(prop, 0));
+  BASE_PROPS.forEach(prop => propertiesMap.set(prop, { count: 0, is_essential: false }));
 
   // 대소문자 구분을 무시하고 기존 속성명(표준 케이스)을 찾아 반환하는 헬퍼 함수
   const getOriginalKey = (key: string) => {
@@ -19,11 +19,14 @@ export default async function PropertyManagementPage() {
 
   try {
     // 2. 템플릿에 등록된 속성 가져오기
-    const result = await query('SELECT DISTINCT property_name FROM property_list');
+    const result = await query('SELECT property_name, is_essential FROM property_list');
     result.rows.forEach((row) => {
       const targetKey = getOriginalKey(row.property_name);
       if (!propertiesMap.has(targetKey)) {
-        propertiesMap.set(targetKey, 0);
+        propertiesMap.set(targetKey, { count: 0, is_essential: row.is_essential });
+      } else {
+        const existing = propertiesMap.get(targetKey);
+        if (existing) existing.is_essential = row.is_essential;
       }
     });
   } catch (error) {
@@ -40,7 +43,8 @@ export default async function PropertyManagementPage() {
     jsonbResult.rows.forEach((row) => {
       const count = parseInt(row.count, 10);
       const targetKey = getOriginalKey(row.property_name);
-      propertiesMap.set(targetKey, (propertiesMap.get(targetKey) || 0) + count);
+      const existing = propertiesMap.get(targetKey) || { count: 0, is_essential: false };
+      propertiesMap.set(targetKey, { ...existing, count: existing.count + count });
     });
   } catch (error) {
     console.warn('Failed to fetch JSONB properties counts:', error);
@@ -48,7 +52,7 @@ export default async function PropertyManagementPage() {
 
   // 맵을 배열로 변환 후 알파벳 순 정렬
   const allProperties: PropertyWithCount[] = Array.from(propertiesMap.entries())
-    .map(([name, count]) => ({ name, count }))
+    .map(([name, data]) => ({ name, count: data.count, is_essential: data.is_essential }))
     .sort((a, b) => a.name.localeCompare(b.name));
 
   return (
