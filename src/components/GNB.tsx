@@ -90,7 +90,7 @@ const GNBContent: React.FC<GNBProps> = ({ isAdmin }) => {
               <Link
                 key={item.href}
                 href={item.href}
-                className={`no-underline text-base font-medium transition-colors duration-200 ${
+                className={`no-underline text-base font-medium whitespace-nowrap transition-colors duration-200 ${
                   isActive
                     ? 'text-white font-bold'
                 : mode === 'portfolio'
@@ -139,7 +139,7 @@ const GNBContent: React.FC<GNBProps> = ({ isAdmin }) => {
                 key={item.href}
                 href={item.href}
                 onClick={() => setIsOpen(false)}
-                className={`no-underline text-base font-medium transition-colors duration-200 ${
+                className={`no-underline text-base font-medium whitespace-nowrap transition-colors duration-200 ${
                   isActive
                     ? 'text-white font-bold'
                 : mode === 'portfolio'
