@@ -1,7 +1,6 @@
 import fs from 'fs';
 import path from 'path';
 import { query } from '../infra/db';
-import { getDbPostBySlug } from '../utils/posts';
 
 async function downloadPosts() {
   // 파일을 저장할 public/download-posts 디렉터리 경로 설정
@@ -14,43 +13,45 @@ async function downloadPosts() {
 
   console.log('🏃‍♂️ 데이터베이스에서 모든 게시물을 가져오는 중...');
   
-  // DB에서 모든 게시물의 slug를 조회합니다.
-  const result = await query<{ slug: string }>('SELECT slug FROM posts');
-  const slugs = result.rows.map(row => row.slug);
+  // 변경된 단일 테이블 스키마: 한 번의 쿼리로 모든 게시물의 데이터와 속성(JSONB)을 조회합니다.
+  const result = await query<{ slug: string; content: string; properties: any }>(
+    'SELECT slug, content, properties FROM posts'
+  );
+  const posts = result.rows;
 
-  console.log(`Found ${slugs.length} posts. Starting download to local md files...`);
+  console.log(`Found ${posts.length} posts. Starting download to local md files...`);
 
-  for (const slug of slugs) {
-    // utils/posts.ts의 함수를 사용하여 DB의 게시물 정보와 결합된 메타데이터를 가져옵니다.
-    const post = await getDbPostBySlug(slug);
-    if (!post) continue;
+  for (const post of posts) {
+    const { slug, content, properties } = post;
 
     // YAML Frontmatter 구성 로직
     let mdContent = '---\n';
-    for (const [key, value] of Object.entries(post.metadata)) {
-      if (value === null || value === undefined || value === '') continue;
-      
-      if (Array.isArray(value)) {
-        if (value.length > 0) {
-          mdContent += `${key}:\n`;
-          value.forEach(v => {
-            mdContent += `  - ${v}\n`;
-          });
+    if (properties && typeof properties === 'object') {
+      for (const [key, value] of Object.entries(properties)) {
+        if (value === null || value === undefined || value === '') continue;
+        
+        if (Array.isArray(value)) {
+          if (value.length > 0) {
+            mdContent += `${key}:\n`;
+            value.forEach(v => {
+              mdContent += `  - ${v}\n`;
+            });
+          } else {
+            mdContent += `${key}: []\n`;
+          }
+        } else if (key === 'summary' && typeof value === 'string') {
+          // summary 속성인 경우에만 작은따옴표로 감싸고 이스케이프 처리
+          mdContent += `${key}: '${value.replace(/'/g, "\\'").replace(/\n/g, '\\n')}'\n`;
+        } else if (typeof value === 'string' && (value.includes(':') || value.includes('\n'))) {
+          // 다른 문자열에 콜론이나 줄바꿈이 포함된 경우 안전을 위해 큰따옴표로 감싸기
+          mdContent += `${key}: "${value.replace(/"/g, '\\"')}"\n`;
         } else {
-          mdContent += `${key}: []\n`;
+          mdContent += `${key}: ${value}\n`;
         }
-      } else if (key === 'summary' && typeof value === 'string') {
-        // summary 속성인 경우에만 작은따옴표로 감싸고 이스케이프 처리
-        mdContent += `${key}: '${value.replace(/'/g, "\\'").replace(/\n/g, '\\n')}'\n`;
-      } else if (typeof value === 'string' && (value.includes(':') || value.includes('\n'))) {
-        // 다른 문자열에 콜론이나 줄바꿈이 포함된 경우 안전을 위해 큰따옴표로 감싸기
-        mdContent += `${key}: "${value.replace(/"/g, '\\"')}"\n`;
-      } else {
-        mdContent += `${key}: ${value}\n`;
       }
     }
     mdContent += '---\n\n';
-    mdContent += post.content;
+    mdContent += content || '';
 
     // slug에 '/'가 포함된 경우 하위 디렉터리까지 자동 생성되도록 처리
     const filePath = path.join(outputDir, `${slug}.md`);

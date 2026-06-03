@@ -8,9 +8,21 @@ export default async function AdminDashboardPage({ searchParams }: { searchParam
   const sort = params?.sort || 'date';
   const order = params?.order || 'desc';
 
-  const { rows: fetchedPosts } = await query('SELECT slug, title, category1, category2, COALESCE(posted_at, created_at) AS date FROM posts ORDER BY created_at DESC');
+  // 변경된 단일 테이블 스키마에 맞게 properties(JSONB) 컬럼을 조회합니다.
+  const { rows: fetchedPosts } = await query('SELECT slug, properties, created_at FROM posts ORDER BY created_at DESC');
 
-  const posts = [...fetchedPosts].sort((a, b) => {
+  const mappedPosts = fetchedPosts.map((row) => {
+    const props = row.properties || {};
+    return {
+      slug: row.slug,
+      title: props.title || row.slug,
+      category1: props.category1 || '',
+      category2: props.category2 || '',
+      date: props.date || props.startDate || row.created_at,
+    };
+  });
+
+  const posts = mappedPosts.sort((a, b) => {
     let valA = a[sort as keyof typeof a] ?? '';
     let valB = b[sort as keyof typeof b] ?? '';
 

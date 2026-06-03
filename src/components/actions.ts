@@ -27,33 +27,18 @@ export async function createPostAction(data: PostFormData) {
   const slug = slugParts.join('/');
 
   try {
+    const { content, ...properties } = data;
+
     // 3. .env(DB_ENV)에 의해 연결된 DB로 쿼리 실행
     // 만약 중복된 슬러그가 있을 경우 덮어쓰기(Upsert)를 수행해 에러를 방지합니다.
     await query(
-      `INSERT INTO posts (
-        slug, title, content, category1, category2, category3, category4, summary, tags, created_at, posted_at
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, NOW(), NOW())
+      `INSERT INTO posts (slug, content, properties)
+       VALUES ($1, $2, $3)
       ON CONFLICT (slug) DO UPDATE SET
-        title = EXCLUDED.title,
-        content = EXCLUDED.content,
-        category1 = EXCLUDED.category1,
-        category2 = EXCLUDED.category2,
-        category3 = EXCLUDED.category3,
-        category4 = EXCLUDED.category4,
-        summary = EXCLUDED.summary,
-        tags = EXCLUDED.tags,
-        updated_at = NOW()`,
-      [
-        slug,
-        data.title,
-        data.content,
-        data.category1 || null,
-        data.category2 || null,
-        data.category3 || null,
-        data.category4 || null,
-        data.summary || null,
-        data.tags // pg 모듈이 JS 배열을 PostgreSQL 배열형(text[])으로 자동 변환해 줍니다.
-      ]
+         content = EXCLUDED.content,
+         properties = EXCLUDED.properties,
+         updated_at = CURRENT_TIMESTAMP`,
+      [slug, content || '', JSON.stringify(properties)]
     );
 
     // 4. 캐시를 무효화하여 Admin 대시보드와 블로그 홈에서 새로운 데이터를 즉시 가져오도록 조치합니다.
@@ -131,22 +116,13 @@ export async function updatePostAction(originalSlug: string, data: PostFormData)
   const newSlug = slugParts.join('/');
 
   try {
+    const { content, ...properties } = data;
+
     await query(
       `UPDATE posts
-       SET slug = $1, title = $2, content = $3, category1 = $4, category2 = $5, category3 = $6, category4 = $7, summary = $8, tags = $9, updated_at = NOW()
-       WHERE slug = $10`,
-      [
-        newSlug,
-        data.title,
-        data.content,
-        data.category1 || null,
-        data.category2 || null,
-        data.category3 || null,
-        data.category4 || null,
-        data.summary || null,
-        data.tags,
-        originalSlug
-      ]
+       SET slug = $1, content = $2, properties = $3, updated_at = CURRENT_TIMESTAMP
+       WHERE slug = $4`,
+      [newSlug, content || '', JSON.stringify(properties), originalSlug]
     );
 
     revalidatePath('/admin');

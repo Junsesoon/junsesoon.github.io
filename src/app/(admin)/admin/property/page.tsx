@@ -31,10 +31,10 @@ export default async function PropertyManagementPage() {
   }
 
   try {
-    // 3. posts 테이블의 metadata(JSONB)에서 집계
+    // 3. posts 테이블의 properties(JSONB)에서 집계
     const jsonbResult = await query(`
       SELECT key AS property_name, COUNT(*) as count
-      FROM posts, jsonb_object_keys(COALESCE(metadata, '{}'::jsonb)) AS key
+      FROM posts, jsonb_object_keys(COALESCE(properties, '{}'::jsonb)) AS key
       GROUP BY key
     `);
     jsonbResult.rows.forEach((row) => {
@@ -43,40 +43,7 @@ export default async function PropertyManagementPage() {
       propertiesMap.set(targetKey, (propertiesMap.get(targetKey) || 0) + count);
     });
   } catch (error) {
-    console.warn('Failed to fetch JSONB metadata counts (column might not exist):', error);
-  }
-
-  try {
-    // 4. 고정 컬럼들의 사용 횟수 집계
-    const colCountResult = await query(`
-      SELECT 
-        COUNT(p.title) as title, 
-        COUNT(p.category1) as category1, 
-        COUNT(p.category2) as category2, 
-        COUNT(p.category3) as category3, 
-        COUNT(p.category4) as category4, 
-        COUNT(p.summary) as summary, 
-        COUNT(p.tags) as tags, 
-        COUNT(p.content) as content,
-        COUNT(p.project_name) as project_name,
-        COUNT(st.tech_start) as techStart,
-        COUNT(st.parent_skill) as parentSkill,
-        COUNT(st.child_skill) as childSkill
-      FROM posts p
-      LEFT JOIN skill_tree st ON p.post_id = st.post_id
-    `);
-    if (colCountResult.rows.length > 0) {
-      const colCounts = colCountResult.rows[0];
-      Object.keys(colCounts).forEach(key => {
-        const count = parseInt(colCounts[key], 10);
-        if (count > 0) {
-          const targetKey = getOriginalKey(key);
-          propertiesMap.set(targetKey, Math.max(propertiesMap.get(targetKey) || 0, count));
-        }
-      });
-    }
-  } catch (error) {
-    console.warn('Failed to fetch base column counts:', error);
+    console.warn('Failed to fetch JSONB properties counts:', error);
   }
 
   // 맵을 배열로 변환 후 알파벳 순 정렬

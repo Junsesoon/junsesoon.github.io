@@ -6,44 +6,7 @@ import rehypeHighlight from 'rehype-highlight';
 import rehypeStringify from 'rehype-stringify';
 import { query } from '../infra/db';
 import { Post, PostFilterOptions, FrontMatter, DbPost, DbPostRow } from '../types/blog';
-import { titleFromSlug, parseMultilineArray } from './parser';
-
-const POST_SELECT = `
-  SELECT
-    p.slug,
-    p.content,
-    p.title,
-    p.posted_at,
-    p.modified_at,
-    p.summary,
-    p.tags,
-    p.project_name,
-    p.category1,
-    p.category2,
-    p.category3,
-    p.category4,
-    p.doc_ver,
-    ts.completion,
-    st.tech_start,
-    st.parent_skill,
-    st.child_skill,
-    ms.familiar,
-    pr.contribute,
-    pr.my_role,
-    pr.tech_platform,
-    pr.tech_language,
-    pr.tech_server,
-    pr.tech_framework,
-    pr.tech_db,
-    pr.tech_ide,
-    pr.tech_api,
-    pr.tech_library
-  FROM posts p
-  LEFT JOIN trouble_shooting ts ON ts.post_id = p.post_id
-  LEFT JOIN skill_tree st ON st.post_id = p.post_id
-  LEFT JOIN my_skill ms ON ms.post_id = p.post_id
-  LEFT JOIN project pr ON pr.post_id = p.post_id
-`;
+import { titleFromSlug } from './parser';
 
 function dateString(value: Date | string | null): string {
   if (!value) return '';
@@ -64,53 +27,40 @@ function normalizeCategoryValue(value: string) {
     .replace(/[-_\s]+/g, '');
 }
 
-function rowToMetadata(row: DbPostRow): FrontMatter {
-  const metadata: FrontMatter = {
-    title: row.title || titleFromSlug(row.slug),
-    parentId: null,
-    startDate: dateString(row.posted_at) || null,
-    endDate: dateString(row.modified_at) || null,
-    project: row.project_name || null,
-    category1: row.category1 || null,
-    category2: row.category2 || null,
-    category3: row.category3 || null,
-    category4: row.category4 || null,
-    summary: row.summary || '',
-    tags: row.tags || [],
-    docVer: row.doc_ver || null,
+function rowToMetadata(row: any): FrontMatter {
+  const props = row.properties || {};
+  
+  // 기존 UI와의 호환성을 위해 properties(JSONB) 내부 데이터를 FrontMatter 포맷으로 전개
+  return {
+    ...props,
+    title: props.title || titleFromSlug(row.slug),
+    parentId: props.parentId || null,
+    startDate: props.startDate || props.date || dateString(row.created_at) || null,
+    endDate: props.endDate || props.modified_at || dateString(row.updated_at) || null,
+    project: props.project || props.project_name || null,
+    category1: props.category1 || null,
+    category2: props.category2 || null,
+    category3: props.category3 || null,
+    category4: props.category4 || null,
+    summary: props.summary || '',
+    tags: props.tags || [],
+    docVer: props.docVer || props.doc_ver || null,
   };
-
-  if (row.completion !== null) metadata.completion = row.completion;
-  if (row.tech_start) metadata.techStart = dateString(row.tech_start);
-  if (row.parent_skill) metadata.parentSkill = parseMultilineArray(row.parent_skill);
-  if (row.child_skill) metadata.childSkill = parseMultilineArray(row.child_skill);
-  if (row.familiar !== null) metadata.familiar = row.familiar;
-  if (row.contribute) metadata.contribute = row.contribute;
-  if (row.my_role) metadata.role = row.my_role;
-  if (row.tech_platform) metadata.platform = row.tech_platform;
-  if (row.tech_language) metadata.language = row.tech_language;
-  if (row.tech_server) metadata.server = row.tech_server;
-  if (row.tech_framework) metadata.framework = row.tech_framework;
-  if (row.tech_db) metadata.db = row.tech_db;
-  if (row.tech_ide) metadata.ide = row.tech_ide;
-  if (row.tech_api) metadata.api = row.tech_api;
-  if (row.tech_library) metadata.library = row.tech_library;
-
-  return metadata;
 }
 
-function rowToPost(row: DbPostRow): Post {
+function rowToPost(row: any): Post {
+  const props = row.properties || {};
   return {
     slug: row.slug,
-    title: row.title || titleFromSlug(row.slug),
-    excerpt: row.summary || '',
-    date: dateString(row.posted_at),
+    title: props.title || titleFromSlug(row.slug),
+    excerpt: props.summary || '',
+    date: dateString(props.startDate || props.date || row.created_at),
   };
 }
 
 function hasCategory(value: string | null, category: string) {
   if (!value) return false;
-  return value === category;
+  return value.toLowerCase() === category.toLowerCase();
 }
 
 function hasNormalizedCategory(value: string | null, category: string) {
@@ -122,52 +72,71 @@ export const getAllPosts = async (
   mode: string = 'blog',
   filters: PostFilterOptions = {},
 ): Promise<Post[]> => {
-  const result = await query<DbPostRow>(`
-    ${POST_SELECT}
-    WHERE p.posted_at IS NOT NULL
-    ORDER BY p.posted_at DESC NULLS LAST, p.slug ASC
+  const result = await query<any>(`
+    SELECT slug, content, properties, created_at, updated_at
+    FROM posts
   `);
 
   let rows = result.rows;
 
+  // JSONB의 날짜 기준으로 JS 내림차순 정렬
+  rows.sort((a, b) => {
+    const dateA = a.properties?.date || a.properties?.startDate || dateString(a.created_at);
+    const dateB = b.properties?.date || b.properties?.startDate || dateString(b.created_at);
+    if (dateA !== dateB) return dateB.localeCompare(dateA);
+    return a.slug.localeCompare(b.slug);
+  });
+
   if (mode === 'blog') {
-    rows = rows.filter((row) => ['knowledge', 'skill'].includes(row.category1 || ''));
+    rows = rows.filter((row) => {
+      const cat = row.properties?.category1 || '';
+      return ['knowledge', 'skill'].includes(cat.toLowerCase());
+    });
   }
 
   if (filters.category1) {
-    rows = rows.filter((row) => hasCategory(row.category1, filters.category1!));
+    rows = rows.filter((row) => hasCategory(row.properties?.category1, filters.category1!));
   }
 
   if (filters.category2) {
-    rows = rows.filter((row) => hasCategory(row.category2, filters.category2!));
+    rows = rows.filter((row) => hasCategory(row.properties?.category2, filters.category2!));
   }
 
   return rows.map(rowToPost);
 };
 
 export const getCategoryPosts = async (category: string, mode: string = 'blog'): Promise<Post[]> => {
-  const result = await query<DbPostRow>(`
-    ${POST_SELECT}
-    WHERE p.posted_at IS NOT NULL
-    ORDER BY p.posted_at DESC NULLS LAST, p.slug ASC
+  const result = await query<any>(`
+    SELECT slug, content, properties, created_at, updated_at
+    FROM posts
   `);
 
-  const rows = result.rows.filter((row) => {
+  let rows = result.rows;
+
+  rows.sort((a, b) => {
+    const dateA = a.properties?.date || a.properties?.startDate || dateString(a.created_at);
+    const dateB = b.properties?.date || b.properties?.startDate || dateString(b.created_at);
+    if (dateA !== dateB) return dateB.localeCompare(dateA);
+    return a.slug.localeCompare(b.slug);
+  });
+
+  rows = rows.filter((row) => {
     if (mode === 'portfolio') {
-      return hasNormalizedCategory(row.category1, category);
+      return hasNormalizedCategory(row.properties?.category1, category);
     }
 
-    return hasCategory(row.category2, category);
+    return hasCategory(row.properties?.category2, category);
   });
 
   return rows.map(rowToPost);
 };
 
 export const getDbPostBySlug = async (slug: string): Promise<DbPost | null> => {
-  const result = await query<DbPostRow>(
+  const result = await query<any>(
     `
-      ${POST_SELECT}
-      WHERE p.slug = $1
+      SELECT slug, content, properties, created_at, updated_at
+      FROM posts
+      WHERE slug = $1
       LIMIT 1
     `,
     [slug],
@@ -184,18 +153,30 @@ export const getDbPostBySlug = async (slug: string): Promise<DbPost | null> => {
 };
 
 export const getSkillTreePosts = async (matchCategory2: string): Promise<DbPost[]> => {
-  const result = await query<DbPostRow>(
+  const result = await query<any>(
     `
-      ${POST_SELECT}
-      WHERE p.category1 = 'skill tree'
-        AND LOWER(p.category2) = LOWER($1)
-        AND p.category4 IS NULL
-      ORDER BY p.posted_at ASC NULLS LAST, p.title ASC
+      SELECT slug, content, properties, created_at, updated_at
+      FROM posts
+      WHERE properties->>'category1' ILIKE 'skill tree' OR properties->>'category1' ILIKE 'skilltree'
+        AND LOWER(properties->>'category2') = LOWER($1)
+        AND properties->>'category4' IS NULL
     `,
     [matchCategory2],
   );
 
-  return result.rows.map((row) => ({
+  let rows = result.rows;
+
+  // 스킬 트리는 시간 역순이 아니라 시간 오름차순(ASC)으로 정렬해야 합니다.
+  rows.sort((a, b) => {
+    const dateA = a.properties?.techStart || a.properties?.startDate || dateString(a.created_at);
+    const dateB = b.properties?.techStart || b.properties?.startDate || dateString(b.created_at);
+    if (dateA !== dateB) return dateA.localeCompare(dateB); // ASC
+    const titleA = a.properties?.title || a.slug;
+    const titleB = b.properties?.title || b.slug;
+    return titleA.localeCompare(titleB);
+  });
+
+  return rows.map((row) => ({
     slug: row.slug,
     content: row.content,
     metadata: rowToMetadata(row),

@@ -137,14 +137,6 @@ export function toStringArray(value: unknown): string[] {
   return [String(value).trim()].filter(Boolean);
 }
 
-export function parseMultilineArray(value: string | null | undefined): string[] {
-  if (!value) return [];
-  if (value.includes('\n')) {
-    return value.split('\n').map((v) => v.trim()).filter(Boolean);
-  }
-  return [value.trim()].filter(Boolean);
-}
-
 export function firstString(...values: unknown[]): string | null {
   for (const value of values) {
     const [first] = toStringArray(value);
@@ -156,11 +148,6 @@ export function firstString(...values: unknown[]): string | null {
   return null;
 }
 
-export function textValue(value: unknown): string | null {
-  const values = toStringArray(value);
-  return values.length > 0 ? values.join('\n') : null;
-}
-
 export function titleFromSlug(slug: string): string {
   const fileName = slug.split('/').pop() || slug;
   return fileName
@@ -168,74 +155,4 @@ export function titleFromSlug(slug: string): string {
     .filter(Boolean)
     .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
     .join(' ');
-}
-
-function normalizeCategory(value: string): string {
-  return value.toLowerCase().replace(/[-_\s]+/g, '');
-}
-
-function categoryValues(frontmatter: Frontmatter): string[] {
-  return toStringArray(frontmatter.category1).map(normalizeCategory);
-}
-
-export function hasCategory(frontmatter: Frontmatter, category: string): boolean {
-  const normalized = normalizeCategory(category);
-  return categoryValues(frontmatter).includes(normalized);
-}
-
-export function dateValue(value: unknown): string | null {
-  if (value instanceof Date && !Number.isNaN(value.getTime())) {
-    return value.toISOString().slice(0, 10);
-  }
-
-  if (typeof value === 'number' && Number.isInteger(value)) {
-    return `${String(value).padStart(4, '0')}-01-01`;
-  }
-
-  const dateText = firstString(value);
-  if (!dateText) {
-    return null;
-  }
-
-  if (/^\d{4}$/.test(dateText)) {
-    return `${dateText}-01-01`;
-  }
-
-  return dateText;
-}
-
-export function booleanValue(value: unknown): boolean | null {
-  if (typeof value === 'boolean') {
-    return value;
-  }
-
-  const text = firstString(value)?.toLowerCase();
-  if (!text) {
-    return null;
-  }
-
-  if (['true', 'yes', 'y', '1', '완료'].includes(text)) {
-    return true;
-  }
-
-  if (['false', 'no', 'n', '0', '미완료'].includes(text)) {
-    return false;
-  }
-
-  return null;
-}
-
-export function familiarValue(value: unknown): number | null {
-  if (typeof value === 'number' && Number.isFinite(value)) {
-    return value;
-  }
-
-  const text = toStringArray(value).join('');
-  const starCount = [...text].filter((char) => char === '★').length;
-  if (starCount > 0) {
-    return starCount;
-  }
-
-  const numeric = Number(text);
-  return Number.isFinite(numeric) ? numeric : null;
 }

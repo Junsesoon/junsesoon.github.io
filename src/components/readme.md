@@ -1,9 +1,12 @@
 # components folder readme
-수정일: 2026-06-01
+수정일: 2026-06-04
 - 재사용 가능한 UI 컴포넌트 및 클라이언트/서버 액션 관리 (Cards, Buttons, Tags, Forms 등)
 
 ## Files
-- `actions.ts`: 폼 제출 시 컴포넌트에서 호출하는 Next.js Server Actions(게시물 생성, 수정, 삭제 등의 DB 조작 로직)를 모아둔 파일입니다.
+- `actions.ts`: 클라이언트 컴포넌트에서 폼 제출 시 호출하는 Next.js Server Actions 모음입니다.
+  - **게시물 관리**: JSONB 단일 컬럼 스키마(`properties`)를 활용하여 유연하게 게시물을 생성(Create), 수정(Update), 삭제(Delete)합니다.
+  - **메타데이터 관리**: 카테고리 템플릿 및 전역 속성(Property)을 추가/삭제하는 기능(`addTemplateAction`, `addPropertyAction` 등)을 처리합니다.
+  - **보안**: IP 기반 Rate Limiting을 적용하여 관리자 로그인 시 브루트 포스(무차별 대입) 공격을 방어합니다.
 - `EditClient.tsx`: 기존 게시물의 데이터를 불러와 폼에 채워주고, `updatePostAction`을 호출하여 게시물 수정을 처리하는 클라이언트 컴포넌트입니다.
 - `PostEditor.tsx`: 게시물 작성(Create) 및 수정(Edit)을 모두 담당하는 재사용 가능한 폼(Form) UI 컴포넌트입니다.
   - **이미지 업로드 지원**: 드래그 앤 드롭 및 클립보드 붙여넣기를 통한 Cloudflare R2 이미지 업로드를 처리합니다.

@@ -1,5 +1,5 @@
 # scripts folder readme
-수정일: 2026-06-02
+수정일: 2026-06-04
 - 마크다운 파일과 PostgreSQL 데이터베이스 간의 데이터 동기화 및 마이그레이션을 담당하는 독립적인 유틸리티 스크립트들을 관리합니다
 - 데이터베이스 스키마 초기화 및 시드 데이터 주입을 위한 SQL 스크립트 파일들도 함께 관리합니다
 
@@ -11,11 +11,13 @@
 - `003_schema_templates.sql`: 템플릿 카테고리(`template_list`)와 속성 간의 M:N 매핑을 관리하는 테이블(`template_property`) 생성 DDL
 
 ### 유틸리티 스크립트 (TS)
-⚠️ **참고: 현재 아래 스크립트들은 새로운 JSONB `properties` 스키마 아키텍처에 맞추어 전면 리팩터링 작업 대기 중입니다.**
-- `upload-posts.ts`: `public/upload-posts` 마크다운을 DB로 업로드하는 로직 (기존 하드코딩 확장 테이블 방식에서 JSONB 단일 저장 방식으로 변경 필요)
-- `download-posts.ts`: DB에 저장된 게시물을 로컬 마크다운 파일로 복원하는 스크립트 (JSONB 파싱 방식으로 전환 필요)
+- `upload-posts.ts`: `public/upload-posts` 마크다운을 읽어 DB로 업로드하는 스크립트입니다.
+  - 마크다운의 모든 Frontmatter를 추출하여 단일 JSONB 객체 형태로 `posts` 테이블의 `properties` 컬럼에 안전하게 통합 저장(Upsert)합니다.
+  - `--write` 플래그 없이 실행 시 실제 DB 변경 없이 파싱 결과 요약(Dry Run)만 출력합니다.
+  - `--limit=N` 플래그를 통해 파싱할 파일 개수를 제한하여 테스트해 볼 수 있습니다.
+- `download-posts.ts`: DB에 저장된 게시물 데이터(단일 테이블의 JSONB)를 로컬 마크다운 파일(`public/download-posts`)로 다시 복원하는 스크립트입니다.
   - DB의 `slug`를 읽어 자동으로 원본 카테고리 폴더 구조를 생성합니다
-  - YAML Frontmatter 구성 시, 배열(`childSkill` 등)과 문자열(특히 `summary`의 작은따옴표 및 줄바꿈 이스케이프 처리)을 안전한 포맷으로 변환하여 파싱 에러를 방지합니다
+  - JSONB로 관리되던 객체를 YAML Frontmatter로 구성 시, 배열 속성과 문자열(특히 `summary` 등의 작은따옴표 및 줄바꿈 이스케이프 처리)을 안전한 포맷으로 변환하여 파싱 에러를 방지합니다.
 
 ## 실행 명령어
 ```bash
