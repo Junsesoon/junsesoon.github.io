@@ -1,5 +1,4 @@
--- src/scripts/02_schema_templates.sql
--- src/scripts/002_schema_templates.sql
+-- src/scripts/003_schema_templates.sql
 
 -- 템플릿 카테고리(목록)를 관리하는 테이블
 CREATE TABLE IF NOT EXISTS template_list (
@@ -8,11 +7,11 @@ CREATE TABLE IF NOT EXISTS template_list (
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- 각 템플릿의 속성(Property)들을 관리하는 테이블
+-- 템플릿과 개별 커스텀 속성을 매핑해주는 중간(Join) 테이블 (M:N 관계)
 CREATE TABLE IF NOT EXISTS template_property (
   template_id INTEGER REFERENCES template_list(template_id) ON DELETE CASCADE,
-  property_key VARCHAR(100) NOT NULL,
+  property_id INTEGER REFERENCES property_list(property_id) ON DELETE CASCADE,
   is_required BOOLEAN DEFAULT false,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (template_id, property_key)
+  PRIMARY KEY (template_id, property_id)
 );

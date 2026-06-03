@@ -191,17 +191,23 @@ export async function addTemplateAction(templateName: string) {
   }
 }
 
-export async function addPropertyAction(templateName: string, propertyKey: string, isRequired: boolean) {
-  if (!templateName || !propertyKey || !propertyKey.trim()) {
-    return { success: false, message: 'Template name and property key are required.' };
+export async function addPropertyAction(templateName: string, propertyName: string, propertyType: string, isRequired: boolean) {
+  if (!templateName || !propertyName || !propertyName.trim()) {
+    return { success: false, message: 'Template name and property name are required.' };
   }
 
   try {
-    // template_name으로 template_id를 조회하여 삽입하는 서브쿼리 활용
+    // 1. property_list에 없으면 새로 만들고, 있으면 타입을 덮어씌워 property_id를 가져옴
+    // 2. template_property 에 템플릿과 매핑 데이터 추가
     await query(
-      `INSERT INTO template_property (template_id, property_key, is_required)
-       SELECT template_id, $2, $3 FROM template_list WHERE template_name = $1`,
-      [templateName.trim().toLowerCase(), propertyKey.trim(), isRequired]
+      `WITH prop AS (
+         INSERT INTO property_list (property_name, property_type) VALUES ($2, $3)
+         ON CONFLICT (property_name) DO UPDATE SET property_type = EXCLUDED.property_type
+         RETURNING property_id
+       )
+       INSERT INTO template_property (template_id, property_id, is_required)
+       SELECT template_id, prop.property_id, $4 FROM template_list, prop WHERE template_name = $1`,
+      [templateName.trim().toLowerCase(), propertyName.trim(), propertyType, isRequired]
     );
     return { success: true };
   } catch (error: any) {
@@ -213,17 +219,17 @@ export async function addPropertyAction(templateName: string, propertyKey: strin
   }
 }
 
-export async function deletePropertyAction(templateName: string, propertyKey: string) {
-  if (!templateName || !propertyKey) {
-    return { success: false, message: 'Template name and property key are required.' };
+export async function deletePropertyAction(templateName: string, propertyName: string) {
+  if (!templateName || !propertyName) {
+    return { success: false, message: 'Template name and property name are required.' };
   }
 
   try {
     await query(
       `DELETE FROM template_property
        WHERE template_id = (SELECT template_id FROM template_list WHERE template_name = $1)
-         AND property_key = $2`,
-      [templateName.trim().toLowerCase(), propertyKey.trim()]
+         AND property_id = (SELECT property_id FROM property_list WHERE property_name = $2)`,
+      [templateName.trim().toLowerCase(), propertyName.trim()]
     );
     return { success: true };
   } catch (error: any) {

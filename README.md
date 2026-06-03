@@ -114,3 +114,7 @@ npx tsx --env-file=.env src/infra/r2-test.ts
 - distribution 2026-06-02
 #### New
 - 관리자 페이지 전역 속성(Property) 관리 기능 및 컴포넌트 추가
+#### Refactoring
+- 데이터베이스 스키마 전면 개편: 게시물 속성 저장을 JSONB (`properties` 컬럼) 방식으로 통합하여 스키마 유연성 확보
+- Property, Template 도메인을 완전히 분리하고 M:N 매핑 구조로 개선
+- ⚠️ (진행 중) 변경된 JSONB 스키마에 맞춘 게시물 업로드/다운로드 로직 리팩터링 대기 중

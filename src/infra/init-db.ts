@@ -9,8 +9,8 @@ async function initDatabase() {
 
     const scripts = [
       '001_schema_posts.sql',
-      '002_schema_templates.sql',
-      '003_seed_templates.sql'
+      '002_schema_properties.sql',
+      '003_schema_templates.sql'
     ];
 
     for (const script of scripts) {

@@ -19,9 +19,9 @@ export default async function PropertyManagementPage() {
 
   try {
     // 2. 템플릿에 등록된 속성 가져오기
-    const result = await query('SELECT DISTINCT property_key FROM templates');
+    const result = await query('SELECT DISTINCT property_name FROM property_list');
     result.rows.forEach((row) => {
-      const targetKey = getOriginalKey(row.property_key);
+      const targetKey = getOriginalKey(row.property_name);
       if (!propertiesMap.has(targetKey)) {
         propertiesMap.set(targetKey, 0);
       }
@@ -33,13 +33,13 @@ export default async function PropertyManagementPage() {
   try {
     // 3. posts 테이블의 metadata(JSONB)에서 집계
     const jsonbResult = await query(`
-      SELECT key AS property_key, COUNT(*) as count
+      SELECT key AS property_name, COUNT(*) as count
       FROM posts, jsonb_object_keys(COALESCE(metadata, '{}'::jsonb)) AS key
       GROUP BY key
     `);
     jsonbResult.rows.forEach((row) => {
       const count = parseInt(row.count, 10);
-      const targetKey = getOriginalKey(row.property_key);
+      const targetKey = getOriginalKey(row.property_name);
       propertiesMap.set(targetKey, (propertiesMap.get(targetKey) || 0) + count);
     });
   } catch (error) {

@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { addTemplateAction, addPropertyAction, deletePropertyAction } from './actions';
 
 export type Property = {
-  keyName: string;
+  propertyName: string;
   type: string;
   isRequired: boolean;
 };
@@ -65,7 +65,7 @@ export default function TemplateManager({ initialTemplates }: { initialTemplates
   };
 
   // Form State
-  const [newKeyName, setNewKeyName] = useState('');
+  const [newPropertyName, setNewPropertyName] = useState('');
   const [newType, setNewType] = useState('string');
   const [isNewRequired, setIsNewRequired] = useState(false);
 
@@ -73,11 +73,11 @@ export default function TemplateManager({ initialTemplates }: { initialTemplates
 
   const handleAddProperty = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newKeyName.trim() || isSaving) return;
+    if (!newPropertyName.trim() || isSaving) return;
 
     // Check for duplicates to prevent schema conflicts
     const isDuplicate = currentProperties.some(
-      (prop) => prop.keyName.toLowerCase() === newKeyName.trim().toLowerCase()
+      (prop) => prop.propertyName.toLowerCase() === newPropertyName.trim().toLowerCase()
     );
 
     if (isDuplicate) {
@@ -86,7 +86,7 @@ export default function TemplateManager({ initialTemplates }: { initialTemplates
     }
 
     setIsSaving(true);
-    const result = await addPropertyAction(selectedTemplate, newKeyName.trim(), isNewRequired);
+    const result = await addPropertyAction(selectedTemplate, newPropertyName.trim(), newType, isNewRequired);
     setIsSaving(false);
 
     if (!result.success) {
@@ -95,7 +95,7 @@ export default function TemplateManager({ initialTemplates }: { initialTemplates
     }
 
     const newProperty: Property = {
-      keyName: newKeyName.trim(),
+      propertyName: newPropertyName.trim(),
       type: newType,
       isRequired: isNewRequired,
     };
@@ -106,16 +106,16 @@ export default function TemplateManager({ initialTemplates }: { initialTemplates
     }));
 
     // Reset Form
-    setNewKeyName('');
+    setNewPropertyName('');
     setNewType('string');
     setIsNewRequired(false);
   };
 
-  const handleDeleteProperty = async (keyNameToDelete: string) => {
-    if (!window.confirm(`Are you sure you want to delete '${keyNameToDelete}'?`)) return;
+  const handleDeleteProperty = async (propertyNameToDelete: string) => {
+    if (!window.confirm(`Are you sure you want to delete '${propertyNameToDelete}'?`)) return;
 
     setIsSaving(true);
-    const result = await deletePropertyAction(selectedTemplate, keyNameToDelete);
+    const result = await deletePropertyAction(selectedTemplate, propertyNameToDelete);
     setIsSaving(false);
 
     if (!result.success) {
@@ -126,7 +126,7 @@ export default function TemplateManager({ initialTemplates }: { initialTemplates
     setTemplates((prev) => ({
       ...prev,
       [selectedTemplate]: prev[selectedTemplate].filter(
-        (prop) => prop.keyName !== keyNameToDelete
+        (prop) => prop.propertyName !== propertyNameToDelete
       ),
     }));
   };
@@ -219,9 +219,9 @@ export default function TemplateManager({ initialTemplates }: { initialTemplates
             ) : (
               <ul className="border border-white/10 rounded-xl overflow-hidden bg-white/5 divide-y divide-white/10">
                 {currentProperties.map((prop) => (
-                  <li key={prop.keyName} className="flex items-center justify-between p-4 hover:bg-white/5 transition-colors">
+                  <li key={prop.propertyName} className="flex items-center justify-between p-4 hover:bg-white/5 transition-colors">
                     <div className="flex items-center space-x-4">
-                      <span className="font-mono text-white text-base">{prop.keyName}</span>
+                      <span className="font-mono text-white text-base">{prop.propertyName}</span>
                       <span className="text-white/40 text-sm bg-black/20 px-2 py-0.5 rounded border border-white/10 capitalize">
                         {prop.type}
                       </span>
@@ -237,7 +237,7 @@ export default function TemplateManager({ initialTemplates }: { initialTemplates
                     </div>
                     <button
                       disabled={isSaving}
-                      onClick={() => handleDeleteProperty(prop.keyName)}
+                      onClick={() => handleDeleteProperty(prop.propertyName)}
                       className="text-red-400 hover:text-red-300 hover:bg-red-400/10 p-2 rounded-lg transition-colors focus:outline-none"
                       title="Delete Property"
                     >
@@ -256,15 +256,15 @@ export default function TemplateManager({ initialTemplates }: { initialTemplates
             <h3 className="text-lg font-semibold text-white mb-4">Add New Property</h3>
             <form onSubmit={handleAddProperty} className="flex flex-col sm:flex-row items-start sm:items-end gap-4">
               <div className="flex-1 w-full">
-                <label htmlFor="keyName" className="block text-sm font-medium text-white/70 mb-1.5">
+                <label htmlFor="propertyName" className="block text-sm font-medium text-white/70 mb-1.5">
                   Property Name
                 </label>
                 <input
                   type="text"
-                  id="keyName"
-                  value={newKeyName}
+                  id="propertyName"
+                  value={newPropertyName}
                   disabled={isSaving}
-                  onChange={(e) => setNewKeyName(e.target.value)}
+                  onChange={(e) => setNewPropertyName(e.target.value)}
                   placeholder="e.g., sourceCodeUrl"
                   className="w-full bg-black/20 border border-white/20 rounded-lg px-4 py-2.5 text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-[#007BFF]/50 focus:border-[#007BFF] transition-all"
                   required

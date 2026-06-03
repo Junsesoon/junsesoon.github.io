@@ -7,9 +7,10 @@ export const dynamic = 'force-dynamic'; // 항상 최신 DB 데이터를 패칭�
 
 export default async function CategoryTemplatePage() {
   const result = await query(`
-    SELECT tl.template_id, tl.template_name, tp.property_key, tp.is_required
+    SELECT tl.template_id, tl.template_name, pl.property_name, pl.property_type, tp.is_required
     FROM template_list tl
     LEFT JOIN template_property tp ON tl.template_id = tp.template_id
+    LEFT JOIN property_list pl ON tp.property_id = pl.property_id
     ORDER BY tl.template_name ASC, tp.created_at ASC
   `);
 
@@ -19,10 +20,10 @@ export default async function CategoryTemplatePage() {
     if (!initialTemplates[row.template_name]) {
       initialTemplates[row.template_name] = [];
     }
-    if (row.property_key) {
+    if (row.property_name) {
       initialTemplates[row.template_name].push({
-        keyName: row.property_key,
-        type: 'string', // DB 스키마에 type 컬럼이 없으므로 임시로 'string'으로 처리
+        propertyName: row.property_name,
+        type: row.property_type || 'string', 
         isRequired: row.is_required,
       });
     }
