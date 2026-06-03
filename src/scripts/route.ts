@@ -4,24 +4,29 @@ import { query } from '../infra/db';
 export async function GET() {
   try {
     // Fetch all properties grouped by template_name
+    // LEFT JOIN을 사용하여 속성이 없는 템플릿 카테고리도 가져올 수 있게 합니다.
     const result = await query(`
-      SELECT id, template_name, property_key, is_required
-      FROM templates
-      ORDER BY template_name ASC, created_at ASC
+      SELECT tl.template_id, tl.template_name, tp.property_key, tp.is_required
+      FROM template_list tl
+      LEFT JOIN template_property tp ON tl.template_id = tp.template_id
+      ORDER BY tl.template_name ASC, tp.created_at ASC
     `);
 
-    // Record<string, Array<{ id, property_key, is_required }>> 형태로 데이터 가공
-    const grouped: Record<string, Array<{ id: number; property_key: string; is_required: boolean }>> = {};
+    // Record<string, Array<{ template_id, property_key, is_required }>> 형태로 데이터 가공
+    const grouped: Record<string, Array<{ template_id: number; property_key: string; is_required: boolean }>> = {};
 
     result.rows.forEach((row) => {
       if (!grouped[row.template_name]) {
         grouped[row.template_name] = [];
       }
-      grouped[row.template_name].push({
-        id: row.id,
-        property_key: row.property_key,
-        is_required: row.is_required,
-      });
+      // LEFT JOIN으로 인해 속성이 없는(empty) 템플릿은 property_key가 null입니다
+      if (row.property_key) {
+        grouped[row.template_name].push({
+          template_id: row.template_id,
+          property_key: row.property_key,
+          is_required: row.is_required,
+        });
+      }
     });
 
     return NextResponse.json(grouped, { status: 200 });

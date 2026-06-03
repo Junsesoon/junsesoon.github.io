@@ -168,3 +168,66 @@ export async function deletePostAction(slug: string) {
     throw new Error('Database query failed.');
   }
 }
+
+export async function addTemplateAction(templateName: string) {
+  if (!templateName || !templateName.trim()) {
+    return { success: false, message: 'Template name is required.' };
+  }
+
+  const sanitizedName = templateName.trim().toLowerCase();
+
+  try {
+    await query(
+      'INSERT INTO template_list (template_name) VALUES ($1)',
+      [sanitizedName]
+    );
+    return { success: true };
+  } catch (error: any) {
+    console.error('addTemplateAction error:', error);
+    if (error.code === '23505') { // PostgreSQL Unique Violation
+      return { success: false, message: 'Template already exists in database.' };
+    }
+    return { success: false, message: 'Internal Server Error' };
+  }
+}
+
+export async function addPropertyAction(templateName: string, propertyKey: string, isRequired: boolean) {
+  if (!templateName || !propertyKey || !propertyKey.trim()) {
+    return { success: false, message: 'Template name and property key are required.' };
+  }
+
+  try {
+    // template_name으로 template_id를 조회하여 삽입하는 서브쿼리 활용
+    await query(
+      `INSERT INTO template_property (template_id, property_key, is_required)
+       SELECT template_id, $2, $3 FROM template_list WHERE template_name = $1`,
+      [templateName.trim().toLowerCase(), propertyKey.trim(), isRequired]
+    );
+    return { success: true };
+  } catch (error: any) {
+    console.error('addPropertyAction error:', error);
+    if (error.code === '23505') {
+      return { success: false, message: 'Property already exists in this template.' };
+    }
+    return { success: false, message: 'Internal Server Error' };
+  }
+}
+
+export async function deletePropertyAction(templateName: string, propertyKey: string) {
+  if (!templateName || !propertyKey) {
+    return { success: false, message: 'Template name and property key are required.' };
+  }
+
+  try {
+    await query(
+      `DELETE FROM template_property
+       WHERE template_id = (SELECT template_id FROM template_list WHERE template_name = $1)
+         AND property_key = $2`,
+      [templateName.trim().toLowerCase(), propertyKey.trim()]
+    );
+    return { success: true };
+  } catch (error: any) {
+    console.error('deletePropertyAction error:', error);
+    return { success: false, message: 'Internal Server Error' };
+  }
+}

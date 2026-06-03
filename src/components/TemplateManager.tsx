@@ -1,64 +1,66 @@
 'use client';
 
 import React, { useState } from 'react';
+import { addTemplateAction, addPropertyAction, deletePropertyAction } from './actions';
 
-type Property = {
+export type Property = {
   keyName: string;
   type: string;
   isRequired: boolean;
 };
 
-type TemplatesState = Record<string, Property[]>;
+export type TemplatesState = Record<string, Property[]>;
 
-export default function TemplateManager() {
-  // Mock State Data
-  const [templates, setTemplates] = useState<TemplatesState>({
-    project: [
-      { keyName: 'DB', type: 'string', isRequired: true },
-      { keyName: 'IDE', type: 'string', isRequired: true },
-    ],
-    knowledge: [],
-    troubleshooting: [
-      { keyName: 'issue', type: 'string', isRequired: true },
-      { keyName: 'solution', type: 'string', isRequired: false },
-    ],
-  });
+export default function TemplateManager({ initialTemplates }: { initialTemplates: TemplatesState }) {
+  // DB Fetch State Data
+  const [templates, setTemplates] = useState<TemplatesState>(initialTemplates);
 
-  const categories = Object.keys(templates);
-  const [selectedCategory, setSelectedCategory] = useState<string>(categories[0] || 'project');
+  const templateNames = Object.keys(templates);
+  const [selectedTemplate, setSelectedTemplate] = useState<string>(templateNames[0] || '');
 
-  // Category Add State
-  const [isAddingCategory, setIsAddingCategory] = useState(false);
-  const [newCategoryName, setNewCategoryName] = useState('');
+  // Template Add State
+  const [isAddingTemplate, setIsAddingTemplate] = useState(false);
+  const [newTemplateName, setNewTemplateName] = useState('');
+  const [isSaving, setIsSaving] = useState(false);
 
-  const handleAddCategory = () => {
-    if (!newCategoryName.trim()) {
-      setIsAddingCategory(false);
+  const handleAddTemplate = async () => {
+    if (!newTemplateName.trim()) {
+      setIsAddingTemplate(false);
       return;
     }
-    const catName = newCategoryName.trim().toLowerCase();
-    if (templates[catName]) {
-      alert('Category already exists.');
+    const tempName = newTemplateName.trim().toLowerCase();
+    if (templates[tempName]) {
+      alert('Template already exists.');
       return;
     }
-    setTemplates((prev) => ({ ...prev, [catName]: [] }));
-    setSelectedCategory(catName);
-    setNewCategoryName('');
-    setIsAddingCategory(false);
+
+    setIsSaving(true);
+    const result = await addTemplateAction(tempName);
+    setIsSaving(false);
+
+    if (!result.success) {
+      alert(result.message);
+      return;
+    }
+
+    setTemplates((prev) => ({ ...prev, [tempName]: [] }));
+    setSelectedTemplate(tempName);
+    setNewTemplateName('');
+    setIsAddingTemplate(false);
   };
 
-  const handleDeleteCategory = (catToDelete: string) => {
-    if (!window.confirm(`Are you sure you want to delete the category '${catToDelete}' and all its properties?`)) return;
+  const handleDeleteTemplate = (templateToDelete: string) => {
+    if (!window.confirm(`Are you sure you want to delete the template '${templateToDelete}' and all its properties?`)) return;
 
     setTemplates((prev) => {
       const next = { ...prev };
-      delete next[catToDelete];
+      delete next[templateToDelete];
       return next;
     });
 
-    if (selectedCategory === catToDelete) {
-      const remaining = categories.filter((c) => c !== catToDelete);
-      setSelectedCategory(remaining.length > 0 ? remaining[0] : '');
+    if (selectedTemplate === templateToDelete) {
+      const remaining = templateNames.filter((t) => t !== templateToDelete);
+      setSelectedTemplate(remaining.length > 0 ? remaining[0] : '');
     }
   };
 
@@ -67,11 +69,11 @@ export default function TemplateManager() {
   const [newType, setNewType] = useState('string');
   const [isNewRequired, setIsNewRequired] = useState(false);
 
-  const currentProperties = templates[selectedCategory] || [];
+  const currentProperties = templates[selectedTemplate] || [];
 
-  const handleAddProperty = (e: React.FormEvent) => {
+  const handleAddProperty = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newKeyName.trim()) return;
+    if (!newKeyName.trim() || isSaving) return;
 
     // Check for duplicates to prevent schema conflicts
     const isDuplicate = currentProperties.some(
@@ -79,7 +81,16 @@ export default function TemplateManager() {
     );
 
     if (isDuplicate) {
-      alert('Property name already exists in this category.');
+      alert('Property name already exists in this template.');
+      return;
+    }
+
+    setIsSaving(true);
+    const result = await addPropertyAction(selectedTemplate, newKeyName.trim(), isNewRequired);
+    setIsSaving(false);
+
+    if (!result.success) {
+      alert(result.message);
       return;
     }
 
@@ -91,7 +102,7 @@ export default function TemplateManager() {
 
     setTemplates((prev) => ({
       ...prev,
-      [selectedCategory]: [...(prev[selectedCategory] || []), newProperty],
+      [selectedTemplate]: [...(prev[selectedTemplate] || []), newProperty],
     }));
 
     // Reset Form
@@ -100,12 +111,21 @@ export default function TemplateManager() {
     setIsNewRequired(false);
   };
 
-  const handleDeleteProperty = (keyNameToDelete: string) => {
+  const handleDeleteProperty = async (keyNameToDelete: string) => {
     if (!window.confirm(`Are you sure you want to delete '${keyNameToDelete}'?`)) return;
+
+    setIsSaving(true);
+    const result = await deletePropertyAction(selectedTemplate, keyNameToDelete);
+    setIsSaving(false);
+
+    if (!result.success) {
+      alert(result.message);
+      return;
+    }
 
     setTemplates((prev) => ({
       ...prev,
-      [selectedCategory]: prev[selectedCategory].filter(
+      [selectedTemplate]: prev[selectedTemplate].filter(
         (prop) => prop.keyName !== keyNameToDelete
       ),
     }));
@@ -114,54 +134,56 @@ export default function TemplateManager() {
   return (
     <div className="backdrop-blur-md bg-white/10 border border-white/20 rounded-2xl p-6 shadow-2xl">
       
-      {/* Category Selector (Tabs) */}
+      {/* Template Selector (Tabs) */}
       <div className="flex space-x-2 mb-8 overflow-x-auto pb-2 scrollbar-hide items-center">
-        {categories.map((cat) => (
+        {templateNames.map((templateName) => (
           <button
-            key={cat}
-            onClick={() => setSelectedCategory(cat)}
+            key={templateName}
+            onClick={() => setSelectedTemplate(templateName)}
             className={`px-5 py-2.5 rounded-lg font-medium transition-all duration-200 whitespace-nowrap outline-none ${
-              selectedCategory === cat
+              selectedTemplate === templateName
                 ? 'bg-[#007BFF] text-white shadow-lg shadow-[#007BFF]/30'
                 : 'bg-white/5 text-white/60 hover:bg-white/15 hover:text-white'
             }`}
           >
-            {cat.charAt(0).toUpperCase() + cat.slice(1)}
+            {templateName.charAt(0).toUpperCase() + templateName.slice(1)}
           </button>
         ))}
 
-        {isAddingCategory ? (
+        {isAddingTemplate ? (
           <div className="flex items-center bg-black/20 rounded-lg px-2 py-1.5 border border-white/20 shrink-0">
             <input
               type="text"
-              value={newCategoryName}
-              onChange={(e) => setNewCategoryName(e.target.value)}
+              value={newTemplateName}
+              onChange={(e) => setNewTemplateName(e.target.value)}
               onKeyDown={(e) => {
+                if (isSaving) return;
                 if (e.key === 'Enter') {
                   e.preventDefault();
-                  handleAddCategory();
+                  handleAddTemplate();
                 }
                 if (e.key === 'Escape') {
-                  setIsAddingCategory(false);
-                  setNewCategoryName('');
+                  setIsAddingTemplate(false);
+                  setNewTemplateName('');
                 }
               }}
-              placeholder="New category..."
+              placeholder="New template..."
               autoFocus
-              className="bg-transparent text-white placeholder-white/30 text-sm focus:outline-none w-28 px-2"
+              disabled={isSaving}
+              className="bg-transparent text-white placeholder-white/30 text-sm focus:outline-none w-28 px-2 disabled:opacity-50"
             />
-            <button onClick={handleAddCategory} className="text-[#007BFF] hover:text-[#0056b3] p-1 transition-colors" title="Save">
+            <button onClick={handleAddTemplate} disabled={isSaving} className="text-[#007BFF] hover:text-[#0056b3] p-1 transition-colors disabled:opacity-50" title="Save">
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
             </button>
-            <button onClick={() => { setIsAddingCategory(false); setNewCategoryName(''); }} className="text-red-400 hover:text-red-300 p-1 transition-colors" title="Cancel">
+            <button onClick={() => { setIsAddingTemplate(false); setNewTemplateName(''); }} disabled={isSaving} className="text-red-400 hover:text-red-300 p-1 transition-colors disabled:opacity-50" title="Cancel">
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
             </button>
           </div>
         ) : (
           <button
-            onClick={() => setIsAddingCategory(true)}
+            onClick={() => setIsAddingTemplate(true)}
             className="px-4 py-2.5 rounded-lg font-medium transition-all duration-200 bg-white/5 text-white/60 hover:bg-white/15 hover:text-white border border-dashed border-white/20 flex items-center justify-center shrink-0"
-            title="Add Category"
+            title="Add Template"
           >
             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
               <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd" />
@@ -170,29 +192,29 @@ export default function TemplateManager() {
         )}
       </div>
 
-      {selectedCategory ? (
+      {selectedTemplate ? (
         <>
           {/* Property List */}
           <div className="mb-8">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-xl font-semibold text-white">
-                Properties for <span className="text-[#007BFF] capitalize">{selectedCategory}</span>
+                Properties for <span className="text-[#007BFF] capitalize">{selectedTemplate}</span>
               </h2>
               <button
-                onClick={() => handleDeleteCategory(selectedCategory)}
+                onClick={() => handleDeleteTemplate(selectedTemplate)}
                 className="text-red-400 hover:text-red-300 hover:bg-red-400/10 px-3 py-1.5 rounded-lg transition-colors text-sm font-medium flex items-center gap-1.5 focus:outline-none"
-                title="Delete Category"
+                title="Delete Template"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                 </svg>
-                Delete Category
+                Delete Template
               </button>
             </div>
             
             {currentProperties.length === 0 ? (
               <div className="py-10 text-center border border-dashed border-white/20 rounded-xl bg-white/5">
-                <p className="text-white/50 text-sm">No properties defined for this category.</p>
+                <p className="text-white/50 text-sm">No properties defined for this template.</p>
               </div>
             ) : (
               <ul className="border border-white/10 rounded-xl overflow-hidden bg-white/5 divide-y divide-white/10">
@@ -214,6 +236,7 @@ export default function TemplateManager() {
                       )}
                     </div>
                     <button
+                      disabled={isSaving}
                       onClick={() => handleDeleteProperty(prop.keyName)}
                       className="text-red-400 hover:text-red-300 hover:bg-red-400/10 p-2 rounded-lg transition-colors focus:outline-none"
                       title="Delete Property"
@@ -240,6 +263,7 @@ export default function TemplateManager() {
                   type="text"
                   id="keyName"
                   value={newKeyName}
+                  disabled={isSaving}
                   onChange={(e) => setNewKeyName(e.target.value)}
                   placeholder="e.g., sourceCodeUrl"
                   className="w-full bg-black/20 border border-white/20 rounded-lg px-4 py-2.5 text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-[#007BFF]/50 focus:border-[#007BFF] transition-all"
@@ -254,6 +278,7 @@ export default function TemplateManager() {
                 <select
                   id="propType"
                   value={newType}
+                  disabled={isSaving}
                   onChange={(e) => setNewType(e.target.value)}
                   className="w-full bg-black/20 border border-white/20 rounded-lg px-3 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-[#007BFF]/50 focus:border-[#007BFF] transition-all cursor-pointer appearance-none"
                 >
@@ -265,14 +290,14 @@ export default function TemplateManager() {
                 </select>
               </div>
 
-              <div className="flex items-center mb-2 sm:mb-0 sm:pb-3 cursor-pointer group" onClick={() => setIsNewRequired(!isNewRequired)}>
+              <div className={`flex items-center mb-2 sm:mb-0 sm:pb-3 group ${isSaving ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`} onClick={() => !isSaving && setIsNewRequired(!isNewRequired)}>
                 <div className={`w-5 h-5 flex items-center justify-center border-2 rounded mr-2 transition-colors ${isNewRequired ? 'bg-[#007BFF] border-[#007BFF]' : 'border-white/30 bg-black/20 group-hover:border-white/50'}`}>
                   {isNewRequired && <svg className="w-3.5 h-3.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>}
                 </div>
                 <span className="text-sm font-medium text-white/70 group-hover:text-white transition-colors select-none">Required</span>
               </div>
 
-              <button type="submit" className="w-full sm:w-auto bg-[#007BFF] hover:bg-[#0069d9] text-white px-6 py-2.5 rounded-lg font-semibold shadow-lg shadow-[#007BFF]/20 transition-all active:scale-95 flex items-center justify-center gap-2">
+              <button type="submit" disabled={isSaving} className="w-full sm:w-auto bg-[#007BFF] hover:bg-[#0069d9] text-white px-6 py-2.5 rounded-lg font-semibold shadow-lg shadow-[#007BFF]/20 transition-all active:scale-95 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd" /></svg>
                 Add Property
               </button>
@@ -281,7 +306,7 @@ export default function TemplateManager() {
         </>
       ) : (
         <div className="py-10 text-center border border-dashed border-white/20 rounded-xl bg-white/5">
-          <p className="text-white/50 text-sm">No categories available. Please add a new category above.</p>
+          <p className="text-white/50 text-sm">No templates available. Please add a new template above.</p>
         </div>
       )}
     </div>
