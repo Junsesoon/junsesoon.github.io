@@ -9,9 +9,14 @@ import { updatePostAction } from './actions';
 export default function EditClient({ post, originalSlug }: { post: any; originalSlug: string }) {
   const router = useRouter();
 
+  // DB 고유 컬럼(id, slug, 생성/수정일 등)을 분리하고, 
+  // 최상위 속성(title, category 등)과 metadata를 병합하여 에디터에 전달합니다.
+  const { id, slug, created_at, updated_at, posted_at, metadata, content, ...rest } = post;
+
   const initialData: PostFormData = {
-    ...(post.metadata || post),
-    content: post.content || '',
+    ...(metadata || {}),
+    ...rest,
+    content: content || '',
   };
 
   const handleSave = async (formData: PostFormData) => {
