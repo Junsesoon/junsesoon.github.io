@@ -28,8 +28,19 @@ export async function createPostAction(data: PostFormData) {
 
   try {
     const { content, ...properties } = data;
+    const propertyNames = Object.keys(properties);
 
-    // 3. .env(DB_ENV)에 의해 연결된 DB로 쿼리 실행
+    // 1. 게시물 작성 시 사용된 모든 속성 키를 전역 property_list에 자동 등록 (없는 경우에만 삽입)
+    if (propertyNames.length > 0) {
+      await query(
+        `INSERT INTO property_list (property_name)
+         SELECT UNNEST($1::text[])
+         ON CONFLICT (property_name) DO NOTHING`,
+        [propertyNames]
+      );
+    }
+
+    // 2. .env(DB_ENV)에 의해 연결된 DB로 쿼리 실행
     // 만약 중복된 슬러그가 있을 경우 덮어쓰기(Upsert)를 수행해 에러를 방지합니다.
     await query(
       `INSERT INTO posts (slug, content, properties)
@@ -41,12 +52,48 @@ export async function createPostAction(data: PostFormData) {
       [slug, content || '', JSON.stringify(properties)]
     );
 
-    // 4. 캐시를 무효화하여 Admin 대시보드와 블로그 홈에서 새로운 데이터를 즉시 가져오도록 조치합니다.
+    // 3. 캐시를 무효화하여 Admin 대시보드와 블로그 홈에서 새로운 데이터를 즉시 가져오도록 조치합니다.
     revalidatePath('/admin');
     revalidatePath('/');
   } catch (error) {
     console.error('Failed to create post:', error);
     throw new Error('Database query failed.');
+  }
+}
+
+export async function addGlobalPropertyAction(propertyName: string, propertyType: string) {
+  if (!propertyName || !propertyName.trim()) {
+    return { success: false, message: 'Property name is required.' };
+  }
+
+  try {
+    await query(
+      `INSERT INTO property_list (property_name, property_type)
+       VALUES ($1, $2)
+       ON CONFLICT (property_name) DO NOTHING`,
+      [propertyName.trim(), propertyType]
+    );
+    return { success: true };
+  } catch (error: any) {
+    console.error('addGlobalPropertyAction error:', error);
+    return { success: false, message: 'Internal Server Error' };
+  }
+}
+
+export async function deleteGlobalPropertyAction(propertyName: string) {
+  if (!propertyName) {
+    return { success: false, message: 'Property name is required.' };
+  }
+
+  try {
+    await query(
+      'DELETE FROM property_list WHERE property_name = $1',
+      [propertyName.trim()]
+    );
+    return { success: true };
+  } catch (error: any) {
+    console.error('deleteGlobalPropertyAction error:', error);
+    return { success: false, message: 'Internal Server Error' };
   }
 }
 
@@ -117,6 +164,17 @@ export async function updatePostAction(originalSlug: string, data: PostFormData)
 
   try {
     const { content, ...properties } = data;
+    const propertyNames = Object.keys(properties);
+
+    // 1. 게시물 수정 시 사용된 모든 속성 키를 전역 property_list에 자동 등록 (없는 경우에만 삽입)
+    if (propertyNames.length > 0) {
+      await query(
+        `INSERT INTO property_list (property_name)
+         SELECT UNNEST($1::text[])
+         ON CONFLICT (property_name) DO NOTHING`,
+        [propertyNames]
+      );
+    }
 
     await query(
       `UPDATE posts
@@ -210,6 +268,41 @@ export async function deletePropertyAction(templateName: string, propertyName: s
     return { success: true };
   } catch (error: any) {
     console.error('deletePropertyAction error:', error);
+    return { success: false, message: 'Internal Server Error' };
+  }
+}
+
+export async function renameGlobalPropertyAction(oldName: string, newName: string) {
+  if (!oldName || !newName || !newName.trim()) {
+    return { success: false, message: 'Valid property names are required.' };
+  }
+
+  try {
+    await query('BEGIN');
+
+    // 1. 전역 속성 테이블의 이름 변경
+    await query(
+      'UPDATE property_list SET property_name = $1 WHERE property_name = $2',
+      [newName.trim(), oldName]
+    );
+
+    // 2. 해당 속성을 가지고 있는( ? 연산자) 모든 게시물의 JSONB 업데이트
+    await query(
+      `UPDATE posts
+       SET properties = (properties - $2) || jsonb_build_object($1::text, properties->$2),
+           updated_at = CURRENT_TIMESTAMP
+       WHERE properties ? $2`,
+      [newName.trim(), oldName]
+    );
+
+    await query('COMMIT');
+    return { success: true };
+  } catch (error: any) {
+    await query('ROLLBACK');
+    console.error('renameGlobalPropertyAction error:', error);
+    if (error.code === '23505') {
+      return { success: false, message: 'Property name already exists.' };
+    }
     return { success: false, message: 'Internal Server Error' };
   }
 }

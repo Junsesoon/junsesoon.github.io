@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { addGlobalPropertyAction, deleteGlobalPropertyAction, renameGlobalPropertyAction } from './actions';
 
 export interface PropertyWithCount {
   name: string;
@@ -22,6 +23,8 @@ export default function PropertyManager({ properties }: PropertyManagerProps) {
   const [localProperties, setLocalProperties] = useState<PropertyWithCount[]>(properties);
   const [newPropName, setNewPropName] = useState('');
   const [newPropType, setNewPropType] = useState('string');
+  const [editingProp, setEditingProp] = useState<string | null>(null);
+  const [editPropName, setEditPropName] = useState('');
 
   // 서버에서 속성 목록이 업데이트되면 동기화
   useEffect(() => {
@@ -52,6 +55,28 @@ export default function PropertyManager({ properties }: PropertyManagerProps) {
       return;
     }
     setLocalProperties((prev) => prev.filter((p) => p.name !== propNameToDelete));
+  };
+
+  const handleRenameProperty = async (oldName: string) => {
+    const trimmedNewName = editPropName.trim();
+    if (!trimmedNewName || trimmedNewName === oldName) {
+      setEditingProp(null);
+      return;
+    }
+    if (localProperties.some((p) => p.name === trimmedNewName)) {
+      alert('Property name already exists.');
+      return;
+    }
+
+    // DB 연동 (트랜잭션 업데이트)
+    const result = await renameGlobalPropertyAction(oldName, trimmedNewName);
+    if (!result.success) {
+      alert(result.message);
+      return;
+    }
+
+    setLocalProperties((prev) => prev.map((p) => (p.name === oldName ? { ...p, name: trimmedNewName } : p)).sort((a, b) => a.name.localeCompare(b.name)));
+    setEditingProp(null);
   };
 
   return (
@@ -93,7 +118,25 @@ export default function PropertyManager({ properties }: PropertyManagerProps) {
           {localProperties.map((prop) => (
             <li key={prop.name} className="flex items-center justify-between p-4 hover:bg-white/5 transition-colors">
               <div className="flex items-center gap-3">
-                <span className="font-mono text-white text-base">{prop.name}</span>
+                {editingProp === prop.name ? (
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="text"
+                      value={editPropName}
+                      onChange={(e) => setEditPropName(e.target.value)}
+                      className="bg-black/20 border border-white/20 rounded px-2 py-1 text-white text-sm w-32 focus:outline-none focus:border-[#007BFF]"
+                      autoFocus
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') handleRenameProperty(prop.name);
+                        if (e.key === 'Escape') setEditingProp(null);
+                      }}
+                    />
+                    <button onClick={() => handleRenameProperty(prop.name)} className="text-[#007BFF] hover:text-[#0056b3] text-sm font-medium transition-colors">Save</button>
+                    <button onClick={() => setEditingProp(null)} className="text-white/50 hover:text-white text-sm transition-colors">Cancel</button>
+                  </div>
+                ) : (
+                  <span className="font-mono text-white text-base">{prop.name}</span>
+                )}
                 <span className="text-white/40 text-xs bg-black/20 px-2 py-0.5 rounded border border-white/10 capitalize">
                   {prop.type || getPredefinedType(prop.name)}
                 </span>
@@ -102,6 +145,15 @@ export default function PropertyManager({ properties }: PropertyManagerProps) {
                 <span className="text-white/60 text-sm font-medium bg-black/20 px-3 py-1 rounded-full border border-white/5">
                   {prop.count} {prop.count === 1 ? 'post' : 'posts'}
                 </span>
+                <button
+                  onClick={() => { setEditingProp(prop.name); setEditPropName(prop.name); }}
+                  className="text-blue-400 hover:text-blue-300 hover:bg-blue-400/10 p-2 rounded-lg transition-colors focus:outline-none"
+                  title={`Rename ${prop.name}`}
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                    <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
+                  </svg>
+                </button>
                 <button
                   onClick={() => handleDeleteProperty(prop.name)}
                   className="text-red-400 hover:text-red-300 hover:bg-red-400/10 p-2 rounded-lg transition-colors focus:outline-none"

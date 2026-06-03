@@ -157,7 +157,7 @@ export const getSkillTreePosts = async (matchCategory2: string): Promise<DbPost[
     `
       SELECT slug, content, properties, created_at, updated_at
       FROM posts
-      WHERE properties->>'category1' ILIKE 'skill tree' OR properties->>'category1' ILIKE 'skilltree'
+      WHERE (properties->>'category1' ILIKE 'skill tree' OR properties->>'category1' ILIKE 'skilltree')
         AND LOWER(properties->>'category2') = LOWER($1)
         AND properties->>'category4' IS NULL
     `,
