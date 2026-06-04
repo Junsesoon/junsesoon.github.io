@@ -1,5 +1,5 @@
 # scripts folder readme
-수정일: 2026-06-04
+수정일: 2026-06-05
 - 마크다운 파일과 PostgreSQL 데이터베이스 간의 데이터 동기화 및 마이그레이션을 담당하는 독립적인 유틸리티 스크립트들을 관리합니다
 - 데이터베이스 스키마 초기화 및 시드 데이터 주입을 위한 SQL 스크립트 파일들도 함께 관리합니다
 
@@ -9,6 +9,7 @@
 - `001_schema_posts.sql`: 공통 필수 메타데이터와 동적 프론트매터를 담는 `properties` (JSONB) 컬럼을 가진 단일 `posts` 테이블 생성 DDL
 - `002_schema_properties.sql`: 전역 속성(`property_list`)과 필수 여부(`is_essential`)를 독립적으로 관리하는 속성 관리 테이블 생성 DDL
 - `003_schema_templates.sql`: 템플릿 카테고리(`template_list`)와 속성 간의 M:N 매핑을 관리하는 테이블(`template_property`) 생성 DDL
+- `004_schema_likes.sql`: 좋아요(유익함) 조회를 위한 `posts` 테이블 역정규화 컬럼(`likes_count`) 추가 및 세션 기반 중복/도배 차단을 위한 `likes_manage` 테이블 생성 DDL
 
 ### 유틸리티 스크립트 (TS)
 - `upload-posts.ts`: `public/upload-posts` 마크다운을 읽어 DB로 업로드하는 스크립트입니다.

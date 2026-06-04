@@ -1,4 +1,6 @@
 export interface Post {
+  post_id?: string;
+  likes_count?: number;
   slug: string;
   title: string;
   date: string;
@@ -48,6 +50,8 @@ export interface FrontMatter {
 }
 
 export interface DbPost {
+  post_id?: string;
+  likes_count?: number;
   slug: string;
   content: string;
   metadata: FrontMatter;
