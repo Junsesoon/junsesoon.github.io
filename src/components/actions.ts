@@ -363,3 +363,25 @@ export async function getEssentialPropertiesAction() {
     return [];
   }
 }
+
+export async function batchUpdateLocationAction(slugs: string[], newLocation: string) {
+  if (!slugs || slugs.length === 0 || !newLocation) {
+    return { success: false, message: 'Invalid parameters.' };
+  }
+
+  try {
+    await query(
+      `UPDATE posts
+       SET properties = properties || jsonb_build_object('location', $1::text),
+           updated_at = CURRENT_TIMESTAMP
+       WHERE slug = ANY($2::text[])`,
+      [newLocation, slugs]
+    );
+    revalidatePath('/admin');
+    revalidatePath('/');
+    return { success: true };
+  } catch (error: any) {
+    console.error('batchUpdateLocationAction error:', error);
+    return { success: false, message: 'Internal Server Error' };
+  }
+}

@@ -1,7 +1,8 @@
 import React from 'react';
 import Link from 'next/link';
 import { query } from '../../../infra/db';
-import { deletePostAction, logoutAction } from '../../../components/actions';
+import { logoutAction } from '../../../components/actions';
+import PostListClient from '../../../components/PostListClient';
 
 export default async function AdminDashboardPage({ searchParams }: { searchParams?: Promise<{ sort?: string; order?: 'asc' | 'desc' }> }) {
   const params = await searchParams;
@@ -40,21 +41,6 @@ export default async function AdminDashboardPage({ searchParams }: { searchParam
     return 0;
   });
 
-  const renderHeader = (key: string, label: string) => {
-    const isActive = sort === key;
-    const nextOrder = isActive && order === 'asc' ? 'desc' : 'asc';
-    return (
-      <th scope="col" className="px-6 py-4 font-semibold text-gray-900 whitespace-nowrap">
-        <Link href={`/admin?sort=${key}&order=${nextOrder}`} className="group inline-flex items-center gap-1 transition-colors hover:text-blue-600">
-          {label}
-          <span className={`text-xs ${isActive ? 'text-blue-600' : 'text-gray-300 group-hover:text-blue-400'}`}>
-            {isActive ? (order === 'asc' ? '▲' : '▼') : '↕'}
-          </span>
-        </Link>
-      </th>
-    );
-  };
-
   return (
     <div className="mx-auto max-w-7xl p-8 font-sans">
       <header className="mb-8 flex flex-col sm:flex-row sm:items-start justify-between border-b border-gray-200 pb-4 gap-4">
@@ -92,98 +78,8 @@ export default async function AdminDashboardPage({ searchParams }: { searchParam
         </div>
       </div>
 
-      {/* 2. Action Bar Layer */}
-      <div className="mb-6 flex items-center justify-between">
-        <h2 className="text-xl font-bold text-gray-800">Manage Posts</h2>
-        <div className="flex gap-3">
-          <Link href="/admin/property" className="inline-flex items-center justify-center rounded-md bg-white border border-gray-300 px-6 py-3 text-sm font-semibold text-gray-700 shadow-sm transition-colors hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-200 focus:ring-offset-2">
-            Manage Properties
-          </Link>
-          <Link href="/admin/template" className="inline-flex items-center justify-center rounded-md bg-white border border-gray-300 px-6 py-3 text-sm font-semibold text-gray-700 shadow-sm transition-colors hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-200 focus:ring-offset-2">
-            Manage Templates
-          </Link>
-          <Link href="/admin/write" className="inline-flex items-center justify-center rounded-md bg-blue-600 px-6 py-3 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
-            + Create New Post
-          </Link>
-        </div>
-      </div>
-
-      {/* 3. Data Grid Layer */}
-      <div className="overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm">
-        <table className="min-w-full divide-y divide-gray-200 text-left text-sm">
-          <thead className="bg-gray-50">
-            <tr>
-              <th scope="col" className="px-6 py-4 w-10 text-center">
-                <input type="checkbox" className="rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer" />
-              </th>
-              {renderHeader('title', 'Title')}
-              <th scope="col" className="px-6 py-4 font-semibold text-gray-900">Location</th>
-              {renderHeader('category1', 'Cat1')}
-              {renderHeader('category2', 'Cat2')}
-              <th scope="col" className="px-6 py-4 font-semibold text-gray-900">Status</th>
-              {renderHeader('date', 'Date')}
-              <th scope="col" className="px-6 py-4 text-right font-semibold text-gray-900">Actions</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-200 bg-white">
-            {posts.length > 0 ? (
-              posts.map((post) => (
-                <tr key={post.slug} className="transition-colors hover:bg-gray-50">
-                  <td className="px-6 py-4 text-center">
-                    <input type="checkbox" className="rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer" />
-                  </td>
-                  <td className="px-6 py-4 font-medium text-gray-900 max-w-[150px] sm:max-w-[200px] md:max-w-[300px]">
-                    <Link 
-                      href={`/${post.slug}`}
-                      className="block truncate text-blue-600 transition-colors hover:text-blue-800 hover:underline"
-                      title={post.title}
-                    >
-                      {post.title}
-                    </Link>
-                  </td>
-                  <td className="px-6 py-4">
-                    {post.location ? (
-                      <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
-                        post.location === 'Portfolio' ? 'bg-red-100 text-red-800' :
-                        post.location === 'Both' ? 'bg-purple-100 text-purple-800' :
-                        'bg-blue-100 text-blue-800'
-                      }`}>
-                        {post.location}
-                      </span>
-                    ) : (
-                      <span className="text-gray-400">-</span>
-                    )}
-                  </td>
-                  <td className="px-6 py-4 text-gray-600 max-w-[150px] break-words" title={post.category1 || ''}>
-                    {post.category1 || '-'}
-                  </td>
-                  <td className="px-6 py-4 text-gray-600 max-w-[150px] break-words" title={post.category2 || ''}>
-                    {post.category2 || '-'}
-                  </td>
-                  <td className="px-6 py-4">
-                    {/* 임시저장(Draft) 기능이 구현되기 전이므로 일괄 Published 상태로 표시합니다 */}
-                    <span className="inline-flex items-center rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-800">Published</span>
-                  </td>
-                  <td className="px-6 py-4 text-gray-500">{new Date(post.date).toLocaleDateString('ko-KR')}</td>
-                  <td className="px-6 py-4 text-right">
-                    <Link href={`/admin/edit/${post.slug}`} className="mr-4 font-medium text-blue-600 transition-colors hover:text-blue-800">Edit</Link>
-                    <form action={deletePostAction.bind(null, post.slug)} className="inline">
-                      <button type="submit" className="font-medium text-red-600 transition-colors hover:text-red-800">Delete</button>
-                    </form>
-                  </td>
-                </tr>
-              ))
-            ) : (
-              <tr>
-                <td colSpan={8} className="px-6 py-4 text-center text-gray-500">등록된 게시물이 없습니다.</td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-        <div className="border-t border-gray-200 bg-gray-50 px-6 py-4 text-center text-sm text-gray-500">
-          End of list
-        </div>
-      </div>
+      {/* 2 & 3. Action Bar and Data Grid Layer */}
+      <PostListClient posts={posts} sort={sort} order={order} />
     </div>
   );
 }
