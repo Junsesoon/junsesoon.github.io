@@ -1,5 +1,6 @@
 'use server';
 
+import { revalidatePath } from 'next/cache';
 import { headers } from 'next/headers';
 import { query } from '../infra/db';
 
@@ -54,11 +55,13 @@ export async function toggleLikeAction(postId: string, sessionId: string) {
       // Unlike: 데이터 삭제 및 카운트 감소
       await query('DELETE FROM likes_manage WHERE post_id = $1 AND session_id = $2', [postId, sessionId]);
       const update = await query('UPDATE posts SET likes_count = GREATEST(likes_count - 1, 0) WHERE post_id = $1 RETURNING likes_count', [postId]);
+      revalidatePath('/', 'layout');
       return { success: true, isLiked: false, likesCount: update.rows[0].likes_count };
     } else {
       // Like: 데이터 추가 및 카운트 증가
       await query('INSERT INTO likes_manage (post_id, session_id) VALUES ($1, $2)', [postId, sessionId]);
       const update = await query('UPDATE posts SET likes_count = likes_count + 1 WHERE post_id = $1 RETURNING likes_count', [postId]);
+      revalidatePath('/', 'layout');
       return { success: true, isLiked: true, likesCount: update.rows[0].likes_count };
     }
   } catch (error) {

@@ -10,7 +10,7 @@ export default async function AdminDashboardPage({ searchParams }: { searchParam
   const order = params?.order || 'desc';
 
   // 변경된 단일 테이블 스키마에 맞게 properties(JSONB) 컬럼을 조회합니다.
-  const { rows: fetchedPosts } = await query('SELECT slug, properties, created_at FROM posts ORDER BY created_at DESC');
+  const { rows: fetchedPosts } = await query('SELECT slug, properties, created_at, likes_count FROM posts ORDER BY created_at DESC');
 
   const mappedPosts = fetchedPosts.map((row) => {
     const props = row.properties || {};
@@ -21,6 +21,7 @@ export default async function AdminDashboardPage({ searchParams }: { searchParam
       category1: props.category1 || '',
       category2: props.category2 || '',
       date: props.date || props.startDate || row.created_at,
+      likes_count: row.likes_count,
     };
   });
 
