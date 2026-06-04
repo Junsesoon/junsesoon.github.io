@@ -16,6 +16,7 @@ export default async function AdminDashboardPage({ searchParams }: { searchParam
     return {
       slug: row.slug,
       title: props.title || row.slug,
+      location: props.location || '',
       category1: props.category1 || '',
       category2: props.category2 || '',
       date: props.date || props.startDate || row.created_at,
@@ -112,7 +113,11 @@ export default async function AdminDashboardPage({ searchParams }: { searchParam
         <table className="min-w-full divide-y divide-gray-200 text-left text-sm">
           <thead className="bg-gray-50">
             <tr>
+              <th scope="col" className="px-6 py-4 w-10 text-center">
+                <input type="checkbox" className="rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer" />
+              </th>
               {renderHeader('title', 'Title')}
+              <th scope="col" className="px-6 py-4 font-semibold text-gray-900">Location</th>
               {renderHeader('category1', 'Cat1')}
               {renderHeader('category2', 'Cat2')}
               <th scope="col" className="px-6 py-4 font-semibold text-gray-900">Status</th>
@@ -124,6 +129,9 @@ export default async function AdminDashboardPage({ searchParams }: { searchParam
             {posts.length > 0 ? (
               posts.map((post) => (
                 <tr key={post.slug} className="transition-colors hover:bg-gray-50">
+                  <td className="px-6 py-4 text-center">
+                    <input type="checkbox" className="rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer" />
+                  </td>
                   <td className="px-6 py-4 font-medium text-gray-900 max-w-[150px] sm:max-w-[200px] md:max-w-[300px]">
                     <Link 
                       href={`/${post.slug}`}
@@ -132,6 +140,19 @@ export default async function AdminDashboardPage({ searchParams }: { searchParam
                     >
                       {post.title}
                     </Link>
+                  </td>
+                  <td className="px-6 py-4">
+                    {post.location ? (
+                      <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
+                        post.location === 'Portfolio' ? 'bg-red-100 text-red-800' :
+                        post.location === 'Both' ? 'bg-purple-100 text-purple-800' :
+                        'bg-blue-100 text-blue-800'
+                      }`}>
+                        {post.location}
+                      </span>
+                    ) : (
+                      <span className="text-gray-400">-</span>
+                    )}
                   </td>
                   <td className="px-6 py-4 text-gray-600 max-w-[150px] break-words" title={post.category1 || ''}>
                     {post.category1 || '-'}
@@ -154,7 +175,7 @@ export default async function AdminDashboardPage({ searchParams }: { searchParam
               ))
             ) : (
               <tr>
-                <td colSpan={6} className="px-6 py-4 text-center text-gray-500">등록된 게시물이 없습니다.</td>
+                <td colSpan={8} className="px-6 py-4 text-center text-gray-500">등록된 게시물이 없습니다.</td>
               </tr>
             )}
           </tbody>

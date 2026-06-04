@@ -14,7 +14,7 @@ export interface PostEditorProps {
 }
 
 const FIXED_PROPS = ['title', 'content'];
-const PREDEFINED_PROPS = ['category1', 'summary', 'category2', 'category3', 'category4', 'tags', 'parentSkill', 'childSkill', 'techStart', 'project_name'];
+const PREDEFINED_PROPS = ['category1', 'summary', 'category2', 'category3', 'category4', 'tags', 'parentSkill', 'childSkill', 'techStart', 'project_name', 'location'];
 
 export default function PostEditor({ initialData, onSave, templates, essentialProps }: PostEditorProps) {
   const [formData, setFormData] = useState<Record<string, any>>(() => {
@@ -351,6 +351,20 @@ export default function PostEditor({ initialData, onSave, templates, essentialPr
                     className="block w-full rounded-md border border-gray-300 px-4 py-2 text-gray-900 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
                     placeholder={`Enter ${key}`}
                   />
+                ) : key === 'location' ? (
+                  <select
+                    id={key}
+                    name={key}
+                    value={formData[key] || ''}
+                    onChange={handleChange}
+                    required={isEssential}
+                    className="block w-full rounded-md border border-gray-300 px-4 py-2 text-gray-900 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 bg-white"
+                  >
+                    <option value="" disabled>Select Location</option>
+                    <option value="Blog">Blog</option>
+                    <option value="Portfolio">Portfolio</option>
+                    <option value="Both">Both</option>
+                  </select>
                 ) : (
                   <input
                     type="text"
