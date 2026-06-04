@@ -8,7 +8,7 @@ export const PORTFOLIO_MENU = [
 ] as const;
 
 export const BLOG_MENU = [
-  { href: '/skilltree', text: 'Skill_Tree' },
+  { href: '/skilltree', text: 'Skill Tree' },
   { href: '/cs', text: 'CS' },
   { href: '/data', text: 'Data' },
   { href: '/language', text: 'Language' },

@@ -27,41 +27,73 @@ export async function createPostAction(data: PostFormData) {
   const slug = slugParts.join('/');
 
   try {
-    // 3. .env(DB_ENV)에 의해 연결된 DB로 쿼리 실행
+    const { content, ...properties } = data;
+    const propertyNames = Object.keys(properties);
+
+    // 1. 게시물 작성 시 사용된 모든 속성 키를 전역 property_list에 자동 등록 (없는 경우에만 삽입)
+    if (propertyNames.length > 0) {
+      await query(
+        `INSERT INTO property_list (property_name)
+         SELECT UNNEST($1::text[])
+         ON CONFLICT (property_name) DO NOTHING`,
+        [propertyNames]
+      );
+    }
+
+    // 2. .env(DB_ENV)에 의해 연결된 DB로 쿼리 실행
     // 만약 중복된 슬러그가 있을 경우 덮어쓰기(Upsert)를 수행해 에러를 방지합니다.
     await query(
-      `INSERT INTO posts (
-        slug, title, content, category1, category2, category3, category4, summary, tags, created_at, posted_at
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, NOW(), NOW())
+      `INSERT INTO posts (slug, content, properties)
+       VALUES ($1, $2, $3)
       ON CONFLICT (slug) DO UPDATE SET
-        title = EXCLUDED.title,
-        content = EXCLUDED.content,
-        category1 = EXCLUDED.category1,
-        category2 = EXCLUDED.category2,
-        category3 = EXCLUDED.category3,
-        category4 = EXCLUDED.category4,
-        summary = EXCLUDED.summary,
-        tags = EXCLUDED.tags,
-        updated_at = NOW()`,
-      [
-        slug,
-        data.title,
-        data.content,
-        data.category1 || null,
-        data.category2 || null,
-        data.category3 || null,
-        data.category4 || null,
-        data.summary || null,
-        data.tags // pg 모듈이 JS 배열을 PostgreSQL 배열형(text[])으로 자동 변환해 줍니다.
-      ]
+         content = EXCLUDED.content,
+         properties = EXCLUDED.properties,
+         updated_at = CURRENT_TIMESTAMP`,
+      [slug, content || '', JSON.stringify(properties)]
     );
 
-    // 4. 캐시를 무효화하여 Admin 대시보드와 블로그 홈에서 새로운 데이터를 즉시 가져오도록 조치합니다.
+    // 3. 캐시를 무효화하여 Admin 대시보드와 블로그 홈에서 새로운 데이터를 즉시 가져오도록 조치합니다.
     revalidatePath('/admin');
     revalidatePath('/');
   } catch (error) {
     console.error('Failed to create post:', error);
     throw new Error('Database query failed.');
+  }
+}
+
+export async function addGlobalPropertyAction(propertyName: string, propertyType: string) {
+  if (!propertyName || !propertyName.trim()) {
+    return { success: false, message: 'Property name is required.' };
+  }
+
+  try {
+    await query(
+      `INSERT INTO property_list (property_name, property_type)
+       VALUES ($1, $2)
+       ON CONFLICT (property_name) DO NOTHING`,
+      [propertyName.trim(), propertyType]
+    );
+    return { success: true };
+  } catch (error: any) {
+    console.error('addGlobalPropertyAction error:', error);
+    return { success: false, message: 'Internal Server Error' };
+  }
+}
+
+export async function deleteGlobalPropertyAction(propertyName: string) {
+  if (!propertyName) {
+    return { success: false, message: 'Property name is required.' };
+  }
+
+  try {
+    await query(
+      'DELETE FROM property_list WHERE property_name = $1',
+      [propertyName.trim()]
+    );
+    return { success: true };
+  } catch (error: any) {
+    console.error('deleteGlobalPropertyAction error:', error);
+    return { success: false, message: 'Internal Server Error' };
   }
 }
 
@@ -131,22 +163,24 @@ export async function updatePostAction(originalSlug: string, data: PostFormData)
   const newSlug = slugParts.join('/');
 
   try {
+    const { content, ...properties } = data;
+    const propertyNames = Object.keys(properties);
+
+    // 1. 게시물 수정 시 사용된 모든 속성 키를 전역 property_list에 자동 등록 (없는 경우에만 삽입)
+    if (propertyNames.length > 0) {
+      await query(
+        `INSERT INTO property_list (property_name)
+         SELECT UNNEST($1::text[])
+         ON CONFLICT (property_name) DO NOTHING`,
+        [propertyNames]
+      );
+    }
+
     await query(
       `UPDATE posts
-       SET slug = $1, title = $2, content = $3, category1 = $4, category2 = $5, category3 = $6, category4 = $7, summary = $8, tags = $9, updated_at = NOW()
-       WHERE slug = $10`,
-      [
-        newSlug,
-        data.title,
-        data.content,
-        data.category1 || null,
-        data.category2 || null,
-        data.category3 || null,
-        data.category4 || null,
-        data.summary || null,
-        data.tags,
-        originalSlug
-      ]
+       SET slug = $1, content = $2, properties = $3, updated_at = CURRENT_TIMESTAMP
+       WHERE slug = $4`,
+      [newSlug, content || '', JSON.stringify(properties), originalSlug]
     );
 
     revalidatePath('/admin');
@@ -166,5 +200,188 @@ export async function deletePostAction(slug: string) {
   } catch (error) {
     console.error('Failed to delete post:', error);
     throw new Error('Database query failed.');
+  }
+}
+
+export async function addTemplateAction(templateName: string) {
+  if (!templateName || !templateName.trim()) {
+    return { success: false, message: 'Template name is required.' };
+  }
+
+  const sanitizedName = templateName.trim().toLowerCase();
+
+  try {
+    await query(
+      'INSERT INTO template_list (template_name) VALUES ($1)',
+      [sanitizedName]
+    );
+    return { success: true };
+  } catch (error: any) {
+    console.error('addTemplateAction error:', error);
+    if (error.code === '23505') { // PostgreSQL Unique Violation
+      return { success: false, message: 'Template already exists in database.' };
+    }
+    return { success: false, message: 'Internal Server Error' };
+  }
+}
+
+export async function addPropertyAction(templateName: string, propertyName: string, propertyType: string, isRequired: boolean) {
+  if (!templateName || !propertyName || !propertyName.trim()) {
+    return { success: false, message: 'Template name and property name are required.' };
+  }
+
+  try {
+    // 1. property_list에 없으면 새로 만들고, 있으면 타입을 덮어씌워 property_id를 가져옴
+    // 2. template_property 에 템플릿과 매핑 데이터 추가
+    await query(
+      `WITH prop AS (
+         INSERT INTO property_list (property_name, property_type) VALUES ($2, $3)
+         ON CONFLICT (property_name) DO UPDATE SET property_type = EXCLUDED.property_type
+         RETURNING property_id
+       )
+       INSERT INTO template_property (template_id, property_id, is_required)
+       SELECT template_id, prop.property_id, $4 FROM template_list, prop WHERE template_name = $1`,
+      [templateName.trim().toLowerCase(), propertyName.trim(), propertyType, isRequired]
+    );
+    return { success: true };
+  } catch (error: any) {
+    console.error('addPropertyAction error:', error);
+    if (error.code === '23505') {
+      return { success: false, message: 'Property already exists in this template.' };
+    }
+    return { success: false, message: 'Internal Server Error' };
+  }
+}
+
+export async function deletePropertyAction(templateName: string, propertyName: string) {
+  if (!templateName || !propertyName) {
+    return { success: false, message: 'Template name and property name are required.' };
+  }
+
+  try {
+    await query(
+      `DELETE FROM template_property
+       WHERE template_id = (SELECT template_id FROM template_list WHERE template_name = $1)
+         AND property_id = (SELECT property_id FROM property_list WHERE property_name = $2)`,
+      [templateName.trim().toLowerCase(), propertyName.trim()]
+    );
+    return { success: true };
+  } catch (error: any) {
+    console.error('deletePropertyAction error:', error);
+    return { success: false, message: 'Internal Server Error' };
+  }
+}
+
+export async function renameGlobalPropertyAction(oldName: string, newName: string) {
+  if (!oldName || !newName || !newName.trim()) {
+    return { success: false, message: 'Valid property names are required.' };
+  }
+
+  try {
+    await query('BEGIN');
+
+    // 1. 전역 속성 테이블의 이름 변경
+    await query(
+      'UPDATE property_list SET property_name = $1 WHERE property_name = $2',
+      [newName.trim(), oldName]
+    );
+
+    // 2. 해당 속성을 가지고 있는( ? 연산자) 모든 게시물의 JSONB 업데이트
+    await query(
+      `UPDATE posts
+       SET properties = (properties - $2) || jsonb_build_object($1::text, properties->$2),
+           updated_at = CURRENT_TIMESTAMP
+       WHERE properties ? $2`,
+      [newName.trim(), oldName]
+    );
+
+    await query('COMMIT');
+    return { success: true };
+  } catch (error: any) {
+    await query('ROLLBACK');
+    console.error('renameGlobalPropertyAction error:', error);
+    if (error.code === '23505') {
+      return { success: false, message: 'Property name already exists.' };
+    }
+    return { success: false, message: 'Internal Server Error' };
+  }
+}
+
+export async function getTemplatesAction() {
+  try {
+    const result = await query(`
+      SELECT tl.template_name, pl.property_name, tp.is_required
+      FROM template_list tl
+      LEFT JOIN template_property tp ON tl.template_id = tp.template_id
+      LEFT JOIN property_list pl ON tp.property_id = pl.property_id
+      ORDER BY tl.template_name ASC
+    `);
+
+    const templates: Record<string, { propertyName: string; isRequired: boolean }[]> = {};
+    result.rows.forEach((row) => {
+      if (!templates[row.template_name]) templates[row.template_name] = [];
+      if (row.property_name) {
+        templates[row.template_name].push({
+          propertyName: row.property_name,
+          isRequired: row.is_required,
+        });
+      }
+    });
+    return templates;
+  } catch (error) {
+    console.error('getTemplatesAction error:', error);
+    return {};
+  }
+}
+
+export async function togglePropertyEssentialAction(propertyName: string, isEssential: boolean) {
+  if (!propertyName) {
+    return { success: false, message: 'Property name is required.' };
+  }
+
+  try {
+    await query(
+      `INSERT INTO property_list (property_name, is_essential)
+       VALUES ($1, $2)
+       ON CONFLICT (property_name) DO UPDATE SET is_essential = EXCLUDED.is_essential`,
+      [propertyName, isEssential]
+    );
+    return { success: true };
+  } catch (error: any) {
+    console.error('togglePropertyEssentialAction error:', error);
+    return { success: false, message: 'Internal Server Error' };
+  }
+}
+
+export async function getEssentialPropertiesAction() {
+  try {
+    const result = await query('SELECT property_name FROM property_list WHERE is_essential = true');
+    // 문자열(속성명) 배열만 깔끔하게 추출해서 반환합니다.
+    return result.rows.map((row) => row.property_name);
+  } catch (error) {
+    console.error('getEssentialPropertiesAction error:', error);
+    return [];
+  }
+}
+
+export async function batchUpdateLocationAction(slugs: string[], newLocation: string) {
+  if (!slugs || slugs.length === 0 || !newLocation) {
+    return { success: false, message: 'Invalid parameters.' };
+  }
+
+  try {
+    await query(
+      `UPDATE posts
+       SET properties = properties || jsonb_build_object('location', $1::text),
+           updated_at = CURRENT_TIMESTAMP
+       WHERE slug = ANY($2::text[])`,
+      [newLocation, slugs]
+    );
+    revalidatePath('/admin');
+    revalidatePath('/');
+    return { success: true };
+  } catch (error: any) {
+    console.error('batchUpdateLocationAction error:', error);
+    return { success: false, message: 'Internal Server Error' };
   }
 }

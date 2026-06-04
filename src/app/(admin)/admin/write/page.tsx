@@ -1,13 +1,20 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import PostEditor, { PostFormData } from '@/components/PostEditor';
-import { createPostAction } from '../../../../components/actions';
+import { createPostAction, getTemplatesAction, getEssentialPropertiesAction } from '../../../../components/actions';
 
 export default function WritePostPage() {
   const router = useRouter();
+  const [templates, setTemplates] = useState<Record<string, { propertyName: string; isRequired: boolean }[]>>({});
+  const [essentialProps, setEssentialProps] = useState<string[]>([]);
+
+  useEffect(() => {
+    getTemplatesAction().then((data) => setTemplates(data));
+    getEssentialPropertiesAction().then((data) => setEssentialProps(data));
+  }, []);
 
   const handleSave = async (formData: PostFormData) => {
     try {
@@ -37,7 +44,7 @@ export default function WritePostPage() {
         </Link>
       </header>
 
-      <PostEditor onSave={handleSave} />
+      <PostEditor onSave={handleSave} templates={templates} essentialProps={essentialProps} />
     </div>
   );
 }

@@ -65,9 +65,9 @@ export default function SkillTreeInteractive({ nodes, COLUMNS }: Props) {
           if (parentPos) {
             lines.push({
               id: `${parentName}-${childNode.file.replace(/\.[^/.]+$/, "")}`,
-              x1: parentPos.col * 100 + 80, // Right center of parent
+              x1: parentPos.col * 120 + 100, // Right center of parent
               y1: parentPos.row * 70 + 25, // Middle Y of parent
-              x2: childPos.col * 100,       // Left center of child
+              x2: childPos.col * 120,       // Left center of child
               y2: childPos.row * 70 + 25,  // Middle Y of child
             });
           }
@@ -83,7 +83,7 @@ export default function SkillTreeInteractive({ nodes, COLUMNS }: Props) {
       onMouseLeave={() => setIsDragging(false)}
       onMouseUp={() => setIsDragging(false)}
       onMouseMove={onMouseMove}
-      className={`w-full max-w-[1000px] mx-auto py-10 px-4 overflow-x-auto relative bg-gray-50 rounded-2xl shadow-[inset_0px_0px_80px_rgba(0,0,0,0.15)] border border-gray-200 mt-4 mb-10 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none'] ${isDragging ? 'cursor-grabbing' : 'cursor-grab'}`}
+      className={`w-full max-w-[1000px] mx-auto py-10 px-4 overflow-x-auto relative bg-gray-50 rounded-2xl border border-gray-200 mt-4 mb-10 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none'] ${isDragging ? 'cursor-grabbing' : 'cursor-grab'}`}
     >
       <div className="relative w-max mx-auto">
         {/* SVG layer for connecting lines */}
@@ -106,7 +106,7 @@ export default function SkillTreeInteractive({ nodes, COLUMNS }: Props) {
         <div 
           className="grid w-max relative z-10"
           style={{
-            gridTemplateColumns: `repeat(${maxCols}, 80px)`,
+            gridTemplateColumns: `repeat(${maxCols}, 100px)`,
             gridTemplateRows: `repeat(${maxRows}, 50px)`,
             gap: '20px',
           }}
@@ -122,7 +122,7 @@ export default function SkillTreeInteractive({ nodes, COLUMNS }: Props) {
                   gridRowStart: nodeInfo.row + 1,
                 }}
                 className={`
-                  h-[50px] rounded-md transition-all duration-300 flex flex-col items-center justify-center text-[11px] text-center overflow-hidden break-all px-1 select-none
+                h-[50px] rounded-md transition-all duration-300 flex flex-col items-center justify-center text-[11px] text-center overflow-hidden break-words px-1 select-none
                   bg-white border border-gray-200 text-gray-800 font-semibold shadow-md cursor-pointer hover:bg-blue-50 hover:border-blue-300 hover:text-blue-600 hover:scale-105'
                 `}
               >
