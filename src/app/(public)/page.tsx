@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { getAllPosts } from '../../utils/posts';
+import BlogStats from '../../components/BlogStats';
 
 export const revalidate = 1200; // ISR 적용 시, 게시물 수정 후 최대 20분까지는 수정 내용이 반영되지 않을 수 있음
 
@@ -14,7 +15,7 @@ export default async function Home({ searchParams }: { searchParams?: Promise<{ 
           {mode === 'portfolio' ? "Junseo's Portfolio 🚀" : "Junseo's Blog 🚀"}
         </h1>
         <p className="text-xl text-gray-600">What are you looking for?</p>
-        <hr className="mt-16 w-80 border-gray-200" />
+        <BlogStats />
       </header>
       <section>
         <h2 className="mb-6 border-b border-gray-200 pb-2 text-3xl">최신 글</h2>
@@ -22,11 +23,11 @@ export default async function Home({ searchParams }: { searchParams?: Promise<{ 
           {posts.map((post) => (
             <li key={post.slug} className="mb-10">
               <Link href={`/${post.slug}`} className="no-underline">
-                <h3 className="mb-2 text-2xl text-blue-600">{post.title}</h3>
-                <p className="my-2 text-gray-600">
+                <h3 className={`mb-2 text-2xl ${mode === 'portfolio' ? 'text-red-800' : 'text-blue-600'}`}>{post.title}</h3>
+                <p className="mb-2 text-1xl text-gray-800">{post.excerpt}</p>
+                <p className="text-sm text-gray-500">
                   {new Date(post.date).toLocaleDateString('ko-KR')}
                 </p>
-                <p className="text-gray-800">{post.excerpt}</p>
               </Link>
             </li>
           ))}

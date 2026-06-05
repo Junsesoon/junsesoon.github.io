@@ -37,13 +37,13 @@ export default async function CategoryPage({ params, searchParams }: { params: P
             {posts.map((post) => (
               <li key={post.slug} className="mb-10">
                 <Link href={`/${post.slug}`} className="no-underline">
-                  <h3 className="mb-2 text-2xl text-blue-600">
+                  <h3 className={`mb-2 text-2xl ${mode === 'portfolio' ? 'text-red-800' : 'text-blue-600'}`}>
                     {post.title}
                   </h3>
-                  <p className="my-2 text-gray-600">
+                  <p className="mb-2 text-gray-800">{post.excerpt}</p>
+                  <p className="text-sm text-gray-500">
                     {new Date(post.date).toLocaleDateString('ko-KR')}
                   </p>
-                  <p className="text-gray-800">{post.excerpt}</p>
                 </Link>
               </li>
             ))}
