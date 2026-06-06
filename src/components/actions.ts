@@ -364,6 +364,16 @@ export async function getEssentialPropertiesAction() {
   }
 }
 
+export async function getAllPropertyNamesAction() {
+  try {
+    const result = await query('SELECT property_name FROM property_list ORDER BY property_name ASC');
+    return result.rows.map((row) => row.property_name);
+  } catch (error) {
+    console.error('getAllPropertyNamesAction error:', error);
+    return [];
+  }
+}
+
 export async function batchUpdateLocationAction(slugs: string[], newLocation: string) {
   if (!slugs || slugs.length === 0 || !newLocation) {
     return { success: false, message: 'Invalid parameters.' };

@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
+import { addGlobalPropertyAction, getAllPropertyNamesAction } from './actions';
 
 export interface PostFormData {
   [key: string]: any;
@@ -61,8 +62,19 @@ export default function PostEditor({ initialData, onSave, templates, essentialPr
     });
   });
 
+  const [globalProps, setGlobalProps] = useState<string[]>(PREDEFINED_PROPS);
+
+  useEffect(() => {
+    getAllPropertyNamesAction().then((names) => {
+      if (names && names.length > 0) {
+        setGlobalProps((prev) => Array.from(new Set([...prev, ...names])));
+      }
+    });
+  }, []);
+
   const [isAddingProp, setIsAddingProp] = useState(false);
   const [newPropName, setNewPropName] = useState('');
+  const [newPropType, setNewPropType] = useState('string');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -230,13 +242,23 @@ export default function PostEditor({ initialData, onSave, templates, essentialPr
     }, 0);
   };
 
-  const handleAddProp = () => {
+  const handleAddProp = async () => {
     const prop = newPropName.trim();
     if (prop && !activeProps.includes(prop) && !FIXED_PROPS.includes(prop)) {
       setActiveProps((prev) => [...prev, prop]);
       setFormData((prev) => ({ ...prev, [prop]: '' }));
+
+      if (!globalProps.includes(prop)) {
+        try {
+          await addGlobalPropertyAction(prop, newPropType);
+          setGlobalProps((prev) => [...prev, prop]);
+        } catch (error) {
+          console.error('Failed to register global property type:', error);
+        }
+      }
     }
     setNewPropName('');
+    setNewPropType('string');
     setIsAddingProp(false);
   };
 
@@ -407,7 +429,7 @@ export default function PostEditor({ initialData, onSave, templates, essentialPr
               Add Property
             </button>
           ) : (
-            <div className="flex max-w-sm items-center gap-2 rounded-md border border-gray-200 bg-gray-50 p-2 shadow-sm">
+            <div className="flex max-w-lg items-center gap-2 rounded-md border border-gray-200 bg-gray-50 p-2 shadow-sm">
               <input
                 type="text"
                 list="predefined-props"
@@ -420,6 +442,7 @@ export default function PostEditor({ initialData, onSave, templates, essentialPr
                   } else if (e.key === 'Escape') {
                     setIsAddingProp(false);
                     setNewPropName('');
+                    setNewPropType('string');
                   }
                 }}
                 placeholder="Property name"
@@ -427,10 +450,23 @@ export default function PostEditor({ initialData, onSave, templates, essentialPr
                 autoFocus
               />
               <datalist id="predefined-props">
-                {PREDEFINED_PROPS.filter((p) => !activeProps.includes(p)).map((p) => (
+                {globalProps.filter((p) => !activeProps.includes(p)).map((p) => (
                   <option key={p} value={p} />
                 ))}
               </datalist>
+              {newPropName.trim() !== '' && !globalProps.includes(newPropName.trim()) && (
+                <select
+                  value={newPropType}
+                  onChange={(e) => setNewPropType(e.target.value)}
+                  className="block w-28 rounded-md border-gray-300 px-3 py-1.5 text-sm text-gray-900 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 bg-white"
+                >
+                  <option value="string">String</option>
+                  <option value="number">Number</option>
+                  <option value="boolean">Boolean</option>
+                  <option value="date">Date</option>
+                  <option value="array">Array</option>
+                </select>
+              )}
               <button
                 type="button"
                 onClick={handleAddProp}
