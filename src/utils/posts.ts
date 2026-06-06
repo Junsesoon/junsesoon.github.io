@@ -70,6 +70,11 @@ function hasNormalizedCategory(value: string | null, category: string) {
   return normalizeCategoryValue(value).includes(normalizeCategoryValue(category));
 }
 
+export const getTotalPostCount = async (): Promise<number> => {
+  const result = await query<{ count: string }>(`SELECT COUNT(*) FROM posts`);
+  return parseInt(result.rows[0].count, 10);
+};
+
 export const getAllPosts = async (
   mode: string = 'blog',
   filters: PostFilterOptions = {},
@@ -159,34 +164,48 @@ export const getDbPostBySlug = async (slug: string): Promise<DbPost | null> => {
 export const getSkillTreePosts = async (matchCategory2: string): Promise<DbPost[]> => {
   const result = await query<any>(
     `
-      SELECT post_id, likes_count, slug, content, properties, created_at, updated_at
-      FROM posts
-      WHERE (properties->>'category1' ILIKE 'skill tree' OR properties->>'category1' ILIKE 'skilltree')
-        AND LOWER(properties->>'category2') = LOWER($1)
-        AND properties->>'category4' IS NULL
+      SELECT 
+        p.post_id, 
+        p.likes_count,
+        p.slug, 
+        p.content, 
+        p.properties, 
+        p.created_at, 
+        p.updated_at,
+        COALESCE(p.properties->>'title', p.slug) AS title,
+        s.domain,
+        s.sub_domain,
+        s.tech_start,
+        s.parent_skill,
+        s.child_skill
+      FROM posts p
+      JOIN skilltree s ON p.post_id = s.post_id
+      WHERE LOWER(s.domain) = LOWER($1)
+        AND p.properties->>'category4' IS NULL
+      ORDER BY s.tech_start ASC NULLS LAST, title ASC
     `,
     [matchCategory2],
   );
 
-  let rows = result.rows;
-
-  // 스킬 트리는 시간 역순이 아니라 시간 오름차순(ASC)으로 정렬해야 합니다.
-  rows.sort((a, b) => {
-    const dateA = a.properties?.techStart || a.properties?.startDate || dateString(a.created_at);
-    const dateB = b.properties?.techStart || b.properties?.startDate || dateString(b.created_at);
-    if (dateA !== dateB) return dateA.localeCompare(dateB); // ASC
-    const titleA = a.properties?.title || a.slug;
-    const titleB = b.properties?.title || b.slug;
-    return titleA.localeCompare(titleB);
+  return result.rows.map((row) => {
+    const metadata = rowToMetadata(row);
+    return {
+      post_id: row.post_id,
+      likes_count: row.likes_count,
+      slug: row.slug,
+      content: row.content,
+      metadata: {
+        ...metadata,
+        title: row.title,
+        category1: 'skilltree',
+        category2: row.domain,
+        category3: row.sub_domain,
+        techStart: row.tech_start ? String(row.tech_start) : metadata.techStart,
+        parentSkill: row.parent_skill,
+        childSkill: row.child_skill,
+      },
+    };
   });
-
-  return rows.map((row) => ({
-    post_id: row.post_id,
-    likes_count: row.likes_count,
-    slug: row.slug,
-    content: row.content,
-    metadata: rowToMetadata(row),
-  }));
 };
 
 export const getPostData = async (id: string) => {

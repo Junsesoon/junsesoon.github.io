@@ -4,7 +4,7 @@
 
 ## Files
 - `actions.ts`: 클라이언트 컴포넌트에서 폼 제출 시 호출하는 Next.js Server Actions 모음입니다.
-  - **게시물 관리**: JSONB 단일 컬럼 스키마(`properties`)를 활용하여 유연하게 게시물을 생성(Create), 수정(Update), 삭제(Delete)하며, **선택된 여러 게시물의 데이터를 안전하게 변경하는 일괄 수정(Batch Update)** 기능도 지원합니다.
+  - **게시물 관리**: JSONB 단일 컬럼 스키마(`properties`)를 활용하여 유연하게 게시물을 생성(Create), 수정(Update), 삭제(Delete)하며, 일괄 수정(Batch Update) 기능도 지원합니다. 스킬 트리 게시물의 경우 1:1 확장 테이블(`skilltree`)에 메타데이터를 분리 저장하고, 일반 카테고리로 변경 시 잉여 데이터를 자동으로 정리(Clean-up)합니다.
   - **메타데이터 관리**: 카테고리 템플릿 및 전역 속성을 추가/삭제/이름 변경(Rename)하거나 **전역 필수 여부(is_essential)**를 토글하는 로직을 처리합니다. 특히 속성 이름 변경 시 DB 트랜잭션을 통해 기존 모든 게시물의 JSONB 데이터(`properties`)도 일괄적으로 안전하게 동기화합니다.
   - **보안**: IP 기반 Rate Limiting을 적용하여 관리자 로그인 시 브루트 포스(무차별 대입) 공격을 방어합니다.
 - `publicActions.ts`: 일반 방문자(Public) 전용 Next.js Server Actions 모음입니다.
