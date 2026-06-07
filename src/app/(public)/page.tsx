@@ -13,6 +13,7 @@ export default async function Home({ searchParams }: { searchParams?: Promise<{ 
   // 이미 getAllPosts(mode) 내부에서 모드에 맞게 필터링된 게시물을 가져오므로 배열의 길이를 그대로 사용합니다.
   const totalPostsCount = posts.length;
   const totalLikesCount = posts.reduce((sum: number, post: any) => sum + (Number(post.likes_count) || 0), 0);
+  const totalViewsCount = posts.reduce((sum: number, post: any) => sum + (Number(post.views_count) || 0), 0);
   
   let totalSkillsCount = 0;
   if (mode === 'portfolio') {
@@ -34,7 +35,7 @@ export default async function Home({ searchParams }: { searchParams?: Promise<{ 
           {mode === 'portfolio' ? "Junseo's Portfolio 🚀" : "Junseo's Blog 🚀"}
         </h1>
         <p className="text-xl text-gray-600">What are you looking for?</p>
-        <BlogStats totalPosts={totalPostsCount} totalLikes={totalLikesCount} totalSkills={totalSkillsCount} />
+        <BlogStats totalPosts={totalPostsCount} totalLikes={totalLikesCount} totalSkills={totalSkillsCount} totalVisitors={totalViewsCount} />
       </header>
       <section>
         <h2 className="mb-6 border-b border-gray-200 pb-2 text-3xl">최신 글</h2>

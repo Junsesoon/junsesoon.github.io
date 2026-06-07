@@ -7,6 +7,7 @@ import rehypeHighlight from 'rehype-highlight';
 import rehypeStringify from 'rehype-stringify';
 import TOC from '../../../../components/TOC';
 import LikeButton from '../../../../components/LikeButton';
+import ViewTracker from '../../../../components/ViewTracker';
 import { collectTocHeadings, type TocHeading } from '../../../../utils/parser';
 import { getDbPostBySlug, getAllPosts } from '../../../../utils/posts';
 
@@ -115,6 +116,9 @@ export default async function PostPage({
           <div className="mt-16 mb-8 flex justify-center">
             <LikeButton postId={post.post_id || ''} initialLikesCount={post.likes_count || 0} />
           </div>
+          
+          {/* 백그라운드 조회수 집계 트리커 */}
+          <ViewTracker postId={post.post_id || ''} />
         </article>
       </main>
 

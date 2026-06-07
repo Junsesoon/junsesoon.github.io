@@ -47,11 +47,11 @@ function AnimatedNumber({ value }: { value: string }) {
   return <>{prefix}{formattedCount}{suffix}</>;
 }
 
-export default function BlogStats({ totalPosts = 0, totalLikes = 0, totalSkills = 0 }: { totalPosts?: number; totalLikes?: number; totalSkills?: number }) {
+export default function BlogStats({ totalPosts = 0, totalLikes = 0, totalSkills = 0, totalVisitors = 0 }: { totalPosts?: number; totalLikes?: number; totalSkills?: number; totalVisitors?: number }) {
   const stats = [
     { value: totalPosts.toString(), label: 'Total Posts', borderColor: 'border-rose-300' },
     { value: totalSkills.toString(), label: 'Total Skills', borderColor: 'border-emerald-300' },
-    { value: '450', label: 'Total Visitors', borderColor: 'border-purple-300' },
+    { value: totalVisitors.toString(), label: 'Total Views', borderColor: 'border-purple-300' },
     { value: totalLikes.toString(), label: 'Total Likes', borderColor: 'border-blue-300' },
   ];
 
@@ -63,7 +63,7 @@ export default function BlogStats({ totalPosts = 0, totalLikes = 0, totalSkills 
             <span className="text-3xl md:text-4xl font-extrabold text-slate-800 tracking-tight">
               <AnimatedNumber value={stat.value} />
             </span>
-            <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
+            <span className="text-xs font-semibold text-slate-400 tracking-wider">
               {stat.label}
             </span>
           </div>

@@ -69,3 +69,54 @@ export async function toggleLikeAction(postId: string, sessionId: string) {
     return { success: false, message: '서버 오류가 발생했습니다.' };
   }
 }
+
+export async function incrementViewCountAction(postId: string, sessionId: string) {
+  const headerList = await headers();
+  const ip = headerList.get('x-forwarded-for') || 'unknown';
+
+  try {
+    // 최근 n시간 이내에 동일한 IP에서 해당 게시물을 조회한 기록이 있는지 확인하는 방법
+    // const check = await query(
+    //   `SELECT view_id FROM views_manage 
+    //    WHERE post_id = $1 AND ip_address = $2 
+    //      AND viewed_at > NOW() - INTERVAL '24 hours'`,
+    //       [postId, ip]
+    // );
+
+    // 한국 시간(KST) 기준으로 매일 새벽 4시를 쿨다운 기준점(threshold)으로 설정
+    const now = new Date();
+    const kstOffset = 9 * 60 * 60 * 1000;
+    const kstNow = new Date(now.getTime() + kstOffset);
+    
+    const resetHour = 4; // 새벽 4시 초기화
+    if (kstNow.getUTCHours() < resetHour) {
+      kstNow.setUTCDate(kstNow.getUTCDate() - 1);
+    }
+    kstNow.setUTCHours(resetHour, 0, 0, 0);
+    
+    // DB 비교를 위해 다시 UTC ISO 문자열로 변환
+    const thresholdUTC = new Date(kstNow.getTime() - kstOffset).toISOString();
+
+    // 기준점(마지막 새벽 4시) 이후에 동일한 IP에서 해당 게시물을 조회한 기록이 있는지 확인
+    const check = await query(
+      `SELECT view_id FROM views_manage 
+       WHERE post_id = $1 AND ip_address = $2 
+         AND viewed_at > $3`,
+      [postId, ip, thresholdUTC]
+    );
+
+    // 기록이 있다면 쿨다운 적용 (조회수 증가 안 함)
+    if (check.rowCount && check.rowCount > 0) {
+      return { success: true, incremented: false };
+    }
+
+    // 기록이 없다면 조회 이력 추가 및 게시물 조회수 1 증가
+    await query('INSERT INTO views_manage (post_id, ip_address, session_id) VALUES ($1, $2, $3)', [postId, ip, sessionId]);
+    await query('UPDATE posts SET views_count = views_count + 1 WHERE post_id = $1', [postId]);
+
+    return { success: true, incremented: true };
+  } catch (error) {
+    console.error('Failed to increment view count:', error);
+    return { success: false, message: '서버 오류가 발생했습니다.' };
+  }
+}

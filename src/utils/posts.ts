@@ -53,6 +53,7 @@ function rowToPost(row: any): Post {
   return {
     post_id: row.post_id,
     likes_count: row.likes_count,
+    views_count: row.views_count,
     slug: row.slug,
     title: props.title || titleFromSlug(row.slug),
     excerpt: props.summary || '',
@@ -83,7 +84,7 @@ export const getAllPosts = async (
   filters: PostFilterOptions = {},
 ): Promise<Post[]> => {
   const result = await query<any>(`
-    SELECT post_id, likes_count, slug, content, properties, created_at, updated_at
+    SELECT post_id, likes_count, views_count, slug, content, properties, created_at, updated_at
     FROM posts
   `);
 
@@ -117,7 +118,7 @@ export const getAllPosts = async (
 
 export const getCategoryPosts = async (category: string, mode: string = 'blog'): Promise<Post[]> => {
   const result = await query<any>(`
-    SELECT post_id, likes_count, slug, content, properties, created_at, updated_at
+    SELECT post_id, likes_count, views_count, slug, content, properties, created_at, updated_at
     FROM posts
   `);
 
@@ -144,7 +145,7 @@ export const getCategoryPosts = async (category: string, mode: string = 'blog'):
 export const getDbPostBySlug = async (slug: string): Promise<DbPost | null> => {
   const result = await query<any>(
     `
-      SELECT post_id, likes_count, slug, content, properties, created_at, updated_at
+      SELECT post_id, likes_count, views_count, slug, content, properties, created_at, updated_at
       FROM posts
       WHERE slug = $1
       LIMIT 1
@@ -158,6 +159,7 @@ export const getDbPostBySlug = async (slug: string): Promise<DbPost | null> => {
   return {
     post_id: row.post_id,
     likes_count: row.likes_count,
+    views_count: row.views_count,
     slug: row.slug,
     content: row.content,
     metadata: rowToMetadata(row),
@@ -170,6 +172,7 @@ export const getSkillTreePosts = async (matchCategory2: string): Promise<DbPost[
       SELECT 
         p.post_id, 
         p.likes_count,
+        p.views_count,
         p.slug, 
         p.content, 
         p.properties, 
@@ -195,6 +198,7 @@ export const getSkillTreePosts = async (matchCategory2: string): Promise<DbPost[
     return {
       post_id: row.post_id,
       likes_count: row.likes_count,
+      views_count: row.views_count,
       slug: row.slug,
       content: row.content,
       metadata: {
