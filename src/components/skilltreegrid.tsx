@@ -1,6 +1,9 @@
 import path from 'path';
 import SkillTreeInteractive from './SkillTreeInteractive';
 import { getSkillTreePosts } from '../utils/posts';
+import { cookies } from 'next/headers';
+import { verifyAdminToken } from '@/utils/auth';
+
 
 export interface SkillNode {
   file: string;
@@ -22,6 +25,10 @@ interface SkillTreeGridProps {
 }
 
 export default async function SkillTreeGrid({ title, description, matchCategory2 }: SkillTreeGridProps) {
+  const cookieStore = await cookies();
+  const token = cookieStore.get('admin_auth')?.value;
+  const isAdmin = token ? await verifyAdminToken(token) : false;
+
   const COLUMNS = 12;
   const nodes = new Map<string, SkillNode>();
   const posts = await getSkillTreePosts(matchCategory2);
@@ -130,6 +137,7 @@ export default async function SkillTreeGrid({ title, description, matchCategory2
       <SkillTreeInteractive
         nodes={nodesRecord} 
         COLUMNS={COLUMNS} 
+        isAdmin={isAdmin}
       />
     </div>
   );
