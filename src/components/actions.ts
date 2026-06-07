@@ -42,15 +42,50 @@ export async function createPostAction(data: PostFormData) {
 
     // 2. .env(DB_ENV)에 의해 연결된 DB로 쿼리 실행
     // 만약 중복된 슬러그가 있을 경우 덮어쓰기(Upsert)를 수행해 에러를 방지합니다.
-    await query(
+    const result = await query(
       `INSERT INTO posts (slug, content, properties)
        VALUES ($1, $2, $3)
       ON CONFLICT (slug) DO UPDATE SET
          content = EXCLUDED.content,
          properties = EXCLUDED.properties,
-         updated_at = CURRENT_TIMESTAMP`,
+         updated_at = CURRENT_TIMESTAMP
+       RETURNING post_id`,
       [slug, content || '', JSON.stringify(properties)]
     );
+
+    const postId = result.rows[0]?.post_id;
+
+    if (postId) {
+      const cat1 = String(properties.category1 || '').trim().toLowerCase().replace(/[-\s_]+/g, '');
+      
+      if (cat1 === 'skilltree') {
+        const domain = properties.category2 ? String(properties.category2) : null;
+        const sub_domain = properties.category3 ? String(properties.category3) : null;
+        
+        const techStartStr = String(properties.techStart || '');
+        const techMatch = techStartStr.match(/\d{4}/);
+        const tech_start = techMatch ? parseInt(techMatch[0], 10) : null;
+
+        const toArray = (val: any): string[] => {
+          if (val === null || val === undefined || val === '') return [];
+          if (Array.isArray(val)) return val.flatMap(toArray);
+          return String(val).split(',').map((s) => s.trim()).filter(Boolean);
+        };
+
+        await query(
+          `INSERT INTO skilltree (post_id, domain, sub_domain, tech_start, parent_skill, child_skill)
+           VALUES ($1, $2, $3, $4, $5, $6)
+           ON CONFLICT (post_id) DO UPDATE SET
+             domain = EXCLUDED.domain,
+             sub_domain = EXCLUDED.sub_domain,
+             tech_start = EXCLUDED.tech_start,
+             parent_skill = EXCLUDED.parent_skill,
+             child_skill = EXCLUDED.child_skill,
+             updated_at = CURRENT_TIMESTAMP`,
+          [postId, domain, sub_domain, tech_start, toArray(properties.parentSkill), toArray(properties.childSkill)]
+        );
+      }
+    }
 
     // 3. 캐시를 무효화하여 Admin 대시보드와 블로그 홈에서 새로운 데이터를 즉시 가져오도록 조치합니다.
     revalidatePath('/admin');
@@ -176,12 +211,50 @@ export async function updatePostAction(originalSlug: string, data: PostFormData)
       );
     }
 
-    await query(
+    const result = await query(
       `UPDATE posts
        SET slug = $1, content = $2, properties = $3, updated_at = CURRENT_TIMESTAMP
-       WHERE slug = $4`,
+       WHERE slug = $4
+       RETURNING post_id`,
       [newSlug, content || '', JSON.stringify(properties), originalSlug]
     );
+
+    const postId = result.rows[0]?.post_id;
+
+    if (postId) {
+      const cat1 = String(properties.category1 || '').trim().toLowerCase().replace(/[-\s_]+/g, '');
+      
+      if (cat1 === 'skilltree') {
+        const domain = properties.category2 ? String(properties.category2) : null;
+        const sub_domain = properties.category3 ? String(properties.category3) : null;
+        
+        const techStartStr = String(properties.techStart || '');
+        const techMatch = techStartStr.match(/\d{4}/);
+        const tech_start = techMatch ? parseInt(techMatch[0], 10) : null;
+
+        const toArray = (val: any): string[] => {
+          if (val === null || val === undefined || val === '') return [];
+          if (Array.isArray(val)) return val.flatMap(toArray);
+          return String(val).split(',').map((s) => s.trim()).filter(Boolean);
+        };
+
+        await query(
+          `INSERT INTO skilltree (post_id, domain, sub_domain, tech_start, parent_skill, child_skill)
+           VALUES ($1, $2, $3, $4, $5, $6)
+           ON CONFLICT (post_id) DO UPDATE SET
+             domain = EXCLUDED.domain,
+             sub_domain = EXCLUDED.sub_domain,
+             tech_start = EXCLUDED.tech_start,
+             parent_skill = EXCLUDED.parent_skill,
+             child_skill = EXCLUDED.child_skill,
+             updated_at = CURRENT_TIMESTAMP`,
+          [postId, domain, sub_domain, tech_start, toArray(properties.parentSkill), toArray(properties.childSkill)]
+        );
+      } else {
+        // 스킬 트리에서 다른 템플릿(일반 카테고리)으로 속성이 변경된 경우 연관 데이터 Clean-up
+        await query('DELETE FROM skilltree WHERE post_id = $1', [postId]);
+      }
+    }
 
     revalidatePath('/admin');
     revalidatePath('/');
@@ -360,6 +433,16 @@ export async function getEssentialPropertiesAction() {
     return result.rows.map((row) => row.property_name);
   } catch (error) {
     console.error('getEssentialPropertiesAction error:', error);
+    return [];
+  }
+}
+
+export async function getAllPropertyNamesAction() {
+  try {
+    const result = await query('SELECT property_name FROM property_list ORDER BY property_name ASC');
+    return result.rows.map((row) => row.property_name);
+  } catch (error) {
+    console.error('getAllPropertyNamesAction error:', error);
     return [];
   }
 }

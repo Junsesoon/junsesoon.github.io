@@ -6,6 +6,8 @@ import remarkRehype from 'remark-rehype';
 import rehypeHighlight from 'rehype-highlight';
 import rehypeStringify from 'rehype-stringify';
 import TOC from '../../../../components/TOC';
+import LikeButton from '../../../../components/LikeButton';
+import ViewTracker from '../../../../components/ViewTracker';
 import { collectTocHeadings, type TocHeading } from '../../../../utils/parser';
 import { getDbPostBySlug, getAllPosts } from '../../../../utils/posts';
 
@@ -69,25 +71,29 @@ export default async function PostPage({
     <div className="mx-auto flex flex-col lg:flex-row max-w-6xl gap-8 p-8 font-sans">
       <main className="min-w-0 flex-1 ml-0">
         <article>
-          <header className="mb-12 flex min-h-40 flex-col justify-center gap-4 border-b border-gray-200 py-10">
-            <h1 className="mb-2 text-4xl">
+          <header className="mb-6 flex min-h-40 flex-col justify-center gap-4 border-b border-gray-200 py-10">
+            <h1 className="text-4xl">
               {postData.title || idString.split(/[-/]+/).map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}
             </h1>
-            <div className="my-2 text-gray-600">
-              <p>
-                작성일: {formatKoreanDate(postData.startDate) ?? '정보 없음'}
-              </p>
-              <p>
-                수정일: {formatKoreanDate(postData.endDate) ?? '정보 없음'}
-              </p>
+            
+            <div className="flex items-start justify-between gap-4">
+              <div className="my-0 text-gray-600">
+                <p>
+                  작성일: {formatKoreanDate(postData.startDate) ?? '정보 없음'}
+                </p>
+                <p>
+                  수정일: {formatKoreanDate(postData.endDate) ?? '정보 없음'}
+                </p>
+              </div>
+            <LikeButton postId={post.post_id || ''} initialLikesCount={post.likes_count || 0} />
             </div>
             {postData.summary && (
-              <p className="my-4 text-lg text-gray-800">
+              <p className="my-0 text-lg text-gray-800">
                 {postData.summary}
               </p>
             )}
             {postData.tags && postData.tags.length > 0 && (
-              <div className="mt-4">
+              <div className="mt-0">
                 <strong>Tags:</strong>{' '}
                 {postData.tags.map((tag: string) => (
                   <span
@@ -105,6 +111,14 @@ export default async function PostPage({
             className="post-body text-base leading-relaxed"
             dangerouslySetInnerHTML={{ __html: contentHtml }}
           />
+
+          {/* 하단 중앙 좋아요 버튼 */}
+          <div className="mt-16 mb-8 flex justify-center">
+            <LikeButton postId={post.post_id || ''} initialLikesCount={post.likes_count || 0} />
+          </div>
+          
+          {/* 백그라운드 조회수 집계 트리커 */}
+          <ViewTracker postId={post.post_id || ''} />
         </article>
       </main>
 

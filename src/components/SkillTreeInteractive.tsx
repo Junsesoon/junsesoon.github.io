@@ -7,11 +7,12 @@ import { SkillNode } from './skilltreegrid';
 interface Props {
   nodes: Record<string, SkillNode>;
   COLUMNS: number;
+  isAdmin?: boolean;
 }
 
-export default function SkillTreeInteractive({ nodes, COLUMNS }: Props) {
+export default function SkillTreeInteractive({ nodes, COLUMNS, isAdmin }: Props) {
   const [selectedNode, setSelectedNode] = useState<SkillNode | null>(null);
-  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   // 마우스 드래그(Pan) 스크롤 처리를 위한 상태 및 Ref
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -45,12 +46,12 @@ export default function SkillTreeInteractive({ nodes, COLUMNS }: Props) {
     if (isDragged.current) return; // 드래그 시 클릭 이벤트 무시
     if (node) {
       setSelectedNode(node);
-      setIsDrawerOpen(true);
+      setIsModalOpen(true);
     }
   };
 
-  const closeDrawer = () => {
-    setIsDrawerOpen(false);
+  const closeModal = () => {
+    setIsModalOpen(false);
   };
 
   // Generate lines between parents and children
@@ -134,68 +135,82 @@ export default function SkillTreeInteractive({ nodes, COLUMNS }: Props) {
         </div>
       </div>
 
-      {/* Side Drawer */}
-      <div 
-        className={`fixed top-0 right-0 h-full w-[400px] max-w-full bg-white shadow-2xl transform transition-transform duration-300 ease-in-out z-50 overflow-y-auto ${
-          isDrawerOpen ? 'translate-x-0' : 'translate-x-full'
-        }`}
-      >
-        <div className="p-6 relative min-h-full flex flex-col">
-          <button 
-            onClick={closeDrawer}
-            className="absolute top-4 right-4 text-gray-400 hover:text-gray-800 text-2xl font-bold w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors"
-          >
-            &times;
-          </button>
-          
-          {selectedNode && (
-            <div className="mt-8 text-black flex-1">
-              <h2 className="text-2xl font-bold mb-6 border-b border-gray-200 pb-3">
-                {selectedNode.title}
-              </h2>
+      {/* Modal Overlay */}
+      {isModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6">
+          {/* Backdrop */}
+          <div 
+            className="absolute inset-0 bg-black/40 backdrop-blur-sm transition-opacity"
+            onClick={closeModal}
+          />
+
+          {/* Modal Content */}
+          <div className="relative w-full max-w-[600px] max-h-[600px] bg-white rounded-2xl shadow-2xl flex flex-col z-10 overflow-hidden transform transition-all scale-100 opacity-100">
+            <div className="p-6 sm:p-8 overflow-y-auto">
+              <button 
+                onClick={closeModal}
+                className="absolute top-4 right-4 text-gray-400 hover:text-gray-800 text-2xl font-bold w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors"
+              >
+                &times;
+              </button>
               
-              <div className="mb-6 bg-gray-50 p-4 rounded-lg border border-gray-100 shadow-inner">
-                <h3 className="text-xs font-bold text-gray-500 mb-3 uppercase tracking-wider">Frontmatter</h3>
-                <div className="space-y-2">
-                  {Object.entries(selectedNode.frontmatter).map(([key, value]) => (
-                    <div key={key} className="text-sm flex flex-col sm:flex-row sm:gap-2">
-                      <span className="font-semibold text-gray-700 min-w-[120px] shrink-0">{key}:</span>
-                      <span className="text-gray-600 break-words">
-                        {Array.isArray(value) ? value.join(', ') : String(value)}
-                      </span>
+              {selectedNode && (
+                <div className="mt-2 text-black flex-1">
+                  <div className="flex items-center justify-between mb-6 border-b border-gray-200 pb-3 pr-6">
+                    <h2 className="text-2xl font-bold">
+                      {selectedNode.title}
+                    </h2>
+                    {isAdmin && (
+                    <Link 
+                      href={`/admin/edit/${selectedNode.slug}?redirect=/skilltree`}
+                      onClick={closeModal}
+                      className="shrink-0 ml-4 px-3 py-1.5 text-sm font-semibold text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors focus:outline-none"
+                    >
+                        수정
+                    </Link>
+                    )}
+                  </div>
+                  
+                  {Object.keys(selectedNode.frontmatter).some(key => ['startDate', 'endDate', 'summary'].includes(key)) && (
+                    <div className="mb-6 bg-gray-50 p-4 rounded-lg border border-gray-100 shadow-inner">
+                      <h3 className="text-xs font-bold text-gray-500 mb-3 uppercase tracking-wider">INFO</h3>
+                      <div className="space-y-2">
+                        {Object.entries(selectedNode.frontmatter)
+                          .filter(([key]) => ['startDate', 'endDate', 'summary'].includes(key))
+                          .map(([key, value]) => (
+                            <div key={key} className="text-sm flex flex-col sm:flex-row sm:gap-2">
+                              <span className="font-semibold text-gray-700 min-w-[120px] shrink-0">{key}:</span>
+                              <span className="text-gray-600 break-words">
+                                {Array.isArray(value) ? value.join(', ') : String(value)}
+                              </span>
+                            </div>
+                          ))}
+                      </div>
                     </div>
-                  ))}
-                </div>
-              </div>
+                  )}
 
-              <div>
-                <h3 className="text-xs font-bold text-gray-500 mb-3 uppercase tracking-wider">Content</h3>
-                <div className="bg-white border border-gray-100 rounded-lg p-4 shadow-sm">
-                  <pre className="whitespace-pre-wrap font-sans text-sm text-gray-700 leading-relaxed break-words">
-                    {selectedNode.content || <span className="text-gray-400 italic">No content</span>}
-                  </pre>
-                </div>
-              </div>
+                  <div>
+                    <h3 className="text-xs font-bold text-gray-500 mb-3 uppercase tracking-wider">Content</h3>
+                    <div className="bg-white border border-gray-100 rounded-lg p-4 shadow-sm">
+                      <pre className="whitespace-pre-wrap font-sans text-sm text-gray-700 leading-relaxed break-words">
+                        {selectedNode.content || <span className="text-gray-400 italic">No content</span>}
+                      </pre>
+                    </div>
+                  </div>
 
-              <div className="mt-8 flex justify-end">
-                <Link
-                  href={`/${selectedNode.slug}`}
-                  className="bg-blue-600 text-white px-5 py-2.5 rounded-lg shadow-md hover:bg-blue-700 transition-colors text-sm font-semibold"
-                >
-                  게시물 자세히 보기 &rarr;
-                </Link>
-              </div>
+                  <div className="mt-8 flex justify-end">
+                    <Link
+                      href={`/${selectedNode.slug}`}
+                      className="bg-blue-600 text-white px-5 py-2.5 rounded-lg shadow-md hover:bg-blue-700 transition-colors text-sm font-semibold"
+                    >
+                      게시물 자세히 보기 &rarr;
+                    </Link>
+                  </div>
+                </div>
+              )}
             </div>
-          )}
+          </div>
         </div>
-      </div>
-      
-      {/* Backdrop */}
-      {isDrawerOpen && (
-        <div 
-          className="fixed inset-0 bg-black/40 backdrop-blur-sm z-40 transition-opacity"
-          onClick={closeDrawer}
-        />
       )}
     </div>
   );

@@ -51,10 +51,16 @@ function rowToMetadata(row: any): FrontMatter {
 function rowToPost(row: any): Post {
   const props = row.properties || {};
   return {
+    post_id: row.post_id,
+    likes_count: row.likes_count,
+    views_count: row.views_count,
     slug: row.slug,
     title: props.title || titleFromSlug(row.slug),
     excerpt: props.summary || '',
     date: dateString(props.startDate || props.date || row.created_at),
+    category1: props.category1 || null,
+    category2: props.category2 || null,
+    metadata: props,
   };
 }
 
@@ -68,12 +74,17 @@ function hasNormalizedCategory(value: string | null, category: string) {
   return normalizeCategoryValue(value).includes(normalizeCategoryValue(category));
 }
 
+export const getTotalPostCount = async (): Promise<number> => {
+  const result = await query<{ count: string }>(`SELECT COUNT(*) FROM posts`);
+  return parseInt(result.rows[0].count, 10);
+};
+
 export const getAllPosts = async (
   mode: string = 'blog',
   filters: PostFilterOptions = {},
 ): Promise<Post[]> => {
   const result = await query<any>(`
-    SELECT slug, content, properties, created_at, updated_at
+    SELECT post_id, likes_count, views_count, slug, content, properties, created_at, updated_at
     FROM posts
   `);
 
@@ -107,7 +118,7 @@ export const getAllPosts = async (
 
 export const getCategoryPosts = async (category: string, mode: string = 'blog'): Promise<Post[]> => {
   const result = await query<any>(`
-    SELECT slug, content, properties, created_at, updated_at
+    SELECT post_id, likes_count, views_count, slug, content, properties, created_at, updated_at
     FROM posts
   `);
 
@@ -134,7 +145,7 @@ export const getCategoryPosts = async (category: string, mode: string = 'blog'):
 export const getDbPostBySlug = async (slug: string): Promise<DbPost | null> => {
   const result = await query<any>(
     `
-      SELECT slug, content, properties, created_at, updated_at
+      SELECT post_id, likes_count, views_count, slug, content, properties, created_at, updated_at
       FROM posts
       WHERE slug = $1
       LIMIT 1
@@ -146,6 +157,9 @@ export const getDbPostBySlug = async (slug: string): Promise<DbPost | null> => {
   if (!row) return null;
 
   return {
+    post_id: row.post_id,
+    likes_count: row.likes_count,
+    views_count: row.views_count,
     slug: row.slug,
     content: row.content,
     metadata: rowToMetadata(row),
@@ -155,32 +169,50 @@ export const getDbPostBySlug = async (slug: string): Promise<DbPost | null> => {
 export const getSkillTreePosts = async (matchCategory2: string): Promise<DbPost[]> => {
   const result = await query<any>(
     `
-      SELECT slug, content, properties, created_at, updated_at
-      FROM posts
-      WHERE (properties->>'category1' ILIKE 'skill tree' OR properties->>'category1' ILIKE 'skilltree')
-        AND LOWER(properties->>'category2') = LOWER($1)
-        AND properties->>'category4' IS NULL
+      SELECT 
+        p.post_id, 
+        p.likes_count,
+        p.views_count,
+        p.slug, 
+        p.content, 
+        p.properties, 
+        p.created_at, 
+        p.updated_at,
+        COALESCE(p.properties->>'title', p.slug) AS title,
+        s.domain,
+        s.sub_domain,
+        s.tech_start,
+        s.parent_skill,
+        s.child_skill
+      FROM posts p
+      JOIN skilltree s ON p.post_id = s.post_id
+      WHERE LOWER(s.domain) = LOWER($1)
+        AND p.properties->>'category4' IS NULL
+      ORDER BY s.tech_start ASC NULLS LAST, title ASC
     `,
     [matchCategory2],
   );
 
-  let rows = result.rows;
-
-  // 스킬 트리는 시간 역순이 아니라 시간 오름차순(ASC)으로 정렬해야 합니다.
-  rows.sort((a, b) => {
-    const dateA = a.properties?.techStart || a.properties?.startDate || dateString(a.created_at);
-    const dateB = b.properties?.techStart || b.properties?.startDate || dateString(b.created_at);
-    if (dateA !== dateB) return dateA.localeCompare(dateB); // ASC
-    const titleA = a.properties?.title || a.slug;
-    const titleB = b.properties?.title || b.slug;
-    return titleA.localeCompare(titleB);
+  return result.rows.map((row) => {
+    const metadata = rowToMetadata(row);
+    return {
+      post_id: row.post_id,
+      likes_count: row.likes_count,
+      views_count: row.views_count,
+      slug: row.slug,
+      content: row.content,
+      metadata: {
+        ...metadata,
+        title: row.title,
+        category1: 'skilltree',
+        category2: row.domain,
+        category3: row.sub_domain,
+        techStart: row.tech_start ? String(row.tech_start) : metadata.techStart,
+        parentSkill: row.parent_skill,
+        childSkill: row.child_skill,
+      },
+    };
   });
-
-  return rows.map((row) => ({
-    slug: row.slug,
-    content: row.content,
-    metadata: rowToMetadata(row),
-  }));
 };
 
 export const getPostData = async (id: string) => {

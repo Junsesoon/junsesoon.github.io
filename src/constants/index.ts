@@ -2,7 +2,7 @@ export const PORTFOLIO_MENU = [
 //{ href: '/?mode=portfolio', text: 'Home', exact: true }, 버튼 중복
   { href: '/about?mode=portfolio', text: 'About' },
   { href: '/project?mode=portfolio', text: 'Project' },
-  { href: '/skill?mode=portfolio', text: 'Skill' },
+  { href: '/myskill?mode=portfolio', text: 'My Skill' },
   { href: '/decision?mode=portfolio', text: 'Decision' },
   { href: '/troubleshooting?mode=portfolio', text: 'Troubleshooting' },
 ] as const;

@@ -1,5 +1,5 @@
 # scripts folder readme
-수정일: 2026-06-04
+수정일: 2026-06-05
 - 마크다운 파일과 PostgreSQL 데이터베이스 간의 데이터 동기화 및 마이그레이션을 담당하는 독립적인 유틸리티 스크립트들을 관리합니다
 - 데이터베이스 스키마 초기화 및 시드 데이터 주입을 위한 SQL 스크립트 파일들도 함께 관리합니다
 
@@ -9,10 +9,15 @@
 - `001_schema_posts.sql`: 공통 필수 메타데이터와 동적 프론트매터를 담는 `properties` (JSONB) 컬럼을 가진 단일 `posts` 테이블 생성 DDL
 - `002_schema_properties.sql`: 전역 속성(`property_list`)과 필수 여부(`is_essential`)를 독립적으로 관리하는 속성 관리 테이블 생성 DDL
 - `003_schema_templates.sql`: 템플릿 카테고리(`template_list`)와 속성 간의 M:N 매핑을 관리하는 테이블(`template_property`) 생성 DDL
+- `004_schema_likes.sql`: 좋아요(유익함) 조회를 위한 `posts` 테이블 역정규화 컬럼(`likes_count`) 추가 및 세션 기반 중복/도배 차단을 위한 `likes_manage` 테이블 생성 DDL
+- `005_schema_skilltree.sql`: 스킬 트리 고유 속성(도메인, 연도, 부모/자식 참조 등)을 관리하기 위한 1:1 확장 테이블(`skilltree`) 생성 DDL
+- `006_schema_views.sql`: 게시물 조회수 집계를 위한 `posts` 테이블 역정규화 컬럼(`views_count`) 추가 및 어뷰징 방지(쿨다운)용 조회 이력 관리 테이블(`views_manage`) 생성 DDL
+- `007_schema_visitors.sql`: 사이트 전역의 일간 순 방문자(Unique Visitor) 추적을 위한 `site_visitors` 테이블 및 전체 방문자 통계 캐싱용 `site_stats` 테이블 생성 DDL
 
 ### 유틸리티 스크립트 (TS)
 - `upload-posts.ts`: `public/upload-posts` 마크다운을 읽어 DB로 업로드하는 스크립트입니다.
   - 마크다운의 모든 Frontmatter를 추출하여 단일 JSONB 객체 형태로 `posts` 테이블의 `properties` 컬럼에 안전하게 통합 저장(Upsert)합니다.
+  - 단, 카테고리가 `skilltree`인 경우 공통 정보는 `posts`에, 고유 정보는 `skilltree` 테이블에 분리 저장하여 1:1 확장 테이블 구조를 유지합니다. 일반 카테고리로 변경될 경우 잉여 데이터를 자동 정리(Clean-up)합니다.
   - `--write` 플래그 없이 실행 시 실제 DB 변경 없이 파싱 결과 요약(Dry Run)만 출력합니다.
   - `--limit=N` 플래그를 통해 파싱할 파일 개수를 제한하여 테스트해 볼 수 있습니다.
 - `download-posts.ts`: DB에 저장된 게시물 데이터(단일 테이블의 JSONB)를 로컬 마크다운 파일(`public/download-posts`)로 다시 복원하는 스크립트입니다.

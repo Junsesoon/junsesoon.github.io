@@ -1,8 +1,14 @@
 export interface Post {
+  post_id?: string;
+  likes_count?: number;
+  views_count?: number;
   slug: string;
   title: string;
   date: string;
   excerpt: string;
+  category1?: string | string[];
+  category2?: string | string[];
+  metadata?: any;
 }
 
 // frontmatter를 포함한 게시물 내부 처리용 타입
@@ -48,6 +54,9 @@ export interface FrontMatter {
 }
 
 export interface DbPost {
+  post_id?: string;
+  likes_count?: number;
+  views_count?: number;
   slug: string;
   content: string;
   metadata: FrontMatter;

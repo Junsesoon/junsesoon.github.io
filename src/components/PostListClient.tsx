@@ -11,6 +11,7 @@ interface Post {
   category1: string;
   category2: string;
   date: string | number | Date;
+  likes_count?: number;
 }
 
 interface PostListClientProps {
@@ -49,7 +50,7 @@ export default function PostListClient({ posts, sort, order }: PostListClientPro
     const isActive = sort === key;
     const nextOrder = isActive && order === 'asc' ? 'desc' : 'asc';
     return (
-      <th scope="col" className="px-6 py-4 font-semibold text-gray-900 whitespace-nowrap">
+      <th scope="col" className="px-3 py-2 font-semibold text-gray-900 whitespace-nowrap">
         <Link href={`/admin?sort=${key}&order=${nextOrder}`} className="group inline-flex items-center gap-1 transition-colors hover:text-blue-600">
           {label}
           <span className={`text-xs ${isActive ? 'text-blue-600' : 'text-gray-300 group-hover:text-blue-400'}`}>
@@ -108,7 +109,7 @@ export default function PostListClient({ posts, sort, order }: PostListClientPro
         <table className="min-w-full divide-y divide-gray-200 text-left text-sm">
           <thead className="bg-gray-50">
             <tr>
-              <th scope="col" className="px-6 py-4 w-10 text-center">
+              <th scope="col" className="px-3 py-2 w-10 text-center">
                 <input 
                   type="checkbox" 
                   checked={isAllSelected}
@@ -120,16 +121,17 @@ export default function PostListClient({ posts, sort, order }: PostListClientPro
               {renderHeader('location', 'Location')}
               {renderHeader('category1', 'Cat1')}
               {renderHeader('category2', 'Cat2')}
-              <th scope="col" className="px-6 py-4 font-semibold text-gray-900">Status</th>
+              <th scope="col" className="px-3 py-2 font-semibold text-gray-900">Status</th>
               {renderHeader('date', 'Date')}
-              <th scope="col" className="px-6 py-4 text-right font-semibold text-gray-900">Actions</th>
+              {renderHeader('likes_count', 'Likes')}
+              <th scope="col" className="px-3 py-2 text-center font-semibold text-gray-900">Actions</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-200 bg-white">
             {posts.length > 0 ? (
               posts.map((post) => (
                 <tr key={post.slug} className={`transition-colors hover:bg-gray-50 ${selectedSlugs.includes(post.slug) ? 'bg-blue-50' : ''}`}>
-                  <td className="px-6 py-4 text-center">
+                  <td className="px-3 py-2 text-center">
                     <input 
                       type="checkbox" 
                       checked={selectedSlugs.includes(post.slug)}
@@ -137,7 +139,7 @@ export default function PostListClient({ posts, sort, order }: PostListClientPro
                       className="rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer" 
                     />
                   </td>
-                  <td className="px-6 py-4 font-medium text-gray-900 max-w-[150px] sm:max-w-[200px] md:max-w-[300px]">
+                  <td className="px-3 py-2 font-medium text-gray-900 max-w-[150px] sm:max-w-[200px] md:max-w-[300px]">
                     <Link 
                       href={`/${post.slug}`}
                       className="block truncate text-blue-600 transition-colors hover:text-blue-800 hover:underline"
@@ -146,7 +148,7 @@ export default function PostListClient({ posts, sort, order }: PostListClientPro
                       {post.title}
                     </Link>
                   </td>
-                  <td className="px-6 py-4">
+                  <td className="px-3 py-2">
                     {post.location ? (
                       <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
                         post.location === 'Portfolio' ? 'bg-red-100 text-red-800' :
@@ -159,17 +161,25 @@ export default function PostListClient({ posts, sort, order }: PostListClientPro
                       <span className="text-gray-400">-</span>
                     )}
                   </td>
-                  <td className="px-6 py-4 text-gray-600 max-w-[150px] break-words" title={post.category1 || ''}>
+                  <td className="px-3 py-2 text-gray-600 max-w-[150px] break-words" title={post.category1 || ''}>
                     {post.category1 || '-'}
                   </td>
-                  <td className="px-6 py-4 text-gray-600 max-w-[150px] break-words" title={post.category2 || ''}>
+                  <td className="px-3 py-2 text-gray-600 max-w-[150px] break-words" title={post.category2 || ''}>
                     {post.category2 || '-'}
                   </td>
-                  <td className="px-6 py-4">
+                  <td className="px-3 py-2">
                     <span className="inline-flex items-center rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-800">Published</span>
                   </td>
-                  <td className="px-6 py-4 text-gray-500">{new Date(post.date).toLocaleDateString('ko-KR')}</td>
-                  <td className="px-6 py-4 text-right">
+                  <td className="px-3 py-2 text-gray-500">{new Date(post.date).toLocaleDateString('ko-KR')}</td>
+                  <td className="px-3 py-2 text-gray-500">
+                    <div className="flex items-center gap-1">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-blue-500" viewBox="0 0 20 20" fill="currentColor">
+                        <path fillRule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clipRule="evenodd" />
+                      </svg>
+                      <span className="font-medium text-gray-700">{Number(post.likes_count ?? 0).toLocaleString()}</span>
+                    </div>
+                  </td>
+                  <td className="px-3 py-2 text-center">
                     <Link href={`/admin/edit/${post.slug}`} className="mr-4 font-medium text-blue-600 transition-colors hover:text-blue-800">Edit</Link>
                     <form action={deletePostAction.bind(null, post.slug)} className="inline">
                       <button type="submit" className="font-medium text-red-600 transition-colors hover:text-red-800">Delete</button>
@@ -179,7 +189,7 @@ export default function PostListClient({ posts, sort, order }: PostListClientPro
               ))
             ) : (
               <tr>
-                <td colSpan={8} className="px-6 py-4 text-center text-gray-500">등록된 게시물이 없습니다.</td>
+                <td colSpan={9} className="px-3 py-2 text-center text-gray-500">등록된 게시물이 없습니다.</td>
               </tr>
             )}
           </tbody>
