@@ -70,6 +70,40 @@ export async function toggleLikeAction(postId: string, sessionId: string) {
   }
 }
 
+export async function trackSiteVisitorAction(sessionId: string) {
+  if (!sessionId) return { success: false, message: 'Invalid session' };
+
+  const headerList = await headers();
+  const ip = headerList.get('x-forwarded-for') || 'unknown';
+
+  try {
+    // 한국 시간(KST) 기준으로 현재 날짜(YYYY-MM-DD) 구하기
+    const now = new Date();
+    const kstOffset = 9 * 60 * 60 * 1000;
+    const kstNow = new Date(now.getTime() + kstOffset);
+    const visitedDate = kstNow.toISOString().split('T')[0];
+
+    // 오늘 방문 기록 추가 시도 (session_id + visited_date 중복 시 무시)
+    const insertResult = await query(
+      `INSERT INTO site_visitors (ip_address, session_id, visited_date) 
+       VALUES ($1, $2, $3) 
+       ON CONFLICT (session_id, visited_date) DO NOTHING`,
+      [ip, sessionId, visitedDate]
+    );
+
+    // 새롭게 추가된 데이터라면 (오늘 첫 방문) 전체 방문자 수 증가
+    if (insertResult.rowCount && insertResult.rowCount > 0) {
+      await query(`UPDATE site_stats SET stat_value = stat_value + 1 WHERE stat_key = 'total_visitors'`);
+      return { success: true, isNewVisitor: true };
+    }
+
+    return { success: true, isNewVisitor: false };
+  } catch (error) {
+    console.error('Failed to track site visitor:', error);
+    return { success: false, message: '서버 오류가 발생했습니다.' };
+  }
+}
+
 export async function incrementViewCountAction(postId: string, sessionId: string) {
   const headerList = await headers();
   const ip = headerList.get('x-forwarded-for') || 'unknown';

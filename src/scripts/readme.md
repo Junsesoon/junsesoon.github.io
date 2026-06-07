@@ -11,6 +11,8 @@
 - `003_schema_templates.sql`: 템플릿 카테고리(`template_list`)와 속성 간의 M:N 매핑을 관리하는 테이블(`template_property`) 생성 DDL
 - `004_schema_likes.sql`: 좋아요(유익함) 조회를 위한 `posts` 테이블 역정규화 컬럼(`likes_count`) 추가 및 세션 기반 중복/도배 차단을 위한 `likes_manage` 테이블 생성 DDL
 - `005_schema_skilltree.sql`: 스킬 트리 고유 속성(도메인, 연도, 부모/자식 참조 등)을 관리하기 위한 1:1 확장 테이블(`skilltree`) 생성 DDL
+- `006_schema_views.sql`: 게시물 조회수 집계를 위한 `posts` 테이블 역정규화 컬럼(`views_count`) 추가 및 어뷰징 방지(쿨다운)용 조회 이력 관리 테이블(`views_manage`) 생성 DDL
+- `007_schema_visitors.sql`: 사이트 전역의 일간 순 방문자(Unique Visitor) 추적을 위한 `site_visitors` 테이블 및 전체 방문자 통계 캐싱용 `site_stats` 테이블 생성 DDL
 
 ### 유틸리티 스크립트 (TS)
 - `upload-posts.ts`: `public/upload-posts` 마크다운을 읽어 DB로 업로드하는 스크립트입니다.

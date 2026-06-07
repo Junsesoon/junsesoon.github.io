@@ -1,4 +1,17 @@
 ## version history
+
+### junseo tech blog 1.0.0
+- distribution 2026-05-02
+
+### junseo tech blog 1.1.0
+- distribution 2026-05-07
+
+### junseo tech blog 1.1.1
+- distribution 2026-05-07
+
+### junseo tech blog 1.2.0
+- distribution 2026-05-10
+
 ### junseo tech blog 2.0.0
 - distribution 2026-05-15
 #### Refactoring
@@ -59,3 +72,16 @@
 - Property, Template 도메인을 완전히 분리하고 M:N 매핑 구조로 개선
 - 변경된 JSONB 스키마에 맞춘 게시물 업로드/다운로드 스크립트(`upload-posts.ts`, `download-posts.ts`) 리팩터링 완료
 - 관리자 대시보드 게시물 목록을 클라이언트 컴포넌트(`PostListClient.tsx`)로 분리하여 인터랙션(상태 관리) 구조 개선
+
+### junseo tech blog 2.6.0
+- distribution 2026-06-08
+#### New
+- 게시물 '좋아요(유익함)' 상호작용 기능 추가 (Optimistic UI 및 애니메이션 적용)
+- 블로그 메인 및 관리자 대시보드에 주요 통계(조회수, 방문자 등) 표시 기능 추가
+- views, visitors, likes 카운트 및 어뷰징 차단(쿨다운)을 위한 DB table 추가
+#### Refactoring
+- skill tree post의 고유 메타데이터를 관리하는 DB 확장 테이블(skilltree) 분리
+#### Modified
+- root/readme.md 에서 버전 히스토리 및 백로그 분리
+- skill tree overlay 방식을 사이드 패널에서 중앙 팝업 모달로 변경 및 관리자 전용 '수정' 버튼 연동
+- 게시물 편집기에서 속성 추가시 타입 선택 기능 지원
