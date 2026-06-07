@@ -4,7 +4,7 @@
 
 ## File list
 ### (public) 라우트 그룹
-- `app/(public)/page.tsx`: 블로그의 메인 페이지입니다. `src/utils/posts.ts`의 `getAllPosts()`를 호출하여 최신 게시물 목록을 표시하며, 데이터는 DB에서 가져옵니다
+- `app/(public)/page.tsx`: 블로그의 메인 페이지입니다. `src/utils/posts.ts`의 `getAllPosts()`를 호출하여 최신 게시물 목록을 표시하며, 데이터는 DB에서 가져옵니다. 상단에는 현재 접속한 모드(Blog/Portfolio)에 맞추어 전체 게시물 수, 총 좋아요 수, 스킬(skilltree 또는 my_skill) 수 등을 계산한 뒤 `BlogStats` 컴포넌트에 전달하여 시각적인 통계 수치로 제공합니다.
 - `app/(public)/[category]/page.tsx`: 카테고리별 게시물 목록 페이지입니다. `getCategoryPosts()`를 호출하며, 선택된 모드에 따라 DB에 저장된 게시물을 `category1` 또는 `category2` 기준으로 필터링합니다
 - `app/(public)/[category]/[...id]/page.tsx`: 개별 게시물 상세 페이지입니다. 라우트 slug를 확인하여 일치하는 게시물을 DB에서 불러오고, 마크다운 본문을 HTML로 변환한 뒤 기존과 동일하게 메타데이터를 렌더링합니다
 - `app/(public)/skilltree/page.tsx`: 스킬 트리 페이지입니다. `SkillTreeGrid`를 통해 DB 기반의 스킬 트리 데이터를 렌더링합니다

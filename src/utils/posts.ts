@@ -57,6 +57,9 @@ function rowToPost(row: any): Post {
     title: props.title || titleFromSlug(row.slug),
     excerpt: props.summary || '',
     date: dateString(props.startDate || props.date || row.created_at),
+    category1: props.category1 || null,
+    category2: props.category2 || null,
+    metadata: props,
   };
 }
 

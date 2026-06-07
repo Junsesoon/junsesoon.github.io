@@ -47,12 +47,12 @@ function AnimatedNumber({ value }: { value: string }) {
   return <>{prefix}{formattedCount}{suffix}</>;
 }
 
-export default function BlogStats({ totalPosts = 0 }: { totalPosts?: number }) {
+export default function BlogStats({ totalPosts = 0, totalLikes = 0, totalSkills = 0 }: { totalPosts?: number; totalLikes?: number; totalSkills?: number }) {
   const stats = [
     { value: totalPosts.toString(), label: 'Total Posts', borderColor: 'border-rose-300' },
-    { value: '32', label: 'Total Skills', borderColor: 'border-emerald-300' },
+    { value: totalSkills.toString(), label: 'Total Skills', borderColor: 'border-emerald-300' },
     { value: '450', label: 'Total Visitors', borderColor: 'border-purple-300' },
-    { value: '1,200', label: 'Total Likes', borderColor: 'border-blue-300' },
+    { value: totalLikes.toString(), label: 'Total Likes', borderColor: 'border-blue-300' },
   ];
 
   return (

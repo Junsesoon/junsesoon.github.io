@@ -4,7 +4,7 @@
 
 ## 파일 목록
 - `blog.ts`: 블로그 게시물과 메타데이터를 위한 핵심 인터페이스를 포함합니다. 주요 타입은 다음과 같습니다
-  - `Post`: 게시물 목록을 렌더링하는 데 사용되는 기본 게시물 정보(`post_id`, `likes_count`, `slug`, `title`, `date`, `excerpt`)입니다
+  - `Post`: 게시물 목록을 렌더링하는 데 사용되는 기본 게시물 정보(`post_id`, `likes_count`, `slug`, `title`, `date`, `excerpt`)와, 필터링 및 통계 산출을 위한 카테고리(`category1`, `category2`) 및 확장 속성(`metadata`)을 포함합니다
   - `FrontMatter`: 데이터베이스에서 재구성되거나 마크다운 파일에서 파싱된 유연한 메타데이터 구조를 정의합니다(예: `parentSkill` 배열)
   - `PostFilterOptions`: 카테고리별 게시물 조회를 필터링하기 위한 옵션입니다
   - `PostWithFrontmatter`: 내부 처리를 위해 카테고리 데이터를 포함하는 확장된 게시물 타입입니다

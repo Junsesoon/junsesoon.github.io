@@ -11,4 +11,4 @@
 - 목록 페이지는 `getAllPosts()` 또는 `getCategoryPosts()`를 호출합니다.
 - 상세 페이지는 `getDbPostBySlug()`를 호출한 다음 `posts.content`를 마크다운으로 렌더링합니다.
 - 스킬 트리 렌더링은 `getSkillTreePosts(matchCategory2)`를 호출합니다. 1:1 확장 테이블 구조에 따라 `posts`와 `skilltree` 테이블을 JOIN하여 공통 데이터와 메타데이터를 함께 가져옵니다.
-- 어댑터는 `properties` JSONB 안에 담긴 동적 속성들을 자바스크립트 레벨에서 전개하여 기존 UI가 기대하는 `title`, `summary`, `tags`, `category1` 등의 필드 구조와 완벽히 호환되도록 일관성을 유지해 줍니다.
+- 어댑터는 `properties` JSONB 안에 담긴 동적 속성들을 자바스크립트 레벨에서 전개하여 기존 UI가 기대하는 `title`, `summary`, `tags` 등의 기본 필드 구조와 완벽히 호환되도록 일관성을 유지하며, 추가적인 필터링 및 통계 처리를 위해 `category1`, `category2` 속성과 전체 `properties` 객체를 `metadata` 속성에 담아 프론트엔드로 온전히 전달합니다.
