@@ -27,7 +27,7 @@ export async function createPostAction(data: PostFormData) {
   const slug = slugParts.join('/');
 
   try {
-    const { content, ...properties } = data;
+    const { content, title, ...properties } = data;
     const propertyNames = Object.keys(properties);
 
     // 1. 게시물 작성 시 사용된 모든 속성 키를 전역 property_list에 자동 등록 (없는 경우에만 삽입)
@@ -43,14 +43,15 @@ export async function createPostAction(data: PostFormData) {
     // 2. .env(DB_ENV)에 의해 연결된 DB로 쿼리 실행
     // 만약 중복된 슬러그가 있을 경우 덮어쓰기(Upsert)를 수행해 에러를 방지합니다.
     const result = await query(
-      `INSERT INTO posts (slug, content, properties)
-       VALUES ($1, $2, $3)
+      `INSERT INTO posts (slug, content, title, properties)
+       VALUES ($1, $2, $3, $4)
       ON CONFLICT (slug) DO UPDATE SET
          content = EXCLUDED.content,
+         title = EXCLUDED.title,
          properties = EXCLUDED.properties,
          updated_at = CURRENT_TIMESTAMP
        RETURNING post_id`,
-      [slug, content || '', JSON.stringify(properties)]
+      [slug, content || '', title || '', JSON.stringify(properties)]
     );
 
     const postId = result.rows[0]?.post_id;
@@ -198,7 +199,7 @@ export async function updatePostAction(originalSlug: string, data: PostFormData)
   const newSlug = slugParts.join('/');
 
   try {
-    const { content, ...properties } = data;
+    const { content, title, ...properties } = data;
     const propertyNames = Object.keys(properties);
 
     // 1. 게시물 수정 시 사용된 모든 속성 키를 전역 property_list에 자동 등록 (없는 경우에만 삽입)
@@ -213,10 +214,10 @@ export async function updatePostAction(originalSlug: string, data: PostFormData)
 
     const result = await query(
       `UPDATE posts
-       SET slug = $1, content = $2, properties = $3, updated_at = CURRENT_TIMESTAMP
-       WHERE slug = $4
+       SET slug = $1, content = $2, title = $3, properties = $4, updated_at = CURRENT_TIMESTAMP
+       WHERE slug = $5
        RETURNING post_id`,
-      [newSlug, content || '', JSON.stringify(properties), originalSlug]
+      [newSlug, content || '', title || '', JSON.stringify(properties), originalSlug]
     );
 
     const postId = result.rows[0]?.post_id;

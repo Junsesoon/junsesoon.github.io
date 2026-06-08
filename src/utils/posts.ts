@@ -33,7 +33,7 @@ function rowToMetadata(row: any): FrontMatter {
   // 기존 UI와의 호환성을 위해 properties(JSONB) 내부 데이터를 FrontMatter 포맷으로 전개
   return {
     ...props,
-    title: props.title || titleFromSlug(row.slug),
+    title: row.title || props.title || titleFromSlug(row.slug),
     parentId: props.parentId || null,
     startDate: props.startDate || props.date || dateString(row.created_at) || null,
     endDate: props.endDate || props.modified_at || dateString(row.updated_at) || null,
@@ -55,7 +55,7 @@ function rowToPost(row: any): Post {
     likes_count: row.likes_count,
     views_count: row.views_count,
     slug: row.slug,
-    title: props.title || titleFromSlug(row.slug),
+    title: row.title || props.title || titleFromSlug(row.slug),
     excerpt: props.summary || '',
     date: dateString(props.startDate || props.date || row.created_at),
     category1: props.category1 || null,
@@ -84,7 +84,7 @@ export const getAllPosts = async (
   filters: PostFilterOptions = {},
 ): Promise<Post[]> => {
   const result = await query<any>(`
-    SELECT post_id, likes_count, views_count, slug, content, properties, created_at, updated_at
+    SELECT post_id, likes_count, views_count, slug, title, content, properties, created_at, updated_at
     FROM posts
   `);
 
@@ -118,7 +118,7 @@ export const getAllPosts = async (
 
 export const getCategoryPosts = async (category: string, mode: string = 'blog'): Promise<Post[]> => {
   const result = await query<any>(`
-    SELECT post_id, likes_count, views_count, slug, content, properties, created_at, updated_at
+    SELECT post_id, likes_count, views_count, slug, title, content, properties, created_at, updated_at
     FROM posts
   `);
 
@@ -145,7 +145,7 @@ export const getCategoryPosts = async (category: string, mode: string = 'blog'):
 export const getDbPostBySlug = async (slug: string): Promise<DbPost | null> => {
   const result = await query<any>(
     `
-      SELECT post_id, likes_count, views_count, slug, content, properties, created_at, updated_at
+      SELECT post_id, likes_count, views_count, slug, title, content, properties, created_at, updated_at
       FROM posts
       WHERE slug = $1
       LIMIT 1
@@ -174,11 +174,11 @@ export const getSkillTreePosts = async (matchCategory2: string): Promise<DbPost[
         p.likes_count,
         p.views_count,
         p.slug, 
+        p.title,
         p.content, 
         p.properties, 
         p.created_at, 
         p.updated_at,
-        COALESCE(p.properties->>'title', p.slug) AS title,
         s.domain,
         s.sub_domain,
         s.tech_start,
@@ -188,7 +188,7 @@ export const getSkillTreePosts = async (matchCategory2: string): Promise<DbPost[
       JOIN skilltree s ON p.post_id = s.post_id
       WHERE LOWER(s.domain) = LOWER($1)
         AND p.properties->>'category4' IS NULL
-      ORDER BY s.tech_start ASC NULLS LAST, title ASC
+      ORDER BY s.tech_start ASC NULLS LAST, p.title ASC
     `,
     [matchCategory2],
   );

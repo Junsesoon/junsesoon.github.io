@@ -3,6 +3,7 @@ import path from 'path';
 import { pool } from '../infra/db';
 import {
   firstString,
+  Frontmatter,
   loadMarkdownPosts,
   MarkdownPost,
   titleFromSlug,
@@ -32,65 +33,73 @@ function readUploadOptions(): UploadOptions {
 }
 
 async function upsertPost(post: MarkdownPost): Promise<string> {
-  const { slug, content, frontmatter } = post;
-
-  // 메타데이터 정규화 (title, tags 등 필수 속성 보장 및 병합)
-  const properties = {
-    ...frontmatter,
-    title: firstString(frontmatter.title) || titleFromSlug(slug),
-    tags: toStringArray(frontmatter.tags),
-  };
+  const { frontmatter } = post;
+  // title은 별도 컬럼으로, 나머지는 properties(JSONB)로 분리
+  const { title: rawTitle, ...properties } = frontmatter;
+  const title = firstString(rawTitle) || titleFromSlug(post.slug);
 
   const result = await pool.query<{ post_id: string }>(
     `
-      INSERT INTO posts (slug, content, properties)
-      VALUES ($1, $2, $3)
+      INSERT INTO posts (
+        slug,
+        content,
+        title,
+        properties
+      )
+      VALUES ($1, $2, $3, $4)
       ON CONFLICT (slug) DO UPDATE SET
         content = EXCLUDED.content,
+        title = EXCLUDED.title,
         properties = EXCLUDED.properties,
         updated_at = CURRENT_TIMESTAMP
       RETURNING post_id
     `,
-    [slug, content, JSON.stringify(properties)]
+    [
+      post.slug,
+      post.content,
+      title,
+      JSON.stringify(properties),
+    ],
   );
 
-  const postId = result.rows[0].post_id;
+  return result.rows[0].post_id;
+}
 
-  // 1:1 확장 테이블 연동: 스킬 트리인 경우 고유 속성을 skilltree 테이블에 분리 저장
-  const cat1 = firstString(frontmatter.category1)?.toLowerCase().replace(/[-\s_]+/g, '');
+async function resetPostDetailRows(postId: string) {
+  // 구형 테이블 삭제 로직 대체: 현재는 skilltree 단일 확장 테이블만 존재함
+  await pool.query('DELETE FROM skilltree WHERE post_id = $1', [postId]);
+}
 
+async function insertPostDetails(postId: string, frontmatter: Frontmatter) {
+  const cat1 = firstString(frontmatter.category1)?.trim().toLowerCase().replace(/[-\s_]+/g, '');
+  
   if (cat1 === 'skilltree') {
-    const domain = firstString(frontmatter.category2) || null;
-    const sub_domain = firstString(frontmatter.category3) || null;
-
-    // techStart 문자열에서 YYYY(4자리 연도)만 추출
-    const techStartStr = firstString(frontmatter.techStart);
-    const techMatch = techStartStr?.match(/\d{4}/);
+    const techStartStr = String(firstString(frontmatter.techStart) || '');
+    const techMatch = techStartStr.match(/\d{4}/);
     const tech_start = techMatch ? parseInt(techMatch[0], 10) : null;
-
-    const parent_skill = toStringArray(frontmatter.parentSkill);
-    const child_skill = toStringArray(frontmatter.childSkill);
 
     await pool.query(
       `
-        INSERT INTO skilltree (post_id, domain, sub_domain, tech_start, parent_skill, child_skill)
+        INSERT INTO skilltree (
+          post_id,
+          domain,
+          sub_domain,
+          tech_start,
+          parent_skill,
+          child_skill
+        )
         VALUES ($1, $2, $3, $4, $5, $6)
-        ON CONFLICT (post_id) DO UPDATE SET
-          domain = EXCLUDED.domain,
-          sub_domain = EXCLUDED.sub_domain,
-          tech_start = EXCLUDED.tech_start,
-          parent_skill = EXCLUDED.parent_skill,
-          child_skill = EXCLUDED.child_skill,
-          updated_at = CURRENT_TIMESTAMP
       `,
-      [postId, domain, sub_domain, tech_start, parent_skill, child_skill]
+      [
+        postId,
+        firstString(frontmatter.category2),
+        firstString(frontmatter.category3),
+        tech_start,
+        toStringArray(frontmatter.parentSkill),
+        toStringArray(frontmatter.childSkill),
+      ],
     );
-  } else {
-    // 일반 게시물로 속성이 변경되었을 경우를 대비한 Clean-up 처리
-    await pool.query('DELETE FROM skilltree WHERE post_id = $1', [postId]);
   }
-
-  return postId;
 }
 
 function printDryRunSummary(posts: MarkdownPost[], skippedWithoutFrontmatter: number) {
@@ -118,7 +127,9 @@ async function uploadPosts(posts: MarkdownPost[]) {
 
   try {
     for (const post of posts) {
-      await upsertPost(post);
+      const postId = await upsertPost(post);
+      await resetPostDetailRows(postId);
+      await insertPostDetails(postId, post.frontmatter);
     }
 
     await pool.query('COMMIT');

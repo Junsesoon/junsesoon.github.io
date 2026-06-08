@@ -14,7 +14,8 @@ async function initDatabase() {
       '004_schema_likes.sql',
       '005_schema_skilltree.sql',
       '006_schema_views.sql', 
-      '007_schema_visitors.sql'
+      '007_schema_visitors.sql',
+      '008_schema_post_title.sql'
     ];
 
     for (const script of scripts) {

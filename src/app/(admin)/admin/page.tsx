@@ -9,14 +9,37 @@ export default async function AdminDashboardPage({ searchParams }: { searchParam
   const sort = params?.sort || 'date';
   const order = params?.order || 'desc';
 
-  // 변경된 단일 테이블 스키마에 맞게 properties(JSONB) 컬럼을 조회합니다.
-  const { rows: fetchedPosts } = await query('SELECT slug, properties, created_at, likes_count FROM posts ORDER BY created_at DESC');
+  // 안전한 정렬 파라미터 매핑 (SQL Injection 방지)
+  const validSortKeys = ['title', 'location', 'category1', 'category2', 'date', 'likes_count'];
+  const safeSort = validSortKeys.includes(sort) ? sort : 'date';
+  const safeOrder = order === 'asc' ? 'ASC' : 'DESC';
+
+  let orderByClause = '';
+  switch (safeSort) {
+    case 'title':
+      orderByClause = `ORDER BY title ${safeOrder}`;
+      break;
+    case 'likes_count':
+      orderByClause = `ORDER BY likes_count ${safeOrder}`;
+      break;
+    case 'date':
+      // 기존 매핑 로직(props.date || props.startDate || row.created_at)과 호환
+      orderByClause = `ORDER BY COALESCE(properties->>'date', properties->>'startDate', created_at::text) ${safeOrder}`;
+      break;
+    case 'location':
+    case 'category1':
+    case 'category2':
+      orderByClause = `ORDER BY properties->>'${safeSort}' ${safeOrder}`;
+      break;
+  }
+
+  const { rows: fetchedPosts } = await query(`SELECT slug, title, properties, created_at, likes_count FROM posts ${orderByClause}`);
 
   const mappedPosts = fetchedPosts.map((row) => {
     const props = row.properties || {};
     return {
       slug: row.slug,
-      title: props.title || row.slug,
+      title: row.title || props.title || row.slug,
       location: props.location || '',
       category1: props.category1 || '',
       category2: props.category2 || '',
@@ -25,22 +48,7 @@ export default async function AdminDashboardPage({ searchParams }: { searchParam
     };
   });
 
-  const posts = mappedPosts.sort((a, b) => {
-    let valA = a[sort as keyof typeof a] ?? '';
-    let valB = b[sort as keyof typeof b] ?? '';
-
-    if (sort === 'date') {
-      valA = valA ? new Date(valA).getTime() : 0;
-      valB = valB ? new Date(valB).getTime() : 0;
-    } else {
-      valA = String(valA).toLowerCase();
-      valB = String(valB).toLowerCase();
-    }
-
-    if (valA < valB) return order === 'asc' ? -1 : 1;
-    if (valA > valB) return order === 'asc' ? 1 : -1;
-    return 0;
-  });
+  const posts = mappedPosts; // DB 쿼리에서 이미 정렬되었으므로 메모리 정렬 생략
 
   // 통계 데이터 가져오기
   const now = new Date();

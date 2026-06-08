@@ -14,20 +14,28 @@ async function downloadPosts() {
   console.log('🏃‍♂️ 데이터베이스에서 모든 게시물을 가져오는 중...');
   
   // 변경된 단일 테이블 스키마: 한 번의 쿼리로 모든 게시물의 데이터와 속성(JSONB)을 조회합니다.
-  const result = await query<{ slug: string; content: string; properties: any }>(
-    'SELECT slug, content, properties FROM posts'
+  const result = await query<{ slug: string; title: string; content: string; properties: any }>(
+    'SELECT slug, title, content, properties FROM posts'
   );
   const posts = result.rows;
 
   console.log(`Found ${posts.length} posts. Starting download to local md files...`);
 
   for (const post of posts) {
-    const { slug, content, properties } = post;
+    const { slug, title, content, properties } = post;
 
     // YAML Frontmatter 구성 로직
     let mdContent = '---\n';
+
+    // title을 독립된 프론트매터 속성으로 가장 먼저 추가
+    if (title) {
+      const escapedTitle = title.includes(':') || title.includes('\n') ? `"${title.replace(/"/g, '\\"')}"` : title;
+      mdContent += `title: ${escapedTitle}\n`;
+    }
+
     if (properties && typeof properties === 'object') {
       for (const [key, value] of Object.entries(properties)) {
+        if (key === 'title') continue; // properties 내부의 중복된 title은 건너뜀
         if (value === null || value === undefined || value === '') continue;
         
         if (Array.isArray(value)) {
