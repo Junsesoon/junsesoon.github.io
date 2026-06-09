@@ -24,7 +24,7 @@ export default async function Home({ searchParams }: { searchParams?: Promise<{ 
     }).length;
   } else {
     // 블로그 모드: 분리된 skilltree 확장 테이블에서 전체 개수를 집계
-    const { rows } = await query('SELECT COUNT(*) as count FROM skilltree');
+    const { rows } = await query('SELECT COUNT(*) as count FROM skilltree_posts');
     totalSkillsCount = parseInt(rows[0].count, 10);
   }
 

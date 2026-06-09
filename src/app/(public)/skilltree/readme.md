@@ -2,6 +2,11 @@
 - `/skilltree` 페이지에서 스킬트리 그리드가 렌더링되는 핵심 로직에 대한 설명
 - 주요 구현은 `src/components/skilltreegrid.tsx` 파일에 있음
 
+## 0. 도메인(카테고리) 동적 렌더링 (`page.tsx`)
+- 기존의 하드코딩된 섹션 방식 대신, DB의 `skilltree_domains` 테이블에서 도메인(그리드) 목록을 동적으로 조회한다.
+- 관리자 페이지에서 설정한 `display_order` (오름차순) 및 `domain_id` 기준으로 정렬되어 화면에 노출될 순서가 결정된다.
+- 조회된 도메인 배열을 순회하며 각 카테고리(`matchCategory2`)별로 `SkillTreeGrid` 컴포넌트를 생성하고 화면에 배치한다.
+
 ## 1. 데이터 파싱 및 노드 생성
 - 기존 방식은 `/public/posts/skilltree` 디렉토리의 마크다운 파일을 읽고 `gray-matter`로 프론트매터를 파싱했다
 - 현재 방식은 `src/utils/posts.ts`의 `getSkillTreePosts(matchCategory2)`를 통해 DB에서 스킬트리 포스트를 조회한다

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { SkillNode } from './skilltreegrid';
 
@@ -21,6 +21,31 @@ export default function SkillTreeInteractive({ nodes, COLUMNS, isAdmin }: Props)
   const scrollLeft = useRef(0);
   const isDragged = useRef(false);
 
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      // 페이지가 다시 표시될 때 (탭 전환 등) 드래그 관련 상태가
+      // 비정상적으로 남아있는 문제를 해결하기 위해 상태를 강제로 초기화합니다.
+      if (document.visibilityState === 'visible') {
+        setIsDragging(false);
+        isDragged.current = false;
+      }
+    };
+
+    const handlePageShow = () => {
+      // BFCache(Back/Forward Cache)에서 복원될 때 호출되는 이벤트
+      // 드래그 관련 상태를 명시적으로 초기화하여 브라우저 뒤로가기 후에도 정상 작동하도록 합니다.
+      setIsDragging(false);
+      isDragged.current = false;
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('pageshow', handlePageShow);
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('pageshow', handlePageShow);
+    };
+  }, []);
+
   const nodesArray = Object.values(nodes);
   const maxCols = nodesArray.length > 0 ? Math.max(COLUMNS, ...nodesArray.map(n => n.col + 1)) : COLUMNS;
   const maxRows = nodesArray.length > 0 ? Math.max(3, ...nodesArray.map(n => n.row + 1)) : 3;
@@ -35,6 +60,15 @@ export default function SkillTreeInteractive({ nodes, COLUMNS, isAdmin }: Props)
 
   const onMouseMove = (e: React.MouseEvent) => {
     if (!isDragging || !scrollRef.current) return;
+
+    // '뒤로가기'를 했을 때 isDragging이 강제로 true로 남아있는 캐시 상태 고착화 방지
+    // 마우스 왼쪽 버튼(1)이 눌린 상태가 아니라면 드래그를 즉시 해제합니다.
+    if (e.buttons !== 1) {
+      setIsDragging(false);
+      isDragged.current = false;
+      return;
+    }
+
     e.preventDefault();
     const x = e.pageX - scrollRef.current.offsetLeft;
     const walk = (x - startX.current) * 1.5; // 드래그 속도 조절
@@ -78,11 +112,18 @@ export default function SkillTreeInteractive({ nodes, COLUMNS, isAdmin }: Props)
   });
 
   return (
-    <div 
+    <>
+      <div 
       ref={scrollRef}
       onMouseDown={onMouseDown}
-      onMouseLeave={() => setIsDragging(false)}
-      onMouseUp={() => setIsDragging(false)}
+      onMouseLeave={() => {
+        setIsDragging(false);
+        isDragged.current = false;
+      }}
+      onMouseUp={() => {
+        setIsDragging(false);
+        isDragged.current = false;
+      }}
       onMouseMove={onMouseMove}
       className={`w-full max-w-[1000px] mx-auto py-10 px-4 overflow-x-auto relative bg-gray-50 rounded-2xl border border-gray-200 mt-4 mb-10 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none'] ${isDragging ? 'cursor-grabbing' : 'cursor-grab'}`}
     >
@@ -134,6 +175,7 @@ export default function SkillTreeInteractive({ nodes, COLUMNS, isAdmin }: Props)
           })}
         </div>
       </div>
+      </div>
 
       {/* Modal Overlay */}
       {isModalOpen && (
@@ -162,7 +204,7 @@ export default function SkillTreeInteractive({ nodes, COLUMNS, isAdmin }: Props)
                     </h2>
                     {isAdmin && (
                     <Link 
-                      href={`/admin/edit/${selectedNode.slug}?redirect=/skilltree`}
+                      href={`/admin/edit/${selectedNode.slug.split('/').map(encodeURIComponent).join('/')}?redirect=/skilltree`}
                       onClick={closeModal}
                       className="shrink-0 ml-4 px-3 py-1.5 text-sm font-semibold text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors focus:outline-none"
                     >
@@ -200,7 +242,7 @@ export default function SkillTreeInteractive({ nodes, COLUMNS, isAdmin }: Props)
 
                   <div className="mt-8 flex justify-end">
                     <Link
-                      href={`/${selectedNode.slug}`}
+                      href={`/${selectedNode.slug.split('/').map(encodeURIComponent).join('/')}`}
                       className="bg-blue-600 text-white px-5 py-2.5 rounded-lg shadow-md hover:bg-blue-700 transition-colors text-sm font-semibold"
                     >
                       게시물 자세히 보기 &rarr;
@@ -212,6 +254,6 @@ export default function SkillTreeInteractive({ nodes, COLUMNS, isAdmin }: Props)
           </div>
         </div>
       )}
-    </div>
+    </>
   );
 }

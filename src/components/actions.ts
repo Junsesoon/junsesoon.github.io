@@ -12,8 +12,20 @@ const loginAttempts = new Map<string, { attempts: number; lockUntil: number }>()
 
 export async function createPostAction(data: PostFormData) {
   // 1. 작성된 카테고리와 제목을 기반으로 URL 슬러그 생성
-  const cleanSlugPart = (str: string) =>
-    str.trim().toLowerCase().replace(/[^a-z0-9가-힣]+/g, '-').replace(/(^-|-$)+/g, '');
+  const cleanSlugPart = (str: string) => {
+    let cleaned = str.trim().toLowerCase();
+
+    // C++, C# 등 특수문자가 포함된 기술 스택 이름을 안전한 영문으로 치환
+    cleaned = cleaned.replace(/\+/g, 'p');
+    cleaned = cleaned.replace(/#/g, 'sharp');
+
+    cleaned = cleaned
+      .replace(/[^a-z0-9가-힣\s-]/g, '') // 영문, 숫자, 한글, 공백, 하이픈만 허용하여 URL 호환성 보장
+      .replace(/\s+/g, '-')
+      .replace(/-+/g, '-')
+      .replace(/(^-|-$)+/g, '');
+    return cleaned || 'untitled';
+  };
 
   const slugParts = [];
   if (data.category1) slugParts.push(cleanSlugPart(data.category1));
@@ -24,9 +36,19 @@ export async function createPostAction(data: PostFormData) {
   const titleSlug = cleanSlugPart(data.title) || `post-${Date.now()}`;
   slugParts.push(titleSlug);
 
-  const slug = slugParts.join('/');
+  const baseSlug = slugParts.join('/');
+  let slug = baseSlug;
+  let counter = 1;
 
   try {
+    // 중복 슬러그 검사 및 넘버링 처리
+    while (true) {
+      const check = await query('SELECT post_id FROM posts WHERE slug = $1', [slug]);
+      if ((check.rowCount ?? 0) === 0) break;
+      slug = `${baseSlug}-${counter}`;
+      counter++;
+    }
+
     const { content, title, ...properties } = data;
     const propertyNames = Object.keys(properties);
 
@@ -74,7 +96,7 @@ export async function createPostAction(data: PostFormData) {
         };
 
         await query(
-          `INSERT INTO skilltree (post_id, domain, sub_domain, tech_start, parent_skill, child_skill)
+          `INSERT INTO skilltree_posts (post_id, domain, sub_domain, tech_start, parent_skill, child_skill)
            VALUES ($1, $2, $3, $4, $5, $6)
            ON CONFLICT (post_id) DO UPDATE SET
              domain = EXCLUDED.domain,
@@ -184,8 +206,20 @@ export async function logoutAction() {
 }
 
 export async function updatePostAction(originalSlug: string, data: PostFormData) {
-  const cleanSlugPart = (str: string) =>
-    str.trim().toLowerCase().replace(/[^a-z0-9가-힣]+/g, '-').replace(/(^-|-$)+/g, '');
+  const cleanSlugPart = (str: string) => {
+    let cleaned = str.trim().toLowerCase();
+
+    // C++, C# 등 특수문자가 포함된 기술 스택 이름을 안전한 영문으로 치환
+    cleaned = cleaned.replace(/\+/g, 'p');
+    cleaned = cleaned.replace(/#/g, 'sharp');
+
+    cleaned = cleaned
+      .replace(/[^a-z0-9가-힣\s-]/g, '') // 영문, 숫자, 한글, 공백, 하이픈만 허용하여 URL 호환성 보장
+      .replace(/\s+/g, '-')
+      .replace(/-+/g, '-')
+      .replace(/(^-|-$)+/g, '');
+    return cleaned || 'untitled';
+  };
 
   const slugParts = [];
   if (data.category1) slugParts.push(cleanSlugPart(data.category1));
@@ -196,9 +230,19 @@ export async function updatePostAction(originalSlug: string, data: PostFormData)
   const titleSlug = cleanSlugPart(data.title) || `post-${Date.now()}`;
   slugParts.push(titleSlug);
 
-  const newSlug = slugParts.join('/');
+  const baseSlug = slugParts.join('/');
+  let newSlug = baseSlug;
+  let counter = 1;
 
   try {
+    // 중복 슬러그 검사 및 넘버링 처리 (기존 자신의 슬러그는 제외)
+    while (true) {
+      const check = await query('SELECT post_id FROM posts WHERE slug = $1 AND slug != $2', [newSlug, originalSlug]);
+      if ((check.rowCount ?? 0) === 0) break;
+      newSlug = `${baseSlug}-${counter}`;
+      counter++;
+    }
+
     const { content, title, ...properties } = data;
     const propertyNames = Object.keys(properties);
 
@@ -240,7 +284,7 @@ export async function updatePostAction(originalSlug: string, data: PostFormData)
         };
 
         await query(
-          `INSERT INTO skilltree (post_id, domain, sub_domain, tech_start, parent_skill, child_skill)
+          `INSERT INTO skilltree_posts (post_id, domain, sub_domain, tech_start, parent_skill, child_skill)
            VALUES ($1, $2, $3, $4, $5, $6)
            ON CONFLICT (post_id) DO UPDATE SET
              domain = EXCLUDED.domain,
@@ -253,7 +297,7 @@ export async function updatePostAction(originalSlug: string, data: PostFormData)
         );
       } else {
         // 스킬 트리에서 다른 템플릿(일반 카테고리)으로 속성이 변경된 경우 연관 데이터 Clean-up
-        await query('DELETE FROM skilltree WHERE post_id = $1', [postId]);
+        await query('DELETE FROM skilltree_posts WHERE post_id = $1', [postId]);
       }
     }
 
@@ -466,6 +510,105 @@ export async function batchUpdateLocationAction(slugs: string[], newLocation: st
     return { success: true };
   } catch (error: any) {
     console.error('batchUpdateLocationAction error:', error);
+    return { success: false, message: 'Internal Server Error' };
+  }
+}
+
+export async function addSkillTreeDomainAction(title: string, description: string, matchCategory2: string, displayOrder: number = 0) {
+  if (!title || !title.trim() || !matchCategory2 || !matchCategory2.trim()) {
+    return { success: false, message: 'Title and Match Category2 are required.' };
+  }
+
+  try {
+    await query(
+      `INSERT INTO skilltree_domains (title, description, match_category2, display_order)
+       VALUES ($1, $2, $3, $4)`,
+      [title.trim(), description ? description.trim() : '', matchCategory2.trim(), displayOrder]
+    );
+    revalidatePath('/admin/skilltree');
+    revalidatePath('/skilltree');
+    return { success: true };
+  } catch (error: any) {
+    console.error('addSkillTreeDomainAction error:', error);
+    if (error.code === '23505') { // PostgreSQL Unique Violation
+      return { success: false, message: 'A domain with this Match Category2 already exists.' };
+    }
+    return { success: false, message: 'Internal Server Error' };
+  }
+}
+
+export async function getSkillTreeDomainsAction() {
+  try {
+    const result = await query(
+      'SELECT domain_id as id, title, description, match_category2 as "matchCategory2", display_order as "displayOrder" FROM skilltree_domains ORDER BY display_order ASC, domain_id ASC'
+    );
+    return result.rows;
+  } catch (error) {
+    console.error('getSkillTreeDomainsAction error:', error);
+    return [];
+  }
+}
+
+export async function deleteSkillTreeDomainAction(id: number) {
+  if (!id) {
+    return { success: false, message: 'Domain ID is required.' };
+  }
+
+  try {
+    await query('DELETE FROM skilltree_domains WHERE domain_id = $1', [id]);
+    revalidatePath('/admin/skilltree');
+    revalidatePath('/skilltree');
+    return { success: true };
+  } catch (error: any) {
+    console.error('deleteSkillTreeDomainAction error:', error);
+    return { success: false, message: 'Internal Server Error' };
+  }
+}
+
+export async function updateSkillTreeDomainAction(id: number, title: string, description: string, matchCategory2: string, displayOrder?: number) {
+  if (!id || !title || !title.trim() || !matchCategory2 || !matchCategory2.trim()) {
+    return { success: false, message: 'ID, Title, and Match Category2 are required.' };
+  }
+
+  try {
+    await query(
+      `UPDATE skilltree_domains
+       SET title = $1, description = $2, match_category2 = $3, display_order = COALESCE($4, display_order), updated_at = CURRENT_TIMESTAMP
+       WHERE domain_id = $5`,
+      [title.trim(), description ? description.trim() : '', matchCategory2.trim(), displayOrder ?? null, id]
+    );
+    revalidatePath('/admin/skilltree');
+    revalidatePath('/skilltree');
+    return { success: true };
+  } catch (error: any) {
+    console.error('updateSkillTreeDomainAction error:', error);
+    if (error.code === '23505') { // PostgreSQL Unique Violation
+      return { success: false, message: 'A domain with this Match Category2 already exists.' };
+    }
+    return { success: false, message: 'Internal Server Error' };
+  }
+}
+
+export async function updateSkillTreeDomainOrdersAction(orders: { id: number; displayOrder: number }[]) {
+  if (!orders || orders.length === 0) {
+    return { success: false, message: 'No orders provided.' };
+  }
+
+  try {
+    await query('BEGIN');
+    for (const { id, displayOrder } of orders) {
+      await query(
+        'UPDATE skilltree_domains SET display_order = $1, updated_at = CURRENT_TIMESTAMP WHERE domain_id = $2',
+        [displayOrder, id]
+      );
+    }
+    await query('COMMIT');
+    revalidatePath('/admin/skilltree');
+    revalidatePath('/skilltree');
+    return { success: true };
+  } catch (error: any) {
+    await query('ROLLBACK');
+    console.error('updateSkillTreeDomainOrdersAction error:', error);
     return { success: false, message: 'Internal Server Error' };
   }
 }

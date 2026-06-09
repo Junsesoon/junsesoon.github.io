@@ -1,8 +1,11 @@
 import SkillTreeGrid from '@/components/skilltreegrid';
+import { query } from '../../../infra/db';
 
 export const revalidate = 3600;
 
-export default function SkillTreePage() {
+export default async function SkillTreePage() {
+  const { rows: domains } = await query('SELECT title, description, match_category2 FROM skilltree_domains ORDER BY display_order ASC, domain_id ASC');
+
   return (
     <main className="mx-auto max-w-5xl p-8 font-sans">
       <header className="mb-0 flex min-h-80 flex-col items-center justify-center gap-6 py-10 text-center">
@@ -12,21 +15,15 @@ export default function SkillTreePage() {
       </header>
       
       <div className="flex flex-col gap-8">
-        <section>
-          <SkillTreeGrid 
-            title="Programming Language" 
-            description="Core programming languages and their related ecosystems" 
-            matchCategory2="Programming Language" 
-          />
-        </section>
-
-        <section>
-          <SkillTreeGrid 
-            title="Operating System"
-            description="OS and Infrastructure"
-            matchCategory2="Operating System" 
-          />
-        </section>
+        {domains.map((domain) => (
+          <section key={domain.match_category2}>
+            <SkillTreeGrid 
+              title={domain.title} 
+              description={domain.description} 
+              matchCategory2={domain.match_category2} 
+            />
+          </section>
+        ))}
       </div>
     </main>
   );
