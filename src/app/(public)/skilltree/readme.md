@@ -1,6 +1,6 @@
 # 스킬트리 그리드(Skill Tree Grid) 구현 로직
 - `/skilltree` 페이지에서 스킬트리 그리드가 렌더링되는 핵심 로직에 대한 설명
-- 주요 구현은 `src/components/skilltreegrid.tsx` 파일에 있음
+- 주요 구현은 `src/components/SkillTreeGrid.tsx` 파일에 있음
 
 ## 0. 도메인(카테고리) 동적 렌더링 (`page.tsx`)
 - 기존의 하드코딩된 섹션 방식 대신, DB의 `skilltree_domains` 테이블에서 도메인(그리드) 목록을 동적으로 조회한다.
@@ -32,7 +32,7 @@
 - **예외 처리**: 연도 정보가 없거나 파싱 불가능한 경우 제일 밑으로 배치되며, 연도가 동일한 경우 파일명 기준 알파벳 순으로 정렬한다
 
 ## 4. 그리드 UI 렌더링 및 인터랙션 (Client Component 분리)
-- **서버-클라이언트 연동**: 서버 컴포넌트(`skilltreegrid.tsx`)에서 DB 조회를 수행한 뒤, 재구성된 `frontmatter` 형태의 metadata와 `content`를 직렬화하여 클라이언트 컴포넌트(`SkillTreeInteractive.tsx`)로 전달한다.
+- **서버-클라이언트 연동**: 서버 컴포넌트(`SkillTreeGrid.tsx`)에서 DB 조회를 수행한 뒤, 재구성된 `frontmatter` 형태의 metadata와 `content`를 직렬화하여 클라이언트 컴포넌트(`SkillTreeInteractive.tsx`)로 전달한다.
 - **SVG 연결선 시각화**: 각 노드의 그리드 상의 좌표(`col`, `row`)를 수학적으로 계산하여(`x, y` 픽셀 도출), 부모 스킬 카드의 우측 중앙(`Right center edge`)에서 시작해 두 카드 사이 중간 지점에서 직각으로 꺾여 자식 스킬 카드의 좌측 중앙(`Left center edge`)으로 이어지는 계단형 직선(Stepped Line)을 SVG를 이용해 렌더링한다.
 - **사이드 드로어(Side Drawer)**: 렌더링된 스킬 셀을 클릭하면, 우측에서 사이드 패널(Drawer)이 슬라이드되어 나타나 해당 스킬의 모든 프론트매터 정보와 본문 내용을 보여준다.
 - **동적 행(Row) 조절**: 12개의 열 중 가장 파일이 많은 열의 길이를 기준으로 그리드의 전체 행(Row) 개수를 동적으로 계산한다(최소 3행 보장).

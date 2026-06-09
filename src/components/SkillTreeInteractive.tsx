@@ -2,7 +2,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
-import { SkillNode } from './skilltreegrid';
+import { SkillNode } from './SkillTreeGrid';
 
 interface Props {
   nodes: Record<string, SkillNode>;

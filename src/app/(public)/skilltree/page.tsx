@@ -1,4 +1,4 @@
-import SkillTreeGrid from '@/components/skilltreegrid';
+import SkillTreeGrid from '@/components/SkillTreeGrid';
 import { query } from '../../../infra/db';
 
 export const revalidate = 3600;
