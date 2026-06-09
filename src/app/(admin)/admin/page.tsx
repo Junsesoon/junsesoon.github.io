@@ -113,7 +113,7 @@ export default async function AdminDashboardPage({ searchParams }: { searchParam
         </div>
       </header>
 
-      {/* 1. Stats Layer */}
+      {/* Stats Layer */}
       <div className="mb-8 grid grid-cols-1 gap-6 md:grid-cols-2">
         {/* 통계 카드 1: 전체 게시물 수 */}
         <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
@@ -138,7 +138,32 @@ export default async function AdminDashboardPage({ searchParams }: { searchParam
         ))}
       </div>
 
-      {/* 2 & 3. Action Bar and Data Grid Layer */}
+      {/* Management Actions Grid (3x2) */}
+      <div className="mb-8">
+        <h2 className="mb-4 text-xl font-bold text-gray-800">Management</h2>
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3">
+          <Link href="/admin/skilltree" className="flex items-center justify-center rounded-lg border border-gray-200 bg-white p-6 shadow-sm transition-all hover:-translate-y-1 hover:shadow-md">
+            <span className="text-lg font-semibold text-gray-700">Skill Tree</span>
+          </Link>
+          <Link href="/admin/property" className="flex items-center justify-center rounded-lg border border-gray-200 bg-white p-6 shadow-sm transition-all hover:-translate-y-1 hover:shadow-md">
+            <span className="text-lg font-semibold text-gray-700">Properties</span>
+          </Link>
+          <Link href="/admin/template" className="flex items-center justify-center rounded-lg border border-gray-200 bg-white p-6 shadow-sm transition-all hover:-translate-y-1 hover:shadow-md">
+            <span className="text-lg font-semibold text-gray-700">Templates</span>
+          </Link>
+          <div className="flex items-center justify-center rounded-lg border border-dashed border-gray-300 bg-gray-50 p-6 text-gray-400">
+            <span className="text-lg font-semibold">Place Holder</span>
+          </div>
+          <div className="flex items-center justify-center rounded-lg border border-dashed border-gray-300 bg-gray-50 p-6 text-gray-400">
+            <span className="text-lg font-semibold">Place Holder</span>
+          </div>
+          <div className="flex items-center justify-center rounded-lg border border-dashed border-gray-300 bg-gray-50 p-6 text-gray-400">
+            <span className="text-lg font-semibold">Place Holder</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Action Bar and Data Grid Layer */}
       <PostListClient posts={posts} sort={sort} order={order} />
     </div>
   );
