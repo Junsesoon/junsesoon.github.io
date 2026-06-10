@@ -95,43 +95,43 @@ export default function PropertyManager({ properties }: PropertyManagerProps) {
   };
 
   return (
-    <div className="backdrop-blur-md bg-white/10 border border-white/20 rounded-2xl p-6 shadow-2xl min-h-[400px] flex flex-col">
+    <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm min-h-[400px] flex flex-col">
       {/* Add Property Form */}
-      <div className="border-b border-white/20 pb-6 mb-6">
-        <h3 className="text-lg font-semibold text-white mb-4">Add New Property</h3>
+      <div className="border-b border-gray-200 pb-6 mb-6">
+        <h3 className="text-lg font-semibold text-gray-800 mb-4">Add New Property</h3>
         <form onSubmit={handleAddProperty} className="flex flex-col sm:flex-row gap-4">
           <input
             type="text"
             value={newPropName}
             onChange={(e) => setNewPropName(e.target.value)}
             placeholder="e.g., customProp"
-            className="flex-1 bg-black/20 border border-white/20 rounded-lg px-4 py-2.5 text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-[#007BFF]/50 focus:border-[#007BFF] transition-all"
+            className="block flex-1 rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 bg-white"
           />
           <select
             value={newPropType}
             onChange={(e) => setNewPropType(e.target.value)}
-            className="w-full sm:w-32 bg-black/20 border border-white/20 rounded-lg px-3 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-[#007BFF]/50 focus:border-[#007BFF] transition-all appearance-none cursor-pointer"
+            className="block w-full sm:w-32 rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 bg-white appearance-none cursor-pointer"
           >
-            <option value="string" className="bg-[#232526]">String</option>
-            <option value="number" className="bg-[#232526]">Number</option>
-            <option value="boolean" className="bg-[#232526]">Boolean</option>
-            <option value="date" className="bg-[#232526]">Date</option>
-            <option value="array" className="bg-[#232526]">Array</option>
+            <option value="string">String</option>
+            <option value="number">Number</option>
+            <option value="boolean">Boolean</option>
+            <option value="date">Date</option>
+            <option value="array">Array</option>
           </select>
           <button
             type="submit"
-            className="bg-[#007BFF] hover:bg-[#0069d9] text-white px-6 py-2.5 rounded-lg font-semibold shadow-lg shadow-[#007BFF]/20 transition-all active:scale-95 whitespace-nowrap"
+            className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-md font-semibold shadow-sm transition-colors active:scale-95 whitespace-nowrap flex items-center justify-center"
           >
             Add
           </button> 
         </form>
       </div>
 
-      <h2 className="text-xl font-semibold text-white mb-6">Property List</h2>
+      <h2 className="text-xl font-semibold text-gray-800 mb-6">Property List</h2>
       {localProperties.length > 0 ? (
-        <ul className="border border-white/10 rounded-xl overflow-hidden bg-white/5 divide-y divide-white/10">
+        <ul className="border border-gray-200 rounded-xl overflow-hidden bg-white divide-y divide-gray-200">
           {localProperties.map((prop) => (
-            <li key={prop.name} className="flex items-center justify-between p-4 hover:bg-white/5 transition-colors">
+            <li key={prop.name} className="flex items-center justify-between p-4 hover:bg-gray-50 transition-colors">
               <div className="flex items-center gap-3">
                 {editingProp === prop.name ? (
                   <div className="flex items-center gap-2">
@@ -139,35 +139,35 @@ export default function PropertyManager({ properties }: PropertyManagerProps) {
                       type="text"
                       value={editPropName}
                       onChange={(e) => setEditPropName(e.target.value)}
-                      className="bg-black/20 border border-white/20 rounded px-2 py-1 text-white text-sm w-32 focus:outline-none focus:border-[#007BFF]"
+                      className="block w-32 rounded-md border border-gray-300 px-2 py-1 text-sm text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 bg-white"
                       autoFocus
                       onKeyDown={(e) => {
                         if (e.key === 'Enter') handleRenameProperty(prop.name);
                         if (e.key === 'Escape') setEditingProp(null);
                       }}
                     />
-                    <button onClick={() => handleRenameProperty(prop.name)} className="text-[#007BFF] hover:text-[#0056b3] text-sm font-medium transition-colors">Save</button>
-                    <button onClick={() => setEditingProp(null)} className="text-white/50 hover:text-white text-sm transition-colors">Cancel</button>
+                    <button onClick={() => handleRenameProperty(prop.name)} className="text-blue-600 hover:text-blue-800 text-sm font-medium transition-colors">Save</button>
+                    <button onClick={() => setEditingProp(null)} className="text-gray-500 hover:text-gray-700 text-sm transition-colors">Cancel</button>
                   </div>
                 ) : (
-                  <span className="font-mono text-white text-base">{prop.name}</span>
+                  <span className="font-mono text-gray-900 font-medium text-base">{prop.name}</span>
                 )}
-                <span className="text-white/40 text-xs bg-black/20 px-2 py-0.5 rounded border border-white/10 capitalize">
+                <span className="text-gray-500 text-xs bg-gray-100 px-2 py-0.5 rounded border border-gray-200 capitalize">
                   {prop.type || getPredefinedType(prop.name)}
                 </span>
               </div>
               <div className="flex items-center gap-4">
-                <span className="text-white/60 text-sm font-medium bg-black/20 px-3 py-1 rounded-full border border-white/5">
+                <span className="text-gray-600 text-sm font-medium bg-gray-100 px-3 py-1 rounded-full border border-gray-200">
                   {prop.count} {prop.count === 1 ? 'post' : 'posts'}
                 </span>
                 {/* Essential Toggle Switch */}
-                <div className="flex items-center gap-1.5 border-r border-white/10 pr-4">
-                  <span className={`text-[10px] uppercase font-bold tracking-wider transition-colors ${prop.is_essential ? 'text-[#007BFF]' : 'text-white/30'}`}>
+                <div className="flex items-center gap-1.5 border-r border-gray-200 pr-4">
+                  <span className={`text-[10px] uppercase font-bold tracking-wider transition-colors ${prop.is_essential ? 'text-blue-600' : 'text-gray-400'}`}>
                     Essential
                   </span>
                   <button
                     onClick={() => handleToggleEssential(prop.name, !!prop.is_essential)}
-                    className={`relative inline-flex h-4 w-7 items-center rounded-full transition-colors focus:outline-none ${prop.is_essential ? 'bg-[#007BFF]' : 'bg-white/20'}`}
+                    className={`relative inline-flex h-4 w-7 items-center rounded-full transition-colors focus:outline-none ${prop.is_essential ? 'bg-blue-600' : 'bg-gray-300'}`}
                     title="Toggle Essential Status"
                   >
                     <span className={`inline-block h-3 w-3 transform rounded-full bg-white transition-transform ${prop.is_essential ? 'translate-x-3.5' : 'translate-x-0.5'}`} />
@@ -175,7 +175,7 @@ export default function PropertyManager({ properties }: PropertyManagerProps) {
                 </div>
                 <button
                   onClick={() => { setEditingProp(prop.name); setEditPropName(prop.name); }}
-                  className="text-blue-400 hover:text-blue-300 hover:bg-blue-400/10 p-2 rounded-lg transition-colors focus:outline-none"
+                  className="text-gray-400 hover:text-blue-600 hover:bg-blue-50 p-2 rounded-md transition-colors focus:outline-none"
                   title={`Rename ${prop.name}`}
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
@@ -184,7 +184,7 @@ export default function PropertyManager({ properties }: PropertyManagerProps) {
                 </button>
                 <button
                   onClick={() => handleDeleteProperty(prop.name)}
-                  className="text-red-400 hover:text-red-300 hover:bg-red-400/10 p-2 rounded-lg transition-colors focus:outline-none"
+                  className="text-gray-400 hover:text-red-600 hover:bg-red-50 p-2 rounded-md transition-colors focus:outline-none"
                   title={`Delete ${prop.name}`}
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
@@ -196,8 +196,8 @@ export default function PropertyManager({ properties }: PropertyManagerProps) {
           ))}
         </ul>
       ) : (
-        <div className="py-10 text-center border border-dashed border-white/20 rounded-xl bg-white/5">
-          <p className="text-white/50 text-sm">No properties found.</p>
+        <div className="py-10 text-center border border-dashed border-gray-300 rounded-xl bg-gray-50">
+          <p className="text-gray-500 text-sm">No properties found.</p>
         </div>
       )}
     </div>

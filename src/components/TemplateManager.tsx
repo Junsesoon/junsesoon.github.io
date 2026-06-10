@@ -1,7 +1,7 @@
 'use client';
 
-import React, { useState } from 'react';
-import { addTemplateAction, addPropertyAction, deletePropertyAction } from './actions';
+import React, { useState, useEffect } from 'react';
+import { addTemplateAction, addPropertyAction, deletePropertyAction, getAllPropertyNamesAction } from './actions';
 
 export type Property = {
   propertyName: string;
@@ -14,6 +14,15 @@ export type TemplatesState = Record<string, Property[]>;
 export default function TemplateManager({ initialTemplates }: { initialTemplates: TemplatesState }) {
   // DB Fetch State Data
   const [templates, setTemplates] = useState<TemplatesState>(initialTemplates);
+  const [globalProps, setGlobalProps] = useState<string[]>([]);
+
+  useEffect(() => {
+    getAllPropertyNamesAction().then((names) => {
+      if (names && names.length > 0) {
+        setGlobalProps(names);
+      }
+    });
+  }, []);
 
   const templateNames = Object.keys(templates);
   const [selectedTemplate, setSelectedTemplate] = useState<string>(templateNames[0] || '');
@@ -132,7 +141,7 @@ export default function TemplateManager({ initialTemplates }: { initialTemplates
   };
 
   return (
-    <div className="backdrop-blur-md bg-white/10 border border-white/20 rounded-2xl p-6 shadow-2xl">
+    <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
       
       {/* Template Selector (Tabs) */}
       <div className="flex space-x-2 mb-8 overflow-x-auto pb-2 scrollbar-hide items-center">
@@ -142,8 +151,8 @@ export default function TemplateManager({ initialTemplates }: { initialTemplates
             onClick={() => setSelectedTemplate(templateName)}
             className={`px-5 py-2.5 rounded-lg font-medium transition-all duration-200 whitespace-nowrap outline-none ${
               selectedTemplate === templateName
-                ? 'bg-[#007BFF] text-white shadow-lg shadow-[#007BFF]/30'
-                : 'bg-white/5 text-white/60 hover:bg-white/15 hover:text-white'
+                ? 'bg-blue-600 text-white shadow-sm'
+                : 'bg-white text-gray-600 hover:bg-gray-50 hover:text-gray-900 border border-gray-200'
             }`}
           >
             {templateName.charAt(0).toUpperCase() + templateName.slice(1)}
@@ -151,7 +160,7 @@ export default function TemplateManager({ initialTemplates }: { initialTemplates
         ))}
 
         {isAddingTemplate ? (
-          <div className="flex items-center bg-black/20 rounded-lg px-2 py-1.5 border border-white/20 shrink-0">
+          <div className="flex items-center bg-gray-50 rounded-lg px-2 py-1.5 border border-gray-200 shrink-0">
             <input
               type="text"
               value={newTemplateName}
@@ -170,19 +179,19 @@ export default function TemplateManager({ initialTemplates }: { initialTemplates
               placeholder="New template..."
               autoFocus
               disabled={isSaving}
-              className="bg-transparent text-white placeholder-white/30 text-sm focus:outline-none w-28 px-2 disabled:opacity-50"
+              className="bg-transparent text-gray-900 placeholder-gray-400 text-sm focus:outline-none w-28 px-2 disabled:opacity-50"
             />
-            <button onClick={handleAddTemplate} disabled={isSaving} className="text-[#007BFF] hover:text-[#0056b3] p-1 transition-colors disabled:opacity-50" title="Save">
+            <button onClick={handleAddTemplate} disabled={isSaving} className="text-blue-600 hover:text-blue-800 p-1 transition-colors disabled:opacity-50" title="Save">
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
             </button>
-            <button onClick={() => { setIsAddingTemplate(false); setNewTemplateName(''); }} disabled={isSaving} className="text-red-400 hover:text-red-300 p-1 transition-colors disabled:opacity-50" title="Cancel">
+            <button onClick={() => { setIsAddingTemplate(false); setNewTemplateName(''); }} disabled={isSaving} className="text-red-500 hover:text-red-700 p-1 transition-colors disabled:opacity-50" title="Cancel">
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
             </button>
           </div>
         ) : (
           <button
             onClick={() => setIsAddingTemplate(true)}
-            className="px-4 py-2.5 rounded-lg font-medium transition-all duration-200 bg-white/5 text-white/60 hover:bg-white/15 hover:text-white border border-dashed border-white/20 flex items-center justify-center shrink-0"
+            className="px-4 py-2.5 rounded-lg font-medium transition-all duration-200 bg-gray-50 text-gray-400 hover:bg-gray-100 hover:text-gray-600 border border-dashed border-gray-300 flex items-center justify-center shrink-0"
             title="Add Template"
           >
             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
@@ -197,12 +206,12 @@ export default function TemplateManager({ initialTemplates }: { initialTemplates
           {/* Property List */}
           <div className="mb-8">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-semibold text-white">
-                Properties for <span className="text-[#007BFF] capitalize">{selectedTemplate}</span>
+          <h2 className="text-xl font-semibold text-gray-800">
+            Properties for <span className="text-blue-600 capitalize">{selectedTemplate}</span>
               </h2>
               <button
                 onClick={() => handleDeleteTemplate(selectedTemplate)}
-                className="text-red-400 hover:text-red-300 hover:bg-red-400/10 px-3 py-1.5 rounded-lg transition-colors text-sm font-medium flex items-center gap-1.5 focus:outline-none"
+            className="text-red-500 hover:text-red-700 hover:bg-red-50 px-3 py-1.5 rounded-md transition-colors text-sm font-medium flex items-center gap-1.5 focus:outline-none"
                 title="Delete Template"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -213,24 +222,24 @@ export default function TemplateManager({ initialTemplates }: { initialTemplates
             </div>
             
             {currentProperties.length === 0 ? (
-              <div className="py-10 text-center border border-dashed border-white/20 rounded-xl bg-white/5">
-                <p className="text-white/50 text-sm">No properties defined for this template.</p>
+              <div className="py-10 text-center border border-dashed border-gray-300 rounded-xl bg-gray-50">
+                <p className="text-gray-500 text-sm">No properties defined for this template.</p>
               </div>
             ) : (
-              <ul className="border border-white/10 rounded-xl overflow-hidden bg-white/5 divide-y divide-white/10">
+              <ul className="border border-gray-200 rounded-xl overflow-hidden bg-white divide-y divide-gray-200">
                 {currentProperties.map((prop) => (
-                  <li key={prop.propertyName} className="flex items-center justify-between p-4 hover:bg-white/5 transition-colors">
+                  <li key={prop.propertyName} className="flex items-center justify-between p-4 hover:bg-gray-50 transition-colors">
                     <div className="flex items-center space-x-4">
-                      <span className="font-mono text-white text-base">{prop.propertyName}</span>
-                      <span className="text-white/40 text-sm bg-black/20 px-2 py-0.5 rounded border border-white/10 capitalize">
+                      <span className="font-mono text-gray-900 font-medium text-base">{prop.propertyName}</span>
+                      <span className="text-gray-500 text-sm bg-gray-100 px-2 py-0.5 rounded border border-gray-200 capitalize">
                         {prop.type}
                       </span>
                       {prop.isRequired ? (
-                        <span className="bg-[#007BFF]/20 text-[#007BFF] border border-[#007BFF]/30 px-2 py-0.5 rounded text-xs font-semibold uppercase tracking-wide">
+                        <span className="bg-blue-50 text-blue-700 border border-blue-200 px-2 py-0.5 rounded text-xs font-semibold uppercase tracking-wide">
                           Required
                         </span>
                       ) : (
-                        <span className="bg-white/10 text-white/60 border border-white/10 px-2 py-0.5 rounded text-xs font-semibold uppercase tracking-wide">
+                        <span className="bg-gray-100 text-gray-500 border border-gray-200 px-2 py-0.5 rounded text-xs font-semibold uppercase tracking-wide">
                           Optional
                         </span>
                       )}
@@ -238,7 +247,7 @@ export default function TemplateManager({ initialTemplates }: { initialTemplates
                     <button
                       disabled={isSaving}
                       onClick={() => handleDeleteProperty(prop.propertyName)}
-                      className="text-red-400 hover:text-red-300 hover:bg-red-400/10 p-2 rounded-lg transition-colors focus:outline-none"
+                      className="text-gray-400 hover:text-red-600 hover:bg-red-50 p-2 rounded-md transition-colors focus:outline-none"
                       title="Delete Property"
                     >
                       <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
@@ -252,27 +261,34 @@ export default function TemplateManager({ initialTemplates }: { initialTemplates
           </div>
 
           {/* Add Property Form */}
-          <div className="border-t border-white/20 pt-6">
-            <h3 className="text-lg font-semibold text-white mb-4">Add New Property</h3>
+          <div className="border-t border-gray-200 pt-6">
+            <h3 className="text-lg font-semibold text-gray-800 mb-4">Add New Property</h3>
             <form onSubmit={handleAddProperty} className="flex flex-col sm:flex-row items-start sm:items-end gap-4">
               <div className="flex-1 w-full">
-                <label htmlFor="propertyName" className="block text-sm font-medium text-white/70 mb-1.5">
+                <label htmlFor="propertyName" className="block text-sm font-medium text-gray-700 mb-1.5">
                   Property Name
                 </label>
                 <input
                   type="text"
                   id="propertyName"
+                  list="global-props-list"
                   value={newPropertyName}
                   disabled={isSaving}
                   onChange={(e) => setNewPropertyName(e.target.value)}
                   placeholder="e.g., sourceCodeUrl"
-                  className="w-full bg-black/20 border border-white/20 rounded-lg px-4 py-2.5 text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-[#007BFF]/50 focus:border-[#007BFF] transition-all"
+                  className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 bg-white"
                   required
+                  autoComplete="off"
                 />
+                <datalist id="global-props-list">
+                  {globalProps.map((prop) => (
+                    <option key={prop} value={prop} />
+                  ))}
+                </datalist>
               </div>
               
               <div className="w-full sm:w-32">
-                <label htmlFor="propType" className="block text-sm font-medium text-white/70 mb-1.5">
+                <label htmlFor="propType" className="block text-sm font-medium text-gray-700 mb-1.5">
                   Type
                 </label>
                 <select
@@ -280,24 +296,24 @@ export default function TemplateManager({ initialTemplates }: { initialTemplates
                   value={newType}
                   disabled={isSaving}
                   onChange={(e) => setNewType(e.target.value)}
-                  className="w-full bg-black/20 border border-white/20 rounded-lg px-3 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-[#007BFF]/50 focus:border-[#007BFF] transition-all cursor-pointer appearance-none"
+                  className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 bg-white appearance-none cursor-pointer"
                 >
-                  <option value="string" className="bg-[#232526]">String</option>
-                  <option value="number" className="bg-[#232526]">Number</option>
-                  <option value="boolean" className="bg-[#232526]">Boolean</option>
-                  <option value="date" className="bg-[#232526]">Date</option>
-                  <option value="array" className="bg-[#232526]">Array</option>
+                  <option value="string">String</option>
+                  <option value="number">Number</option>
+                  <option value="boolean">Boolean</option>
+                  <option value="date">Date</option>
+                  <option value="array">Array</option>
                 </select>
               </div>
 
               <div className={`flex items-center mb-2 sm:mb-0 sm:pb-3 group ${isSaving ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`} onClick={() => !isSaving && setIsNewRequired(!isNewRequired)}>
-                <div className={`w-5 h-5 flex items-center justify-center border-2 rounded mr-2 transition-colors ${isNewRequired ? 'bg-[#007BFF] border-[#007BFF]' : 'border-white/30 bg-black/20 group-hover:border-white/50'}`}>
+                <div className={`w-5 h-5 flex items-center justify-center border rounded mr-2 transition-colors ${isNewRequired ? 'bg-blue-600 border-blue-600' : 'border-gray-300 bg-white group-hover:border-gray-400'}`}>
                   {isNewRequired && <svg className="w-3.5 h-3.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>}
                 </div>
-                <span className="text-sm font-medium text-white/70 group-hover:text-white transition-colors select-none">Required</span>
+                <span className="text-sm font-medium text-gray-700 group-hover:text-gray-900 transition-colors select-none">Required</span>
               </div>
 
-              <button type="submit" disabled={isSaving} className="w-full sm:w-auto bg-[#007BFF] hover:bg-[#0069d9] text-white px-6 py-2.5 rounded-lg font-semibold shadow-lg shadow-[#007BFF]/20 transition-all active:scale-95 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
+              <button type="submit" disabled={isSaving} className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-md font-semibold shadow-sm transition-colors active:scale-95 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd" /></svg>
                 Add Property
               </button>
@@ -305,8 +321,8 @@ export default function TemplateManager({ initialTemplates }: { initialTemplates
           </div>
         </>
       ) : (
-        <div className="py-10 text-center border border-dashed border-white/20 rounded-xl bg-white/5">
-          <p className="text-white/50 text-sm">No templates available. Please add a new template above.</p>
+      <div className="py-10 text-center border border-dashed border-gray-300 rounded-xl bg-gray-50">
+        <p className="text-gray-500 text-sm">No templates available. Please add a new template above.</p>
         </div>
       )}
     </div>

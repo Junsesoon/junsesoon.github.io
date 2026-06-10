@@ -42,3 +42,6 @@ Thumbs.db
 !/public/upload-posts/.gitkeep
 
 /public/posts/*
+
+# 📚 개발문서(아키텍처, 시퀀스 다이어그램 등)
+.docx
