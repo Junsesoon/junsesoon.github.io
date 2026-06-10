@@ -14,6 +14,7 @@
 - `006_schema_views.sql`: 게시물 조회수 집계를 위한 `posts` 테이블 역정규화 컬럼(`views_count`) 추가 및 어뷰징 방지(쿨다운)용 조회 이력 관리 테이블(`views_manage`) 생성 DDL
 - `007_schema_visitors.sql`: 사이트 전역의 일간 순 방문자(Unique Visitor) 추적을 위한 `site_visitors` 테이블 및 전체 방문자 통계 캐싱용 `site_stats` 테이블 생성 DDL
 - `008_schema_post_title.sql`: JSONB 객체 내부에 저장되던 게시물 제목(`title`)을 독립적인 컬럼으로 분리하고 기존 데이터를 안전하게 마이그레이션하는 DDL 및 DML
+- `009_schema_skilltree_domains.sql`: 스킬 트리 페이지에서 동적으로 렌더링될 도메인(그리드) 목록과 노출 순서(`display_order`)를 관리하는 `skilltree_domains` 테이블 생성 및 기존 `skilltree` 테이블을 `skilltree_posts`로 이름 변경하는 DDL
 
 ### 유틸리티 스크립트 (TS)
 - `upload-posts.ts`: `public/upload-posts` 마크다운을 읽어 DB로 업로드하는 스크립트입니다.

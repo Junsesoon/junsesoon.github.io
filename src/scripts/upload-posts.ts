@@ -67,7 +67,7 @@ async function upsertPost(post: MarkdownPost): Promise<string> {
 
 async function resetPostDetailRows(postId: string) {
   // 구형 테이블 삭제 로직 대체: 현재는 skilltree 단일 확장 테이블만 존재함
-  await pool.query('DELETE FROM skilltree WHERE post_id = $1', [postId]);
+  await pool.query('DELETE FROM skilltree_posts WHERE post_id = $1', [postId]);
 }
 
 async function insertPostDetails(postId: string, frontmatter: Frontmatter) {
@@ -80,7 +80,7 @@ async function insertPostDetails(postId: string, frontmatter: Frontmatter) {
 
     await pool.query(
       `
-        INSERT INTO skilltree (
+        INSERT INTO skilltree_posts (
           post_id,
           domain,
           sub_domain,

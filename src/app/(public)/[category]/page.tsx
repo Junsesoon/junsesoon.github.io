@@ -1,5 +1,5 @@
-import Link from 'next/link';
 import { getCategoryPosts } from '../../../utils/posts';
+import PostList from '../../../components/PostList';
 
 export const dynamic = 'force-dynamic';
 
@@ -31,23 +31,9 @@ export default async function CategoryPage({ params, searchParams }: { params: P
       ) : (
         <section>
           <h2 className="mb-6 border-b border-gray-200 pb-2 text-2xl">
-            포스트 목록 ({posts.length})
+            Posts ({posts.length})
           </h2>
-          <ul className="list-none p-0">
-            {posts.map((post) => (
-              <li key={post.slug} className="mb-10">
-                <Link href={`/${post.slug}`} className="no-underline">
-                  <h3 className={`mb-2 text-2xl ${mode === 'portfolio' ? 'text-red-800' : 'text-blue-600'}`}>
-                    {post.title}
-                  </h3>
-                  <p className="mb-2 text-gray-800">{post.excerpt}</p>
-                  <p className="text-sm text-gray-500">
-                    {new Date(post.date).toLocaleDateString('ko-KR')}
-                  </p>
-                </Link>
-              </li>
-            ))}
-          </ul>
+        <PostList posts={posts} theme={mode === 'portfolio' ? 'portfolio' : 'blog'} />
         </section>
       )}
     </main>

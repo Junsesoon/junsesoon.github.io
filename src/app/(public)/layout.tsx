@@ -22,7 +22,7 @@ export default async function RootLayout({
 
   return (
     <html lang="ko">
-      <body className="m-0 p-0 flex flex-col min-h-screen bg-white text-gray-900">
+      <body className="m-0 p-0 flex flex-col min-h-screen overflow-y-scroll bg-white text-gray-900">
         {process.env.GA_MEASUREMENT_ID && (
           <>
             <Script

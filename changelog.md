@@ -85,3 +85,14 @@
 - root/readme.md 에서 버전 히스토리 및 백로그 분리
 - skill tree overlay 방식을 사이드 패널에서 중앙 팝업 모달로 변경 및 관리자 전용 '수정' 버튼 연동
 - 게시물 편집기에서 속성 추가시 타입 선택 기능 지원
+
+### junseo tech blog 2.7.0
+- distribution 2026-06-10
+#### New
+- 스킬 트리 카드에 마우스 호버시 연결된 선이 강조되는 상호작용 기능 추가
+#### Refactoring
+- portfolio page를 구현하는 folder를 (public)에서 (protected)로 분리
+- actions.ts에 있던 skilltree 관련 서버 액션 코드를 skillTreeActions.ts로 분리
+- 게시물 제목을 별도 DB 컬럼으로 분리하여 저장
+#### Modified
+- 관리자 페이지 UI 수정(manage button들을 blog stats 하단에 3x2 grid로 재배치)

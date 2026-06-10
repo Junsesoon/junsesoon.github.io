@@ -1,8 +1,8 @@
 'use client';
 
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
-import { SkillNode } from './skilltreegrid';
+import { SkillNode } from './SkillTreeGrid';
 
 interface Props {
   nodes: Record<string, SkillNode>;
@@ -13,6 +13,7 @@ interface Props {
 export default function SkillTreeInteractive({ nodes, COLUMNS, isAdmin }: Props) {
   const [selectedNode, setSelectedNode] = useState<SkillNode | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [hoveredNode, setHoveredNode] = useState<string | null>(null);
 
   // 마우스 드래그(Pan) 스크롤 처리를 위한 상태 및 Ref
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -20,6 +21,31 @@ export default function SkillTreeInteractive({ nodes, COLUMNS, isAdmin }: Props)
   const startX = useRef(0);
   const scrollLeft = useRef(0);
   const isDragged = useRef(false);
+
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      // 페이지가 다시 표시될 때 (탭 전환 등) 드래그 관련 상태가
+      // 비정상적으로 남아있는 문제를 해결하기 위해 상태를 강제로 초기화합니다.
+      if (document.visibilityState === 'visible') {
+        setIsDragging(false);
+        isDragged.current = false;
+      }
+    };
+
+    const handlePageShow = () => {
+      // BFCache(Back/Forward Cache)에서 복원될 때 호출되는 이벤트
+      // 드래그 관련 상태를 명시적으로 초기화하여 브라우저 뒤로가기 후에도 정상 작동하도록 합니다.
+      setIsDragging(false);
+      isDragged.current = false;
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('pageshow', handlePageShow);
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('pageshow', handlePageShow);
+    };
+  }, []);
 
   const nodesArray = Object.values(nodes);
   const maxCols = nodesArray.length > 0 ? Math.max(COLUMNS, ...nodesArray.map(n => n.col + 1)) : COLUMNS;
@@ -35,6 +61,15 @@ export default function SkillTreeInteractive({ nodes, COLUMNS, isAdmin }: Props)
 
   const onMouseMove = (e: React.MouseEvent) => {
     if (!isDragging || !scrollRef.current) return;
+
+    // '뒤로가기'를 했을 때 isDragging이 강제로 true로 남아있는 캐시 상태 고착화 방지
+    // 마우스 왼쪽 버튼(1)이 눌린 상태가 아니라면 드래그를 즉시 해제합니다.
+    if (e.buttons !== 1) {
+      setIsDragging(false);
+      isDragged.current = false;
+      return;
+    }
+
     e.preventDefault();
     const x = e.pageX - scrollRef.current.offsetLeft;
     const walk = (x - startX.current) * 1.5; // 드래그 속도 조절
@@ -55,7 +90,7 @@ export default function SkillTreeInteractive({ nodes, COLUMNS, isAdmin }: Props)
   };
 
   // Generate lines between parents and children
-  const lines: Array<{ id: string; x1: number; y1: number; x2: number; y2: number }> = [];
+  const lines: Array<{ id: string; parentName: string; childName: string; x1: number; y1: number; x2: number; y2: number }> = [];
   nodesArray.forEach((childNode) => {
     if (childNode.parents && childNode.parents.length > 0) {
       const childPos = { col: childNode.col, row: childNode.row };
@@ -66,6 +101,8 @@ export default function SkillTreeInteractive({ nodes, COLUMNS, isAdmin }: Props)
           if (parentPos) {
             lines.push({
               id: `${parentName}-${childNode.file.replace(/\.[^/.]+$/, "")}`,
+              parentName: parentName,
+              childName: childNode.title.toLowerCase(),
               x1: parentPos.col * 120 + 100, // Right center of parent
               y1: parentPos.row * 70 + 25, // Middle Y of parent
               x2: childPos.col * 120,       // Left center of child
@@ -78,11 +115,18 @@ export default function SkillTreeInteractive({ nodes, COLUMNS, isAdmin }: Props)
   });
 
   return (
-    <div 
+    <>
+      <div 
       ref={scrollRef}
       onMouseDown={onMouseDown}
-      onMouseLeave={() => setIsDragging(false)}
-      onMouseUp={() => setIsDragging(false)}
+      onMouseLeave={() => {
+        setIsDragging(false);
+        isDragged.current = false;
+      }}
+      onMouseUp={() => {
+        setIsDragging(false);
+        isDragged.current = false;
+      }}
       onMouseMove={onMouseMove}
       className={`w-full max-w-[1000px] mx-auto py-10 px-4 overflow-x-auto relative bg-gray-50 rounded-2xl border border-gray-200 mt-4 mb-10 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none'] ${isDragging ? 'cursor-grabbing' : 'cursor-grab'}`}
     >
@@ -92,16 +136,26 @@ export default function SkillTreeInteractive({ nodes, COLUMNS, isAdmin }: Props)
           className="absolute top-0 left-0 w-full h-full pointer-events-none" 
           style={{ zIndex: 0, overflow: 'visible' }}
         >
-          {lines.map((line) => (
-            <path
-              key={line.id}
-              d={`M ${line.x1} ${line.y1} L ${(line.x1 + line.x2) / 2} ${line.y1} L ${(line.x1 + line.x2) / 2} ${line.y2} L ${line.x2} ${line.y2}`}
-              // d={`M ${line.x1} ${line.y1} C ${line.x1 + 30} ${line.y1}, ${line.x2 - 30} ${line.y2}, ${line.x2} ${line.y2}`} // 베지어 곡선 style
-              stroke="rgb(179, 185, 196)" // skill tree card 연결선 색상 설정 영역
-              strokeWidth="1.5"
-              fill="none"
-            />
-          ))}
+          {lines
+            .sort((a, b) => {
+              const aHighlighted = hoveredNode === a.parentName || hoveredNode === a.childName;
+              const bHighlighted = hoveredNode === b.parentName || hoveredNode === b.childName;
+              return aHighlighted === bHighlighted ? 0 : aHighlighted ? 1 : -1;
+            })
+            .map((line) => {
+              const isHighlighted = hoveredNode === line.parentName || hoveredNode === line.childName;
+            return (
+              <path
+                key={line.id}
+                d={`M ${line.x1} ${line.y1} L ${(line.x1 + line.x2) / 2} ${line.y1} L ${(line.x1 + line.x2) / 2} ${line.y2} L ${line.x2} ${line.y2}`}
+                // d={`M ${line.x1} ${line.y1} C ${line.x1 + 30} ${line.y1}, ${line.x2 - 30} ${line.y2}, ${line.x2} ${line.y2}`} // 베지어 곡선 style
+                stroke={isHighlighted ? "#3b82f6" : "rgb(179, 185, 196)"} // blue-500 for highlight
+                strokeWidth={isHighlighted ? "2.5" : "1.5"}
+                fill="none"
+                className="transition-all duration-300"
+              />
+            );
+          })}
         </svg>
 
         <div 
@@ -118,6 +172,8 @@ export default function SkillTreeInteractive({ nodes, COLUMNS, isAdmin }: Props)
               <div
                 key={nodeInfo.file}
                 onClick={() => handleNodeClick(nodeInfo)}
+                onMouseEnter={() => setHoveredNode(displayName.toLowerCase())}
+                onMouseLeave={() => setHoveredNode(null)}
                 style={{
                   gridColumnStart: nodeInfo.col + 1,
                   gridRowStart: nodeInfo.row + 1,
@@ -133,6 +189,7 @@ export default function SkillTreeInteractive({ nodes, COLUMNS, isAdmin }: Props)
             );
           })}
         </div>
+      </div>
       </div>
 
       {/* Modal Overlay */}
@@ -162,7 +219,7 @@ export default function SkillTreeInteractive({ nodes, COLUMNS, isAdmin }: Props)
                     </h2>
                     {isAdmin && (
                     <Link 
-                      href={`/admin/edit/${selectedNode.slug}?redirect=/skilltree`}
+                      href={`/admin/edit/${selectedNode.slug.split('/').map(encodeURIComponent).join('/')}?redirect=/skilltree`}
                       onClick={closeModal}
                       className="shrink-0 ml-4 px-3 py-1.5 text-sm font-semibold text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors focus:outline-none"
                     >
@@ -200,7 +257,7 @@ export default function SkillTreeInteractive({ nodes, COLUMNS, isAdmin }: Props)
 
                   <div className="mt-8 flex justify-end">
                     <Link
-                      href={`/${selectedNode.slug}`}
+                      href={`/${selectedNode.slug.split('/').map(encodeURIComponent).join('/')}`}
                       className="bg-blue-600 text-white px-5 py-2.5 rounded-lg shadow-md hover:bg-blue-700 transition-colors text-sm font-semibold"
                     >
                       게시물 자세히 보기 &rarr;
@@ -212,6 +269,6 @@ export default function SkillTreeInteractive({ nodes, COLUMNS, isAdmin }: Props)
           </div>
         </div>
       )}
-    </div>
+    </>
   );
 }

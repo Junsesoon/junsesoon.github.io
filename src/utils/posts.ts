@@ -185,7 +185,7 @@ export const getSkillTreePosts = async (matchCategory2: string): Promise<DbPost[
         s.parent_skill,
         s.child_skill
       FROM posts p
-      JOIN skilltree s ON p.post_id = s.post_id
+      JOIN skilltree_posts s ON p.post_id = s.post_id
       WHERE LOWER(s.domain) = LOWER($1)
         AND p.properties->>'category4' IS NULL
       ORDER BY s.tech_start ASC NULLS LAST, p.title ASC

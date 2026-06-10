@@ -1,10 +1,9 @@
 export const PORTFOLIO_MENU = [
-//{ href: '/?mode=portfolio', text: 'Home', exact: true }, 버튼 중복
-  { href: '/about?mode=portfolio', text: 'About' },
-  { href: '/project?mode=portfolio', text: 'Project' },
-  { href: '/myskill?mode=portfolio', text: 'My Skill' },
-  { href: '/decision?mode=portfolio', text: 'Decision' },
-  { href: '/troubleshooting?mode=portfolio', text: 'Troubleshooting' },
+  { href: '/portfolio/about', text: 'About' },
+  { href: '/portfolio/project', text: 'Project' },
+  { href: '/portfolio/myskill', text: 'My Skill' },
+  { href: '/portfolio/decision', text: 'Decision' },
+  { href: '/portfolio/troubleshooting', text: 'Troubleshooting' },
 ] as const;
 
 export const BLOG_MENU = [

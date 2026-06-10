@@ -1,8 +1,8 @@
 'use client';
 
 import Link from 'next/link';
-import React, { Suspense, useState } from 'react';
-import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import React, { useState } from 'react';
+import { usePathname, useRouter } from 'next/navigation';
 import { PORTFOLIO_MENU, BLOG_MENU, ENABLE_MODE_TOGGLE } from '@/constants';
 
 interface GNBProps {
@@ -11,24 +11,11 @@ interface GNBProps {
 
 const GNBContent: React.FC<GNBProps> = ({ isAdmin }) => {
   const router = useRouter();
-  const searchParams = useSearchParams();
   const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
 
   const getMode = () => {
-    const queryMode = searchParams.get('mode');
-    if (queryMode === 'blog' || queryMode === 'portfolio') {
-      return queryMode;
-    }
-
-    // Infer from pathname if query parameter is missing
-    const isPortfolioPath = PORTFOLIO_MENU.some((item) => {
-      const itemPath = item.href.split('?')[0];
-      // Ensure we don't match on '/' for portfolio
-      return itemPath !== '/' && (pathname === itemPath || pathname.startsWith(itemPath + '/'));
-    });
-
-    return isPortfolioPath ? 'portfolio' : 'blog';
+    return pathname.startsWith('/portfolio') ? 'portfolio' : 'blog';
   };
 
   const mode = getMode();
@@ -36,7 +23,7 @@ const GNBContent: React.FC<GNBProps> = ({ isAdmin }) => {
 
   const handleModeSwitch = (newMode: 'blog' | 'portfolio') => {
     setIsOpen(false);
-    router.push(`/?mode=${newMode}`);
+    router.push(newMode === 'portfolio' ? '/portfolio' : '/');
   };
 
   const isLinkActive = (href: string, exact?: boolean) => {
@@ -61,7 +48,7 @@ const GNBContent: React.FC<GNBProps> = ({ isAdmin }) => {
         {/* Left: Logo */}
         <div className="md:justify-self-start">
           <Link
-            href={mode === 'portfolio' ? '/?mode=portfolio' : '/'}
+            href={mode === 'portfolio' ? '/portfolio' : '/'}
             className="text-gray-900 text-2xl font-bold no-underline transition-opacity duration-200 hover:opacity-80"
             onClick={() => setIsOpen(false)}
           >
@@ -172,11 +159,7 @@ const GNBContent: React.FC<GNBProps> = ({ isAdmin }) => {
 };
 
 const GNB: React.FC<GNBProps> = ({ isAdmin }) => {
-  return (
-    <Suspense fallback={<nav className="bg-white">Loading...</nav>}>
-      <GNBContent isAdmin={isAdmin} />
-    </Suspense>
-  );
+  return <GNBContent isAdmin={isAdmin} />;
 };
 
 export default GNB;
