@@ -136,8 +136,14 @@ export default function SkillTreeInteractive({ nodes, COLUMNS, isAdmin }: Props)
           className="absolute top-0 left-0 w-full h-full pointer-events-none" 
           style={{ zIndex: 0, overflow: 'visible' }}
         >
-          {lines.map((line) => {
-            const isHighlighted = hoveredNode === line.parentName || hoveredNode === line.childName;
+          {lines
+            .sort((a, b) => {
+              const aHighlighted = hoveredNode === a.parentName || hoveredNode === a.childName;
+              const bHighlighted = hoveredNode === b.parentName || hoveredNode === b.childName;
+              return aHighlighted === bHighlighted ? 0 : aHighlighted ? 1 : -1;
+            })
+            .map((line) => {
+              const isHighlighted = hoveredNode === line.parentName || hoveredNode === line.childName;
             return (
               <path
                 key={line.id}
