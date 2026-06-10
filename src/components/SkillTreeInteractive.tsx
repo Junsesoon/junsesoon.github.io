@@ -13,6 +13,7 @@ interface Props {
 export default function SkillTreeInteractive({ nodes, COLUMNS, isAdmin }: Props) {
   const [selectedNode, setSelectedNode] = useState<SkillNode | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [hoveredNode, setHoveredNode] = useState<string | null>(null);
 
   // 마우스 드래그(Pan) 스크롤 처리를 위한 상태 및 Ref
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -89,7 +90,7 @@ export default function SkillTreeInteractive({ nodes, COLUMNS, isAdmin }: Props)
   };
 
   // Generate lines between parents and children
-  const lines: Array<{ id: string; x1: number; y1: number; x2: number; y2: number }> = [];
+  const lines: Array<{ id: string; parentName: string; childName: string; x1: number; y1: number; x2: number; y2: number }> = [];
   nodesArray.forEach((childNode) => {
     if (childNode.parents && childNode.parents.length > 0) {
       const childPos = { col: childNode.col, row: childNode.row };
@@ -100,6 +101,8 @@ export default function SkillTreeInteractive({ nodes, COLUMNS, isAdmin }: Props)
           if (parentPos) {
             lines.push({
               id: `${parentName}-${childNode.file.replace(/\.[^/.]+$/, "")}`,
+              parentName: parentName,
+              childName: childNode.title.toLowerCase(),
               x1: parentPos.col * 120 + 100, // Right center of parent
               y1: parentPos.row * 70 + 25, // Middle Y of parent
               x2: childPos.col * 120,       // Left center of child
@@ -133,16 +136,20 @@ export default function SkillTreeInteractive({ nodes, COLUMNS, isAdmin }: Props)
           className="absolute top-0 left-0 w-full h-full pointer-events-none" 
           style={{ zIndex: 0, overflow: 'visible' }}
         >
-          {lines.map((line) => (
-            <path
-              key={line.id}
-              d={`M ${line.x1} ${line.y1} L ${(line.x1 + line.x2) / 2} ${line.y1} L ${(line.x1 + line.x2) / 2} ${line.y2} L ${line.x2} ${line.y2}`}
-              // d={`M ${line.x1} ${line.y1} C ${line.x1 + 30} ${line.y1}, ${line.x2 - 30} ${line.y2}, ${line.x2} ${line.y2}`} // 베지어 곡선 style
-              stroke="rgb(179, 185, 196)" // skill tree card 연결선 색상 설정 영역
-              strokeWidth="1.5"
-              fill="none"
-            />
-          ))}
+          {lines.map((line) => {
+            const isHighlighted = hoveredNode === line.parentName || hoveredNode === line.childName;
+            return (
+              <path
+                key={line.id}
+                d={`M ${line.x1} ${line.y1} L ${(line.x1 + line.x2) / 2} ${line.y1} L ${(line.x1 + line.x2) / 2} ${line.y2} L ${line.x2} ${line.y2}`}
+                // d={`M ${line.x1} ${line.y1} C ${line.x1 + 30} ${line.y1}, ${line.x2 - 30} ${line.y2}, ${line.x2} ${line.y2}`} // 베지어 곡선 style
+                stroke={isHighlighted ? "#3b82f6" : "rgb(179, 185, 196)"} // blue-500 for highlight
+                strokeWidth={isHighlighted ? "2.5" : "1.5"}
+                fill="none"
+                className="transition-all duration-300"
+              />
+            );
+          })}
         </svg>
 
         <div 
@@ -159,6 +166,8 @@ export default function SkillTreeInteractive({ nodes, COLUMNS, isAdmin }: Props)
               <div
                 key={nodeInfo.file}
                 onClick={() => handleNodeClick(nodeInfo)}
+                onMouseEnter={() => setHoveredNode(displayName.toLowerCase())}
+                onMouseLeave={() => setHoveredNode(null)}
                 style={{
                   gridColumnStart: nodeInfo.col + 1,
                   gridRowStart: nodeInfo.row + 1,
