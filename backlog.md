@@ -17,6 +17,7 @@
 - LLM을 활용한 게시물 추천 챗봇
 - 블로그 소개시 들어갈 내용 후보: (1)프로젝트 소개 및 정체성 (2)기술 스택 및 아키텍처 (3)디렉토리 구조
 - view manage page 도입(DB table은 아래와 같이 구성)
+    - 현재 DB table은 생성이 되어있으나 사이트 안정성 문제로 인해 개발이 지연되고 있음
     - session_id: 사용자의 브라우저 로컬 스토리지에 발급한 고유 난수(UUID)
     - target_path: 사용자가 정확히 어떤 게시물이나 URL을 조회했는지 기록
     - referer: 사용자가 어떤 링크를 타고 내 블로그에 들어왔는지(예: https://google.com, https://github.com 등) 기록하는 HTTP 헤더 정보
