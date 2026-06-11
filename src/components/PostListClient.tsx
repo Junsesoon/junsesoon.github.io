@@ -12,6 +12,7 @@ interface Post {
   category2: string;
   date: string | number | Date;
   likes_count?: number;
+  views_count?: number;
 }
 
 interface PostListClientProps {
@@ -46,11 +47,14 @@ export default function PostListClient({ posts, sort, order }: PostListClientPro
   const isAllSelected = posts.length > 0 && selectedSlugs.length === posts.length;
   const isSomeSelected = selectedSlugs.length > 0;
 
-  const renderHeader = (key: string, label: string) => {
+  const renderHeader = (key: string, label: string, extraClasses: string = '') => {
     const isActive = sort === key;
     const nextOrder = isActive && order === 'asc' ? 'desc' : 'asc';
     return (
-      <th scope="col" className="px-3 py-2 font-semibold text-gray-900 whitespace-nowrap">
+      <th 
+        scope="col" 
+        className={`py-2 font-semibold text-gray-900 align-middle truncate ${extraClasses}`}
+      >
         <Link href={`/admin?sort=${key}&order=${nextOrder}`} className="group inline-flex items-center gap-1 transition-colors hover:text-blue-600">
           {label}
           <span className={`text-xs ${isActive ? 'text-blue-600' : 'text-gray-300 group-hover:text-blue-400'}`}>
@@ -100,94 +104,110 @@ export default function PostListClient({ posts, sort, order }: PostListClientPro
 
       {/* 3. Data Grid Layer */}
       <div className="overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm">
-        <table className="min-w-full divide-y divide-gray-200 text-left text-sm">
-          <thead className="bg-gray-50">
-            <tr>
-              <th scope="col" className="px-3 py-2 w-10 text-center">
-                <input 
-                  type="checkbox" 
-                  checked={isAllSelected}
-                  onChange={handleSelectAll}
-                  className="rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer" 
-                />
-              </th>
-              {renderHeader('title', 'Title')}
-              {renderHeader('location', 'Location')}
-              {renderHeader('category1', 'Cat1')}
-              {renderHeader('category2', 'Cat2')}
-              <th scope="col" className="px-3 py-2 font-semibold text-gray-900">Status</th>
-              {renderHeader('date', 'Date')}
-              {renderHeader('likes_count', 'Likes')}
-              <th scope="col" className="px-3 py-2 text-center font-semibold text-gray-900">Actions</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-200 bg-white">
-            {posts.length > 0 ? (
-              posts.map((post) => (
-                <tr key={post.slug} className={`transition-colors hover:bg-gray-50 ${selectedSlugs.includes(post.slug) ? 'bg-blue-50' : ''}`}>
-                  <td className="px-3 py-2 text-center">
-                    <input 
-                      type="checkbox" 
-                      checked={selectedSlugs.includes(post.slug)}
-                      onChange={(e) => handleSelectOne(e, post.slug)}
-                      className="rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer" 
-                    />
-                  </td>
-                  <td className="px-3 py-2 font-medium text-gray-900 max-w-[150px] sm:max-w-[200px] md:max-w-[300px]">
-                    <Link 
-                      href={`/${post.slug.split('/').map(encodeURIComponent).join('/')}`}
-                      className="block truncate text-blue-600 transition-colors hover:text-blue-800 hover:underline"
-                      title={post.title}
-                    >
-                      {post.title}
-                    </Link>
-                  </td>
-                  <td className="px-3 py-2">
-                    {post.location ? (
-                      <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
-                        post.location === 'Portfolio' ? 'bg-red-100 text-red-800' :
-                        post.location === 'Both' ? 'bg-purple-100 text-purple-800' :
-                        'bg-blue-100 text-blue-800'
-                      }`}>
-                        {post.location}
-                      </span>
-                    ) : (
-                      <span className="text-gray-400">-</span>
-                    )}
-                  </td>
-                  <td className="px-3 py-2 text-gray-600 max-w-[150px] break-words" title={post.category1 || ''}>
-                    {post.category1 || '-'}
-                  </td>
-                  <td className="px-3 py-2 text-gray-600 max-w-[150px] break-words" title={post.category2 || ''}>
-                    {post.category2 || '-'}
-                  </td>
-                  <td className="px-3 py-2">
-                    <span className="inline-flex items-center rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-800">Published</span>
-                  </td>
-                  <td className="px-3 py-2 text-gray-500">{new Date(post.date).toLocaleDateString('ko-KR')}</td>
-                  <td className="px-3 py-2 text-gray-500">
-                    <div className="flex items-center gap-1">
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-blue-500" viewBox="0 0 20 20" fill="currentColor">
-                        <path fillRule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clipRule="evenodd" />
-                      </svg>
-                      <span className="font-medium text-gray-700">{Number(post.likes_count ?? 0).toLocaleString()}</span>
-                    </div>
-                  </td>
-                  <td className="px-3 py-2 text-center">
-                    <Link href={`/admin/edit/${post.slug.split('/').map(encodeURIComponent).join('/')}`} className="mr-4 font-medium text-blue-600 transition-colors hover:text-blue-800">Edit</Link>
-                    <form action={deletePostAction.bind(null, post.slug)} className="inline">
-                      <button type="submit" className="font-medium text-red-600 transition-colors hover:text-red-800">Delete</button>
-                    </form>
-                  </td>
-                </tr>
-              ))
-            ) : (
+        <div className="overflow-x-auto w-full">
+          <table className="w-full divide-y divide-gray-200 text-left text-sm table-fixed">
+            <thead className="bg-gray-50">
               <tr>
-                <td colSpan={9} className="px-3 py-2 text-center text-gray-500">등록된 게시물이 없습니다.</td>
+                <th scope="col" className="w-10 py-1 text-center align-middle">
+                  <input 
+                    type="checkbox" 
+                    checked={isAllSelected}
+                    onChange={handleSelectAll}
+                    className="rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer" 
+                  />
+                </th>
+                {renderHeader('title', 'Title')}
+                {renderHeader('location', 'Location', 'w-20 hidden sm:table-cell')}
+                {renderHeader('category1', 'Cat1', 'w-24 hidden md:table-cell')}
+                {renderHeader('category2', 'Cat2', 'w-24 hidden lg:table-cell')}
+                <th scope="col" className="w-21 py-1 font-semibold text-gray-900 align-middle truncate hidden lg:table-cell">
+                  Status
+                </th>
+                {renderHeader('date', 'Date', 'w-22 hidden md:table-cell')}
+                {renderHeader('views_count', 'View', 'w-13 hidden lg:table-cell')}
+                {renderHeader('likes_count', 'Like', 'w-13 hidden lg:table-cell')}
+                <th scope="col" className="w-20 py-1 text-center font-semibold text-gray-900 align-middle truncate">
+                  Action
+                </th>
               </tr>
-            )}
-          </tbody>
-        </table>
+            </thead>
+            <tbody className="divide-y divide-gray-200 bg-white">
+              {posts.length > 0 ? (
+                posts.map((post) => (
+                  <tr key={post.slug} className={`transition-colors hover:bg-gray-50 ${selectedSlugs.includes(post.slug) ? 'bg-blue-50' : ''}`}>
+                    <td className="py-1 text-center overflow-hidden">
+                      <input 
+                        type="checkbox" 
+                        checked={selectedSlugs.includes(post.slug)}
+                        onChange={(e) => handleSelectOne(e, post.slug)}
+                        className="rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer" 
+                      />
+                    </td>
+                    <td className="py-1 font-medium text-gray-900 truncate">
+                      <Link 
+                        href={`/${post.slug.split('/').map(encodeURIComponent).join('/')}`}
+                        className="block truncate text-blue-600 transition-colors hover:text-blue-800 hover:underline"
+                        title={post.title}
+                      >
+                        {post.title}
+                      </Link>
+                    </td>
+                    <td className="py-1 truncate hidden sm:table-cell">
+                      {post.location ? (
+                        <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
+                          post.location === 'Portfolio' ? 'bg-red-100 text-red-800' :
+                          post.location === 'Both' ? 'bg-purple-100 text-purple-800' :
+                          'bg-blue-100 text-blue-800'
+                        }`}>
+                          {post.location}
+                        </span>
+                      ) : (
+                        <span className="text-gray-400">-</span>
+                      )}
+                    </td>
+                    <td className="py-1 text-gray-600 whitespace-normal break-words hidden md:table-cell" title={post.category1 || ''}>
+                      {post.category1 || '-'}
+                    </td>
+                    <td className="py-1 text-gray-600 whitespace-normal break-words hidden lg:table-cell" title={post.category2 || ''}>
+                      {post.category2 || '-'}
+                    </td>
+                    <td className="py-1 truncate hidden lg:table-cell">
+                      <span className="inline-flex items-center rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-800">Published</span>
+                    </td>
+                    <td className="py-1 text-gray-500 truncate hidden md:table-cell">{new Date(post.date).toLocaleDateString('ko-KR')}</td>
+                    <td className="py-1 text-gray-500 truncate hidden lg:table-cell">
+                      <div className="flex items-center gap-1">
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-emerald-500 shrink-0" viewBox="0 0 20 20" fill="currentColor">
+                          <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
+                          <path fillRule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clipRule="evenodd" />
+                        </svg>
+                        <span className="font-medium text-gray-700 truncate">{Number(post.views_count ?? 0).toLocaleString()}</span>
+                      </div>
+                    </td>
+                    <td className="py-1 text-gray-500 truncate hidden lg:table-cell">
+                      <div className="flex items-center gap-1">
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-blue-500 shrink-0" viewBox="0 0 20 20" fill="currentColor">
+                          <path fillRule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clipRule="evenodd" />
+                        </svg>
+                        <span className="font-medium text-gray-700 truncate">{Number(post.likes_count ?? 0).toLocaleString()}</span>
+                      </div>
+                    </td>
+                    <td className="py-1 text-center overflow-hidden whitespace-nowrap">
+                      <Link href={`/admin/edit/${post.slug.split('/').map(encodeURIComponent).join('/')}`} className="mr-3 font-medium text-blue-600 transition-colors hover:text-blue-800">Edit</Link>
+                      <form action={deletePostAction.bind(null, post.slug)} className="inline">
+                        <button type="submit" className="font-medium text-red-600 transition-colors hover:text-red-800">Del</button>
+                      </form>
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan={10} className="py-4 text-center text-gray-500">등록된 게시물이 없습니다.</td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
         <div className="border-t border-gray-200 bg-gray-50 px-6 py-4 text-center text-sm text-gray-500">
           End of list
         </div>
