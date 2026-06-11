@@ -4,7 +4,8 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import PostEditor, { PostFormData } from '@/components/PostEditor';
-import { createPostAction, getTemplatesAction, getEssentialPropertiesAction } from '../../../../components/actions';
+import { createPostAction, getTemplatesAction } from '../../../../components/actions';
+import { getEssentialPropertiesAction } from '../../../../components/propertyActions';
 
 export default function WritePostPage() {
   const router = useRouter();

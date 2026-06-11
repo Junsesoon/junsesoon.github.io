@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
-import { addGlobalPropertyAction, getAllPropertyNamesAction } from './actions';
+import { addGlobalPropertyAction, getAllPropertiesWithTypesAction } from './propertyActions';
 
 export interface PostFormData {
   [key: string]: any;
@@ -62,12 +62,23 @@ export default function PostEditor({ initialData, onSave, templates, essentialPr
     });
   });
 
-  const [globalProps, setGlobalProps] = useState<string[]>(PREDEFINED_PROPS);
+  const [globalProps, setGlobalProps] = useState<{name: string, type: string}[]>(() => {
+    return PREDEFINED_PROPS.map(name => {
+      let type = 'string';
+      if (['tags', 'parentSkill', 'childSkill'].includes(name)) type = 'array';
+      else if (['techStart', 'date', 'created_at', 'updated_at'].includes(name)) type = 'date';
+      return { name, type };
+    });
+  });
 
   useEffect(() => {
-    getAllPropertyNamesAction().then((names) => {
-      if (names && names.length > 0) {
-        setGlobalProps((prev) => Array.from(new Set([...prev, ...names])));
+    getAllPropertiesWithTypesAction().then((props) => {
+      if (props && props.length > 0) {
+        setGlobalProps((prev) => {
+          const map = new Map(prev.map(p => [p.name, p.type]));
+          props.forEach(p => map.set(p.name, p.type));
+          return Array.from(map.entries()).map(([name, type]) => ({ name, type }));
+        });
       }
     });
   }, []);
@@ -248,10 +259,10 @@ export default function PostEditor({ initialData, onSave, templates, essentialPr
       setActiveProps((prev) => [...prev, prop]);
       setFormData((prev) => ({ ...prev, [prop]: '' }));
 
-      if (!globalProps.includes(prop)) {
+      if (!globalProps.some(p => p.name === prop)) {
         try {
           await addGlobalPropertyAction(prop, newPropType);
-          setGlobalProps((prev) => [...prev, prop]);
+          setGlobalProps((prev) => [...prev, { name: prop, type: newPropType }]);
         } catch (error) {
           console.error('Failed to register global property type:', error);
         }
@@ -434,7 +445,14 @@ export default function PostEditor({ initialData, onSave, templates, essentialPr
                 type="text"
                 list="predefined-props"
                 value={newPropName}
-                onChange={(e) => setNewPropName(e.target.value)}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  setNewPropName(val);
+                  const existingProp = globalProps.find(p => p.name === val.trim());
+                  if (existingProp) {
+                    setNewPropType(existingProp.type);
+                  }
+                }}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter') {
                     e.preventDefault();
@@ -450,23 +468,22 @@ export default function PostEditor({ initialData, onSave, templates, essentialPr
                 autoFocus
               />
               <datalist id="predefined-props">
-                {globalProps.filter((p) => !activeProps.includes(p)).map((p) => (
-                  <option key={p} value={p} />
+                {globalProps.filter((p) => !activeProps.includes(p.name)).map((p) => (
+                  <option key={p.name} value={p.name} />
                 ))}
               </datalist>
-              {newPropName.trim() !== '' && !globalProps.includes(newPropName.trim()) && (
-                <select
-                  value={newPropType}
-                  onChange={(e) => setNewPropType(e.target.value)}
-                  className="block w-28 rounded-md border-gray-300 px-3 py-1.5 text-sm text-gray-900 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 bg-white"
-                >
-                  <option value="string">String</option>
-                  <option value="number">Number</option>
-                  <option value="boolean">Boolean</option>
-                  <option value="date">Date</option>
-                  <option value="array">Array</option>
-                </select>
-              )}
+              <select
+                value={newPropType}
+                onChange={(e) => setNewPropType(e.target.value)}
+                disabled={globalProps.some(p => p.name === newPropName.trim())}
+                className="block w-28 rounded-md border-gray-300 px-3 py-1.5 text-sm text-gray-900 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 bg-white disabled:opacity-50"
+              >
+                <option value="string">String</option>
+                <option value="number">Number</option>
+                <option value="boolean">Boolean</option>
+                <option value="date">Date</option>
+                <option value="array">Array</option>
+              </select>
               <button
                 type="button"
                 onClick={handleAddProp}
