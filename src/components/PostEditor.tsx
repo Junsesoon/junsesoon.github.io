@@ -18,6 +18,17 @@ export interface PostEditorProps {
 const FIXED_PROPS = ['title', 'content'];
 const PREDEFINED_PROPS = ['category1', 'summary', 'category2', 'category3', 'category4', 'tags', 'parentSkill', 'childSkill', 'techStart', 'project_name', 'location'];
 
+const getTypeColor = (type: string) => {
+  switch (type) {
+    case 'string': return 'text-emerald-500';
+    case 'number': return 'text-amber-500';
+    case 'boolean': return 'text-rose-500';
+    case 'array': return 'text-cyan-500';
+    case 'date': return 'text-violet-500';
+    default: return 'text-gray-500';
+  }
+};
+
 export default function PostEditor({ initialData, onSave, templates, essentialProps }: PostEditorProps) {
   const [formData, setFormData] = useState<Record<string, any>>(() => {
     const initial: Record<string, any> = {};
@@ -570,13 +581,13 @@ export default function PostEditor({ initialData, onSave, templates, essentialPr
                   value={newPropType}
                   onChange={(e) => setNewPropType(e.target.value)}
                   disabled={globalProps.some(p => p.name === newPropName.trim())}
-                  className="w-28 rounded-md border-0 bg-gray-100 px-3 py-1.5 text-sm text-gray-900 focus:ring-0 focus:outline-none cursor-pointer disabled:opacity-50"
+                  className={`w-28 rounded-md border-0 bg-gray-100 px-3 py-1.5 text-sm focus:ring-0 focus:outline-none cursor-pointer disabled:opacity-50 font-semibold ${getTypeColor(newPropType)}`}
                 >
-                  <option value="string">String</option>
-                  <option value="number">Number</option>
-                  <option value="boolean">Boolean</option>
-                  <option value="date">Date</option>
-                  <option value="array">Array</option>
+                  <option value="string" className="text-gray-900 font-medium">String</option>
+                  <option value="number" className="text-gray-900 font-medium">Number</option>
+                  <option value="boolean" className="text-gray-900 font-medium">Boolean</option>
+                  <option value="date" className="text-gray-900 font-medium">Date</option>
+                  <option value="array" className="text-gray-900 font-medium">Array</option>
                 </select>
                 <button
                   type="button"

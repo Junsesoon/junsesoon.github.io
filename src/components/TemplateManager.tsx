@@ -12,6 +12,17 @@ export type Property = {
 
 export type TemplatesState = Record<string, Property[]>;
 
+const getTypeColor = (type: string) => {
+  switch (type) {
+    case 'string': return 'text-emerald-500';
+    case 'number': return 'text-amber-500';
+    case 'boolean': return 'text-rose-500';
+    case 'array': return 'text-cyan-500';
+    case 'date': return 'text-violet-500';
+    default: return 'text-gray-500';
+  }
+};
+
 export default function TemplateManager({ initialTemplates }: { initialTemplates: TemplatesState }) {
   // DB Fetch State Data
   const [templates, setTemplates] = useState<TemplatesState>(initialTemplates);
@@ -263,15 +274,15 @@ export default function TemplateManager({ initialTemplates }: { initialTemplates
                       <select
                         value={prop.type || 'string'}
                         onChange={(e) => handleUpdateType(prop.propertyName, e.target.value)}
-                        className="text-gray-500 text-xs bg-gray-100 px-1 py-0.5 rounded border border-gray-200 capitalize w-[68px] text-center shrink-0 cursor-pointer hover:bg-blue-50 hover:border-blue-200 hover:text-blue-600 transition-colors appearance-none focus:outline-none focus:ring-1 focus:ring-blue-500 focus:bg-white focus:text-gray-700"
+                        className={`${getTypeColor(prop.type || 'string')} font-semibold text-xs bg-gray-100 px-1 py-0.5 rounded border border-gray-200 capitalize w-[68px] text-center shrink-0 cursor-pointer hover:bg-gray-200 transition-colors appearance-none focus:outline-none focus:ring-1 focus:ring-blue-500 focus:bg-white`}
                         title="Click to edit type"
                         style={{ textAlignLast: 'center' }}
                       >
-                        <option value="string">String</option>
-                        <option value="number">Number</option>
-                        <option value="boolean">Boolean</option>
-                        <option value="date">Date</option>
-                        <option value="array">Array</option>
+                        <option value="string" className="text-gray-900 font-medium">String</option>
+                        <option value="number" className="text-gray-900 font-medium">Number</option>
+                        <option value="boolean" className="text-gray-900 font-medium">Boolean</option>
+                        <option value="date" className="text-gray-900 font-medium">Date</option>
+                        <option value="array" className="text-gray-900 font-medium">Array</option>
                       </select>
                       <span className="font-mono text-gray-900 font-medium text-base">{prop.propertyName}</span>
                       {prop.isRequired ? (
@@ -343,13 +354,13 @@ export default function TemplateManager({ initialTemplates }: { initialTemplates
                   value={newType}
                   disabled={isSaving || globalProps.some(p => p.name === newPropertyName.trim())}
                   onChange={(e) => setNewType(e.target.value)}
-                  className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 bg-white appearance-none cursor-pointer disabled:opacity-50"
+                  className={`block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 bg-white appearance-none cursor-pointer disabled:opacity-50 font-semibold ${getTypeColor(newType)}`}
                 >
-                  <option value="string">String</option>
-                  <option value="number">Number</option>
-                  <option value="boolean">Boolean</option>
-                  <option value="date">Date</option>
-                  <option value="array">Array</option>
+                  <option value="string" className="text-gray-900 font-medium">String</option>
+                  <option value="number" className="text-gray-900 font-medium">Number</option>
+                  <option value="boolean" className="text-gray-900 font-medium">Boolean</option>
+                  <option value="date" className="text-gray-900 font-medium">Date</option>
+                  <option value="array" className="text-gray-900 font-medium">Array</option>
                 </select>
               </div>
 
