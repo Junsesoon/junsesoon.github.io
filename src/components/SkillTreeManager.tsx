@@ -168,7 +168,7 @@ export default function SkillTreeManager() {
   };
 
   return (
-    <div className="mx-auto max-w-6xl p-8 font-sans">
+    <div className="mx-auto w-full max-w-[1000px] p-4 sm:p-8 font-sans">
       <header className="mb-8 flex items-center justify-between border-b border-gray-200 pb-4">
         <div>
           <h1 className="text-3xl font-bold text-gray-800">Manage SkillTree</h1>
