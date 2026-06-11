@@ -2,6 +2,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { addGlobalPropertyAction, getAllPropertiesWithTypesAction } from './propertyActions';
+import { getSkillTreeCardsAction } from './skillTreeActions';
 
 export interface PostFormData {
   [key: string]: any;
@@ -80,6 +81,14 @@ export default function PostEditor({ initialData, onSave, templates, essentialPr
           return Array.from(map.entries()).map(([name, type]) => ({ name, type }));
         });
       }
+    });
+  }, []);
+
+  const [skillCards, setSkillCards] = useState<{ title: string; category2: string }[]>([]);
+
+  useEffect(() => {
+    getSkillTreeCardsAction().then((data) => {
+      if (data && data.length > 0) setSkillCards(data);
     });
   }, []);
 
@@ -383,7 +392,7 @@ export default function PostEditor({ initialData, onSave, templates, essentialPr
           return (
             <div key={key} className={isFullWidth ? 'sm:col-span-2' : ''}>
               <label htmlFor={key} className="mb-2 flex items-center gap-1 text-sm font-medium text-gray-700 capitalize">
-                {propType === 'array' ? `${key} (comma separated)` : key}
+                {propType === 'array' ? `${key}` : key}
                 {isEssential && <span className="text-red-500" title="Essential Property">*</span>}
               </label>
               <div className="flex items-center gap-2">
@@ -467,6 +476,34 @@ export default function PostEditor({ initialData, onSave, templates, essentialPr
                   </svg>
                 </button>
               </div>
+              
+              {/* 연결 가능한 카드 목록 나열 */}
+              {(key.toLowerCase() === 'parentskill' || key.toLowerCase() === 'childskill') && skillCards.length > 0 && (
+                <div className="mt-2 rounded-md border border-gray-200 bg-gray-50 p-2.5">
+                  <span className="mb-1.5 block text-xs font-semibold text-gray-500">
+                    {formData.category2 ? `${formData.category2}` : '전체'}
+                  </span>
+                  <div className="flex flex-wrap gap-1.5">
+                    {skillCards
+                      .filter((card) => !formData.category2 || card.category2 === formData.category2)
+                      .map((card, idx) => (
+                        <span 
+                          key={idx} 
+                          onClick={() => {
+                            const currentVal = formData[key] || '';
+                            const skills = String(currentVal).split(',').map(s => s.trim()).filter(Boolean);
+                            if (!skills.includes(card.title)) {
+                              setFormData(prev => ({ ...prev, [key]: [...skills, card.title].join(', ') }));
+                            }
+                          }}
+                          className="inline-flex rounded border border-blue-200 bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700 cursor-pointer hover:bg-blue-100 hover:border-blue-300 transition-all active:scale-95 select-none"
+                        >
+                          {card.title}
+                        </span>
+                      ))}
+                  </div>
+                </div>
+              )}
             </div>
           );
         })}

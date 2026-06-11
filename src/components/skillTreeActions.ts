@@ -101,3 +101,20 @@ export async function updateSkillTreeDomainOrdersAction(orders: { id: number; di
     return { success: false, message: 'Internal Server Error' };
   }
 }
+
+export async function getSkillTreeCardsAction() {
+  try {
+    const result = await query(`
+      SELECT title, properties->>'category2' as category2 
+      FROM posts 
+      WHERE properties->>'category1' = 'skilltree' OR properties->>'category1' = 'Skilltree'
+    `);
+    return result.rows.map((row) => ({
+      title: row.title || 'Untitled',
+      category2: row.category2 || '',
+    }));
+  } catch (error) {
+    console.error('getSkillTreeCardsAction error:', error);
+    return [];
+  }
+}
