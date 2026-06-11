@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { addGlobalPropertyAction, deleteGlobalPropertyAction, renameGlobalPropertyAction, togglePropertyEssentialAction } from './propertyActions';
+import { addGlobalPropertyAction, deleteGlobalPropertyAction, renameGlobalPropertyAction, togglePropertyEssentialAction, updatePropertyTypeAction } from './propertyActions';
 
 export interface PropertyWithCount {
   name: string;
@@ -64,9 +64,13 @@ export default function PropertyManager({ properties }: PropertyManagerProps) {
       setEditingProp(null);
       return;
     }
-    if (localProperties.some((p) => p.name === trimmedNewName)) {
-      alert('Property name already exists.');
-      return;
+    
+    // 병합 의도인지 확인 및 경고
+    const targetProp = localProperties.find((p) => p.name === trimmedNewName);
+    if (targetProp) {
+      if (!window.confirm(`'${oldName}' 속성을 '${trimmedNewName}' (타입: ${targetProp.type || getPredefinedType(trimmedNewName)}) 속성으로 병합하시겠습니까?\n\n이 작업은 되돌릴 수 없으며, 기존 데이터는 새 타입에 맞춰 안전하게 변환됩니다.`)) {
+        return;
+      }
     }
 
     // DB 연동 (트랜잭션 업데이트)
@@ -76,7 +80,13 @@ export default function PropertyManager({ properties }: PropertyManagerProps) {
       return;
     }
 
-    setLocalProperties((prev) => prev.map((p) => (p.name === oldName ? { ...p, name: trimmedNewName } : p)).sort((a, b) => a.name.localeCompare(b.name)));
+    if (targetProp) {
+      // 병합(Merge) 성공 시 기존 속성 UI에서 제거
+      setLocalProperties((prev) => prev.filter((p) => p.name !== oldName));
+    } else {
+      // 단순 이름 변경(Rename) 성공 시
+      setLocalProperties((prev) => prev.map((p) => (p.name === oldName ? { ...p, name: trimmedNewName } : p)).sort((a, b) => a.name.localeCompare(b.name)));
+    }
     setEditingProp(null);
   };
 
@@ -92,6 +102,15 @@ export default function PropertyManager({ properties }: PropertyManagerProps) {
       setLocalProperties(prev => prev.map(p => p.name === propName ? { ...p, is_essential: currentStatus } : p));
       alert(result.message);
     }
+  };
+
+  const handleUpdateType = async (propName: string, newType: string) => {
+    const result = await updatePropertyTypeAction(propName, newType);
+    if (!result.success) {
+      alert(result.message);
+      return;
+    }
+    setLocalProperties((prev) => prev.map((p) => (p.name === propName ? { ...p, type: newType } : p)));
   };
 
   return (
@@ -133,6 +152,19 @@ export default function PropertyManager({ properties }: PropertyManagerProps) {
           {localProperties.map((prop) => (
             <li key={prop.name} className="flex items-center justify-between p-4 hover:bg-gray-50 transition-colors">
               <div className="flex items-center gap-3">
+                <select
+                  value={prop.type || getPredefinedType(prop.name)}
+                  onChange={(e) => handleUpdateType(prop.name, e.target.value)}
+                  className="text-gray-500 text-xs bg-gray-100 px-1 py-0.5 rounded border border-gray-200 capitalize w-[68px] text-center shrink-0 cursor-pointer hover:bg-blue-50 hover:border-blue-200 hover:text-blue-600 transition-colors appearance-none focus:outline-none focus:ring-1 focus:ring-blue-500 focus:bg-white focus:text-gray-700"
+                  title="Click to edit type"
+                  style={{ textAlignLast: 'center' }}
+                >
+                  <option value="string">String</option>
+                  <option value="number">Number</option>
+                  <option value="boolean">Boolean</option>
+                  <option value="date">Date</option>
+                  <option value="array">Array</option>
+                </select>
                 {editingProp === prop.name ? (
                   <div className="flex items-center gap-2">
                     <input
@@ -152,9 +184,6 @@ export default function PropertyManager({ properties }: PropertyManagerProps) {
                 ) : (
                   <span className="font-mono text-gray-900 font-medium text-base">{prop.name}</span>
                 )}
-                <span className="text-gray-500 text-xs bg-gray-100 px-2 py-0.5 rounded border border-gray-200 capitalize">
-                  {prop.type || getPredefinedType(prop.name)}
-                </span>
               </div>
               <div className="flex items-center gap-4">
                 <span className="text-gray-600 text-sm font-medium bg-gray-100 px-3 py-1 rounded-full border border-gray-200">

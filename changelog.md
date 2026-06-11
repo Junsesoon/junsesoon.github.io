@@ -96,3 +96,15 @@
 - 게시물 제목을 별도 DB 컬럼으로 분리하여 저장
 #### Modified
 - 관리자 페이지 UI 수정(manage button들을 blog stats 하단에 3x2 grid로 재배치)
+
+### junseo tech blog 2.8.0
+- distribution 2026-06-11
+#### New
+- 기존 속성의 이름을 다른 존재하는 속성 이름으로 변경 시, 사용자 확인을 거쳐 두 속성을 안전하게 병합(Merge)하는 기능 추가
+- 속성 타입(Type) 변경 및 병합 시, 기존 게시물의 JSONB 데이터를 DB단에서 안전하게 일괄 형변환하는 트랜잭션 및 충돌 역추적 로직 추가
+- 게시물 작성 에디터(`PostEditor.tsx`)에서 속성 타입(`number`, `boolean`, `date` 등)에 맞게 폼 필드가 동적으로 렌더링되고 제출 시 캐스팅되도록 개선
+#### Refactoring
+- `actions.ts`에 존재하던 속성(Property) 관리 서버 액션들을 `propertyActions.ts`로 분리하여 코드 응집도 향상
+#### Modified
+- `PropertyManager` 및 `TemplateManager`에서 타입 뱃지를 클릭해 즉시 타입을 수정할 수 있도록 인라인 드롭다운 UX 개선
+- 에디터 및 관리자 페이지에서 새로운 속성 추가 시 타입 선택 드롭다운이 항상 노출되며, 기존 글로벌 속성의 타입은 자동으로 매핑 및 고정(`disabled`)되도록 변경

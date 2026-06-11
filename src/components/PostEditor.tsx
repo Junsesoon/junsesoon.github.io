@@ -124,7 +124,9 @@ export default function PostEditor({ initialData, onSave, templates, essentialPr
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
   ) => {
-    const { name, value } = e.target;
+    const target = e.target as HTMLInputElement;
+    const name = target.name;
+    const value = target.type === 'checkbox' ? target.checked : target.value;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
@@ -135,30 +137,39 @@ export default function PostEditor({ initialData, onSave, templates, essentialPr
     try {
       const finalData = { ...formData };
 
+      // 1. 동적 속성들의 타입에 맞춰 안전하게 형변환 진행
+      globalProps.forEach(p => {
+        const val = finalData[p.name];
+        if (val !== undefined && val !== null) {
+          if (p.type === 'number' && val !== '') {
+            finalData[p.name] = Number(val);
+          } else if (p.type === 'boolean') {
+            finalData[p.name] = (val === true || val === 'true');
+          } else if (p.type === 'array' && typeof val === 'string') {
+            finalData[p.name] = val.split(',').map((s) => s.trim()).filter((s) => s.length > 0);
+          }
+        }
+      });
+
       if (!finalData.title?.trim()) {
         alert('제목(Title)은 필수 항목입니다.');
         setIsSubmitting(false);
         return;
       }
 
-      // 필수 속성(essential) 미입력 시 저장 차단 (프론트엔드 검증 방어선)
+      // 2. 필수 속성(essential) 미입력 시 저장 차단 (프론트엔드 검증 방어선)
       if (essentialProps) {
         for (const ep of essentialProps) {
           if (FIXED_PROPS.includes(ep)) continue;
           const val = finalData[ep];
-          if (val === undefined || val === null || val === '') {
+          
+          // Boolean은 false 값이 허용되어야 하므로 빈 문자열이나 null일 때만 차단, Array는 빈 배열이면 차단
+          if (val === undefined || val === null || val === '' || (Array.isArray(val) && val.length === 0)) {
             alert(`전역 필수 속성인 '${ep}' 항목을 반드시 입력해 주세요.`);
             setIsSubmitting(false);
             return;
           }
         }
-      }
-
-      if (typeof finalData.tags === 'string') {
-        finalData.tags = finalData.tags.split(',').map((tag: string) => tag.trim()).filter((tag: string) => tag.length > 0);
-      }
-      if (typeof finalData.parentSkill === 'string') {
-        finalData.parentSkill = finalData.parentSkill.split(',').map((s: string) => s.trim()).filter((s: string) => s.length > 0);
       }
 
       // Extract image URLs from markdown content
@@ -363,13 +374,16 @@ export default function PostEditor({ initialData, onSave, templates, essentialPr
 
         {/* 동적 추가된 프론트매터 속성들 */}
         {activeProps.map((key) => {
-          const isFullWidth = ['category1', 'summary', 'tags', 'parentSkill', 'childSkill'].includes(key);
+          const propInfo = globalProps.find((p) => p.name === key);
+          const propType = propInfo?.type || 'string';
+
+          const isFullWidth = propType === 'array' || ['category1', 'summary'].includes(key);
           const isEssential = essentialProps?.includes(key);
 
           return (
             <div key={key} className={isFullWidth ? 'sm:col-span-2' : ''}>
               <label htmlFor={key} className="mb-2 flex items-center gap-1 text-sm font-medium text-gray-700 capitalize">
-                {key === 'tags' ? 'Tags (comma separated)' : key}
+                {propType === 'array' ? `${key} (comma separated)` : key}
                 {isEssential && <span className="text-red-500" title="Essential Property">*</span>}
               </label>
               <div className="flex items-center gap-2">
@@ -398,6 +412,37 @@ export default function PostEditor({ initialData, onSave, templates, essentialPr
                     <option value="Portfolio">Portfolio</option>
                     <option value="Both">Both</option>
                   </select>
+                ) : propType === 'boolean' ? (
+                  <div className="flex h-[42px] items-center px-1">
+                    <input
+                      type="checkbox"
+                      id={key}
+                      name={key}
+                      checked={formData[key] === true || formData[key] === 'true'}
+                      onChange={handleChange}
+                      className="h-5 w-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
+                    />
+                  </div>
+                ) : propType === 'number' ? (
+                  <input
+                    type="number"
+                    id={key}
+                    name={key}
+                    value={formData[key] ?? ''}
+                    onChange={handleChange}
+                    required={isEssential}
+                    className="block w-full rounded-md border border-gray-300 px-4 py-2 text-gray-900 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                  />
+                ) : propType === 'date' ? (
+                  <input
+                    type="date"
+                    id={key}
+                    name={key}
+                    value={formData[key] ? String(formData[key]).split('T')[0] : ''}
+                    onChange={handleChange}
+                    required={isEssential}
+                    className="block w-full rounded-md border border-gray-300 px-4 py-2 text-gray-900 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                  />
                 ) : (
                   <input
                     type="text"
