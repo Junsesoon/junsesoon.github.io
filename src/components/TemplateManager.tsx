@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { addTemplateAction } from './actions';
+import { addTemplateAction, deleteTemplateAction } from './actions';
 import { addPropertyAction, deletePropertyAction, getAllPropertiesWithTypesAction, updatePropertyTypeAction } from './propertyActions';
 
 export type Property = {
@@ -59,8 +59,17 @@ export default function TemplateManager({ initialTemplates }: { initialTemplates
     setIsAddingTemplate(false);
   };
 
-  const handleDeleteTemplate = (templateToDelete: string) => {
+  const handleDeleteTemplate = async (templateToDelete: string) => {
     if (!window.confirm(`Are you sure you want to delete the template '${templateToDelete}' and all its properties?`)) return;
+
+    setIsSaving(true);
+    const result = await deleteTemplateAction(templateToDelete);
+    setIsSaving(false);
+
+    if (!result.success) {
+      alert(result.message);
+      return;
+    }
 
     setTemplates((prev) => {
       const next = { ...prev };

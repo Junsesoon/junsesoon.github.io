@@ -32,7 +32,7 @@ export default function PropertyManager({ properties }: PropertyManagerProps) {
     setLocalProperties(properties);
   }, [properties]);
 
-  const handleAddProperty = (e: React.FormEvent) => {
+  const handleAddProperty = async (e: React.FormEvent) => {
     e.preventDefault();
     const trimmedProp = newPropName.trim();
     
@@ -40,6 +40,12 @@ export default function PropertyManager({ properties }: PropertyManagerProps) {
     
     if (localProperties.some((p) => p.name === trimmedProp)) {
       alert('Property already exists.');
+      return;
+    }
+
+    const result = await addGlobalPropertyAction(trimmedProp, newPropType);
+    if (!result.success) {
+      alert(result.message);
       return;
     }
 
@@ -51,10 +57,17 @@ export default function PropertyManager({ properties }: PropertyManagerProps) {
     setNewPropType('string');
   };
 
-  const handleDeleteProperty = (propNameToDelete: string) => {
+  const handleDeleteProperty = async (propNameToDelete: string) => {
     if (!window.confirm(`Are you sure you want to delete the property '${propNameToDelete}'?`)) {
       return;
     }
+
+    const result = await deleteGlobalPropertyAction(propNameToDelete);
+    if (!result.success) {
+      alert(result.message);
+      return;
+    }
+
     setLocalProperties((prev) => prev.filter((p) => p.name !== propNameToDelete));
   };
 

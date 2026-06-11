@@ -297,12 +297,31 @@ export async function addTemplateAction(templateName: string) {
       'INSERT INTO template_list (template_name) VALUES ($1)',
       [sanitizedName]
     );
+    revalidatePath('/admin/template');
+    revalidatePath('/admin/write'); // 글쓰기 페이지의 템플릿 목록도 갱신
     return { success: true };
   } catch (error: any) {
     console.error('addTemplateAction error:', error);
     if (error.code === '23505') { // PostgreSQL Unique Violation
       return { success: false, message: 'Template already exists in database.' };
     }
+    return { success: false, message: 'Internal Server Error' };
+  }
+}
+
+export async function deleteTemplateAction(templateName: string) {
+  if (!templateName) {
+    return { success: false, message: 'Template name is required.' };
+  }
+
+  try {
+    // ON DELETE CASCADE 제약 조건에 의해 매핑된 template_property 데이터도 자동 삭제됩니다.
+    await query('DELETE FROM template_list WHERE template_name = $1', [templateName.trim().toLowerCase()]);
+    revalidatePath('/admin/template');
+    revalidatePath('/admin/write');
+    return { success: true };
+  } catch (error: any) {
+    console.error('deleteTemplateAction error:', error);
     return { success: false, message: 'Internal Server Error' };
   }
 }

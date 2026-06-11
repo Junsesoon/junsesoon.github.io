@@ -1,5 +1,6 @@
 'use server';
 
+import { revalidatePath } from 'next/cache';
 import { query } from '../infra/db';
 
 export async function addGlobalPropertyAction(propertyName: string, propertyType: string) {
@@ -14,6 +15,8 @@ export async function addGlobalPropertyAction(propertyName: string, propertyType
        ON CONFLICT (property_name) DO NOTHING`,
       [propertyName.trim(), propertyType]
     );
+    revalidatePath('/admin/property');
+    revalidatePath('/admin/template');
     return { success: true };
   } catch (error: any) {
     console.error('addGlobalPropertyAction error:', error);
@@ -29,22 +32,30 @@ export async function deleteGlobalPropertyAction(propertyName: string) {
   try {
     await query('BEGIN');
 
-    // 1. property_list 테이블에서 속성 삭제
+    // 1. 템플릿 매핑 데이터 우선 삭제 (Foreign Key 제약 조건 위반 방지)
+    await query(
+      'DELETE FROM template_property WHERE property_id IN (SELECT property_id FROM property_list WHERE property_name = $1)',
+      [propertyName.trim()]
+    );
+
+    // 2. property_list 테이블에서 속성 삭제
     await query(
       'DELETE FROM property_list WHERE property_name = $1',
       [propertyName.trim()]
     );
 
-    // 2. 해당 속성을 가지고 있는 모든 게시물의 JSONB에서 해당 키와 데이터 일괄 삭제
+    // 3. 해당 속성을 가지고 있는 모든 게시물의 JSONB에서 해당 키와 데이터 일괄 삭제 (명시적 형변환 추가)
     await query(
       `UPDATE posts
-       SET properties = properties - $1,
+       SET properties = properties - $1::text,
            updated_at = CURRENT_TIMESTAMP
-       WHERE properties ? $1`,
+       WHERE properties ? $1::text`,
       [propertyName.trim()]
     );
 
     await query('COMMIT');
+    revalidatePath('/admin/property');
+    revalidatePath('/admin/template');
     return { success: true };
   } catch (error: any) {
     await query('ROLLBACK');
@@ -71,6 +82,8 @@ export async function addPropertyAction(templateName: string, propertyName: stri
        SELECT template_id, prop.property_id, $4 FROM template_list, prop WHERE template_name = $1`,
       [templateName.trim().toLowerCase(), propertyName.trim(), propertyType, isRequired]
     );
+    revalidatePath('/admin/template');
+    revalidatePath('/admin/property');
     return { success: true };
   } catch (error: any) {
     console.error('addPropertyAction error:', error);
@@ -93,6 +106,7 @@ export async function deletePropertyAction(templateName: string, propertyName: s
          AND property_id = (SELECT property_id FROM property_list WHERE property_name = $2)`,
       [templateName.trim().toLowerCase(), propertyName.trim()]
     );
+    revalidatePath('/admin/template');
     return { success: true };
   } catch (error: any) {
     console.error('deletePropertyAction error:', error);
@@ -231,6 +245,7 @@ export async function togglePropertyEssentialAction(propertyName: string, isEsse
        ON CONFLICT (property_name) DO UPDATE SET is_essential = EXCLUDED.is_essential`,
       [propertyName, isEssential]
     );
+    revalidatePath('/admin/property');
     return { success: true };
   } catch (error: any) {
     console.error('togglePropertyEssentialAction error:', error);
@@ -309,6 +324,8 @@ export async function updatePropertyTypeAction(propertyName: string, newType: st
     );
 
     await query('COMMIT');
+    revalidatePath('/admin/property');
+    revalidatePath('/admin/template');
     return { success: true };
   } catch (error: any) {
     await query('ROLLBACK');
