@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { addGlobalPropertyAction, deleteGlobalPropertyAction, renameGlobalPropertyAction, togglePropertyEssentialAction, updatePropertyTypeAction } from './propertyActions';
+import { addGlobalPropertyAction, deleteGlobalPropertyAction, renameGlobalPropertyAction, togglePropertyEssentialAction, updatePropertyTypeAction, checkUppercasePropertiesAction, autoNormalizeUppercasePropertiesAction, syncAndCleanPropertiesAction, previewSyncAndCleanPropertiesAction, getPostsUsingPropertyAction } from './propertyActions';
 
 export interface PropertyWithCount {
   name: string;
@@ -12,6 +12,17 @@ export interface PropertyWithCount {
 
 interface PropertyManagerProps {
   properties: PropertyWithCount[];
+}
+
+interface ModalState {
+  isOpen: boolean;
+  type: 'alert' | 'confirm';
+  title: string;
+  message: React.ReactNode;
+  confirmText?: string;
+  cancelText?: string;
+  onConfirm?: () => void;
+  onCancel?: () => void;
 }
 
 const getPredefinedType = (name: string) => {
@@ -39,6 +50,20 @@ export default function PropertyManager({ properties }: PropertyManagerProps) {
   const [newPropType, setNewPropType] = useState('string');
   const [editingProp, setEditingProp] = useState<string | null>(null);
   const [editPropName, setEditPropName] = useState('');
+  const [isCheckingProps, setIsCheckingProps] = useState(false);
+  const [isRefreshingProps, setIsRefreshingProps] = useState(false);
+
+  const [modalConfig, setModalConfig] = useState<ModalState | null>(null);
+
+  const showAlert = (title: string, message: React.ReactNode, onConfirm?: () => void) => {
+    setModalConfig({ isOpen: true, type: 'alert', title, message, onConfirm });
+  };
+
+  const showConfirm = (title: string, message: React.ReactNode, onConfirm: () => void) => {
+    setModalConfig({ isOpen: true, type: 'confirm', title, message, onConfirm });
+  };
+
+  const closeModal = () => setModalConfig(null);
 
   const [sortConfig, setSortConfig] = useState<{ key: keyof PropertyWithCount; order: 'asc' | 'desc' }>({ key: 'name', order: 'asc' });
 
@@ -109,17 +134,33 @@ export default function PropertyManager({ properties }: PropertyManagerProps) {
   };
 
   const handleDeleteProperty = async (propNameToDelete: string) => {
-    if (!window.confirm(`Are you sure you want to delete the property '${propNameToDelete}'?`)) {
-      return;
-    }
+    // 온디맨드 방식: 휴지통 클릭 시점에 서버 액션을 호출해 사용 중인 게시물 목록을 즉시 가져옵니다.
+    const usageList = await getPostsUsingPropertyAction(propNameToDelete);
 
-    const result = await deleteGlobalPropertyAction(propNameToDelete);
-    if (!result.success) {
-      alert(result.message);
-      return;
-    }
-
-    setLocalProperties((prev) => prev.filter((p) => p.name !== propNameToDelete));
+    showConfirm(
+      '속성 삭제 (Delete Property)',
+      <div className="space-y-2">
+        <p>정말로 <span className="font-semibold text-red-600">'{propNameToDelete}'</span> 속성을 삭제하시겠습니까?</p>
+        <p className="text-xs text-gray-500">이 작업은 되돌릴 수 없으며, 기존 게시물 데이터에서 해당 속성이 영구적으로 제거됩니다</p>
+        {usageList.length > 0 && (
+          <div className="mt-4 p-3 bg-rose-50 rounded-lg border border-rose-100 max-h-[150px] overflow-y-auto">
+            <p className="font-bold text-xs text-rose-600 mb-2">[사용 중인 게시물 목록 - {usageList.length}개]</p>
+            <ul className="list-disc pl-4 text-sm text-rose-800 space-y-1">
+              {usageList.map((title, i) => <li key={i}>{title}</li>)}
+            </ul>
+          </div>
+        )}
+      </div>,
+      async () => {
+        closeModal();
+        const result = await deleteGlobalPropertyAction(propNameToDelete);
+        if (!result.success) {
+          showAlert('오류', result.message);
+          return;
+        }
+        setLocalProperties((prev) => prev.filter((p) => p.name !== propNameToDelete));
+      }
+    );
   };
 
   const handleRenameProperty = async (oldName: string) => {
@@ -177,37 +218,187 @@ export default function PropertyManager({ properties }: PropertyManagerProps) {
     setLocalProperties((prev) => prev.map((p) => (p.name === propName ? { ...p, type: newType } : p)));
   };
 
+  const handlePropCheck = async () => {
+    setIsCheckingProps(true);
+    try {
+      const result = await checkUppercasePropertiesAction();
+      setIsCheckingProps(false);
+
+      if (!result.success) {
+        showAlert('오류', result.message);
+        return;
+      }
+
+      const { dbProperties, postProperties } = result;
+      if (!dbProperties || !postProperties) return;
+
+      if (dbProperties.length === 0 && postProperties.length === 0) {
+        showAlert('점검 완료', '✅ 대문자가 포함된 속성이 없습니다');
+        return;
+      }
+
+      const messageNode = (
+        <div className="space-y-4 text-left">
+          <p className="font-medium text-gray-800">⚠️ 대문자가 포함된 속성이 발견되었습니다!</p>
+          {dbProperties.length > 0 && (
+            <div className="bg-gray-50 p-3 rounded-lg border border-gray-200">
+              <p className="font-bold text-xs text-gray-500 mb-2">[전역 속성 목록]</p>
+              <ul className="list-disc pl-4 text-sm text-gray-700 space-y-1">
+                {dbProperties.map((p: string) => <li key={p}>{p}</li>)}
+              </ul>
+            </div>
+          )}
+          {postProperties.length > 0 && (
+            <div className="bg-gray-50 p-3 rounded-lg border border-gray-200">
+              <p className="font-bold text-xs text-gray-500 mb-2">[게시물 내부 속성]</p>
+              <ul className="list-disc pl-4 text-sm text-gray-700 space-y-1">
+                {Object.entries(
+                  postProperties.reduce((acc: any, p: any) => {
+                    if (!acc[p.title]) acc[p.title] = [];
+                    if (!acc[p.title].includes(p.key)) acc[p.title].push(p.key);
+                    return acc;
+                  }, {})
+                ).map(([title, keys]: any) => (
+                  <li key={title}>
+                    <span className="font-semibold text-gray-900">{title}</span>: {keys.join(', ')}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+          <p className="font-semibold pt-2 text-blue-600">위 속성들을 모두 소문자로 변환하시겠습니까?</p>
+        </div>
+      );
+
+      showConfirm('속성 정규화', messageNode, async () => {
+        closeModal();
+        setIsCheckingProps(true);
+        const normResult = await autoNormalizeUppercasePropertiesAction();
+        setIsCheckingProps(false);
+        showAlert('변환 결과', normResult.message, () => {
+          if (normResult.success) window.location.reload();
+        });
+      });
+    } catch (error) {
+      setIsCheckingProps(false);
+      showAlert('오류', '서버 통신 중 문제가 발생했습니다.');
+    }
+  };
+
+  const handlePropRefresh = async () => {
+    setIsRefreshingProps(true);
+    try {
+      // 1. 추가 및 삭제될 속성 미리보기
+      const preview = await previewSyncAndCleanPropertiesAction();
+      setIsRefreshingProps(false);
+
+      if (!preview.success) {
+        showAlert('오류', preview.message);
+        return;
+      }
+
+      const { toAdd = [], toDelete = [] } = preview;
+
+      if (toAdd.length === 0 && toDelete.length === 0) {
+        showAlert('동기화 완료', '✅ 최신 상태로 동기화되어 있습니다. 추가하거나 삭제할 잉여 속성이 없습니다.');
+        return;
+      }
+
+      const messageNode = (
+        <div className="space-y-4 text-left">
+          <p className="font-medium text-gray-800">다음 동기화 및 정리 작업이 수행됩니다.</p>
+          {toAdd.length > 0 && (
+            <div className="bg-emerald-50 p-3 rounded-lg border border-emerald-100">
+              <p className="font-bold text-xs text-emerald-600 mb-2">[추가될 누락 속성 ({toAdd.length}개)]</p>
+              <ul className="list-disc pl-4 text-sm text-emerald-800 space-y-1">
+                {toAdd.map((p: string) => <li key={p}>{p}</li>)}
+              </ul>
+            </div>
+          )}
+          {toDelete.length > 0 && (
+            <div className="bg-rose-50 p-3 rounded-lg border border-rose-100">
+              <p className="font-bold text-xs text-rose-600 mb-2">[삭제될 잉여 속성 ({toDelete.length}개)]</p>
+              <ul className="list-disc pl-4 text-sm text-rose-800 space-y-1">
+                {toDelete.map((p: string) => <li key={p}>{p}</li>)}
+              </ul>
+            </div>
+          )}
+          <p className="font-semibold pt-2 text-blue-600">계속하시겠습니까?</p>
+        </div>
+      );
+
+      showConfirm('동기화 및 정리 (Refresh)', messageNode, async () => {
+        closeModal();
+        setIsRefreshingProps(true);
+        const result = await syncAndCleanPropertiesAction();
+        setIsRefreshingProps(false);
+        showAlert('정리 결과', result.message, () => {
+          if (result.success) window.location.reload();
+        });
+      });
+    } catch (error) {
+      setIsRefreshingProps(false);
+      showAlert('오류', '서버 통신 중 문제가 발생했습니다.');
+    }
+  };
+
   return (
     <div className="flex flex-col gap-8 min-h-[400px]">
-      {/* Add Property Form */}
-      <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
-        <h3 className="text-lg font-semibold text-gray-800 mb-4">Add New Property</h3>
-        <form onSubmit={handleAddProperty} className="flex flex-col sm:flex-row gap-4">
-          <input
-            type="text"
-            value={newPropName}
-            onChange={(e) => setNewPropName(e.target.value)}
-            placeholder="e.g., customProp"
-            className="block flex-1 rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 bg-white"
-          />
-          <select
-            value={newPropType}
-            onChange={(e) => setNewPropType(e.target.value)}
-            className={`block w-full sm:w-32 rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 bg-white appearance-none cursor-pointer font-semibold ${getTypeColor(newPropType)}`}
-          >
-            <option value="string" className="text-gray-900 font-medium">String</option>
-            <option value="number" className="text-gray-900 font-medium">Number</option>
-            <option value="boolean" className="text-gray-900 font-medium">Boolean</option>
-            <option value="date" className="text-gray-900 font-medium">Date</option>
-            <option value="array" className="text-gray-900 font-medium">Array</option>
-          </select>
-          <button
-            type="submit"
-            className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-md font-semibold shadow-sm transition-colors active:scale-95 whitespace-nowrap flex items-center justify-center"
-          >
-            Add
-          </button> 
-        </form>
+      <div className="flex flex-col md:flex-row gap-4">
+        {/* Add Property Form (65%) */}
+        <div className="w-full md:w-[65%] rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
+          <h3 className="text-lg font-semibold text-gray-800 mb-4">Add New Property</h3>
+          <form onSubmit={handleAddProperty} className="flex flex-col sm:flex-row gap-4">
+            <input
+              type="text"
+              value={newPropName}
+              onChange={(e) => setNewPropName(e.target.value)}
+              placeholder="e.g., customProp"
+              className="block flex-1 rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 bg-white"
+            />
+            <select
+              value={newPropType}
+              onChange={(e) => setNewPropType(e.target.value)}
+              className={`block w-full sm:w-32 rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 bg-white appearance-none cursor-pointer font-semibold ${getTypeColor(newPropType)}`}
+            >
+              <option value="string" className="text-gray-900 font-medium">String</option>
+              <option value="number" className="text-gray-900 font-medium">Number</option>
+              <option value="boolean" className="text-gray-900 font-medium">Boolean</option>
+              <option value="date" className="text-gray-900 font-medium">Date</option>
+              <option value="array" className="text-gray-900 font-medium">Array</option>
+            </select>
+            <button
+              type="submit"
+              className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-md font-semibold shadow-sm transition-colors active:scale-95 whitespace-nowrap flex items-center justify-center"
+            >
+              Add
+            </button> 
+          </form>
+        </div>
+
+        {/* Action Boxes (35%) */}
+        <div className="w-full md:w-[35%] flex flex-row gap-4">
+          <div className="flex-1 rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+            <h3 className="text-lg font-semibold text-gray-800 mb-4 truncate">Prop Check</h3>
+            <button
+              onClick={handlePropCheck}
+              disabled={isCheckingProps}
+              className={`w-full flex items-center justify-center h-[42px] rounded-md border border-dashed transition-colors text-sm font-medium focus:outline-none ${isCheckingProps ? 'bg-gray-100 border-gray-300 text-gray-400 cursor-not-allowed' : 'border-blue-300 bg-blue-50 text-blue-600 hover:bg-blue-100 hover:border-blue-400'}`}
+            >
+              {isCheckingProps ? 'Checking...' : 'Start!'}
+            </button>
+          </div>
+          <div className="flex-1 rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+            <h3 className="text-lg font-semibold text-gray-800 mb-4 truncate">Prop Refresh</h3>
+            <button
+              onClick={handlePropRefresh}
+              disabled={isRefreshingProps}
+              className={`w-full flex items-center justify-center h-[42px] rounded-md border border-dashed transition-colors text-sm font-medium focus:outline-none ${isRefreshingProps ? 'bg-gray-100 border-gray-300 text-gray-400 cursor-not-allowed' : 'border-emerald-300 bg-emerald-50 text-emerald-600 hover:bg-emerald-100 hover:border-emerald-400'}`}
+            >
+              {isRefreshingProps ? 'Refreshing...' : 'Refresh!'}
+            </button>
+          </div>
+        </div>
       </div>
 
       <div>
@@ -339,6 +530,43 @@ export default function PropertyManager({ properties }: PropertyManagerProps) {
           </div>
         )}
       </div>
+
+      {/* Modal Component */}
+      {modalConfig && modalConfig.isOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6">
+          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm transition-opacity" onClick={closeModal} />
+          <div className="relative w-full max-w-md bg-white rounded-2xl shadow-xl flex flex-col z-10 overflow-hidden transform transition-all">
+            <div className="p-6">
+              <h3 className="text-xl font-bold text-gray-900 mb-4">{modalConfig.title}</h3>
+              <div className="text-gray-700 text-sm max-h-[60vh] overflow-y-auto whitespace-pre-wrap">
+                {modalConfig.message}
+              </div>
+              <div className="mt-8 flex justify-end gap-3">
+                {modalConfig.type === 'confirm' && (
+                  <button
+                    onClick={() => {
+                      if (modalConfig.onCancel) modalConfig.onCancel();
+                      closeModal();
+                    }}
+                    className="px-4 py-2 rounded-lg text-sm font-semibold text-gray-600 bg-gray-100 hover:bg-gray-200 transition-colors focus:outline-none"
+                  >
+                    {modalConfig.cancelText || '취소'}
+                  </button>
+                )}
+                <button
+                  onClick={() => {
+                    if (modalConfig.onConfirm) modalConfig.onConfirm();
+                    if (modalConfig.type === 'alert') closeModal();
+                  }}
+                  className="px-4 py-2 rounded-lg text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 transition-colors focus:outline-none"
+                >
+                  {modalConfig.confirmText || '확인'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

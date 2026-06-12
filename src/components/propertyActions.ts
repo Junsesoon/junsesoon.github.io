@@ -114,6 +114,152 @@ export async function deletePropertyAction(templateName: string, propertyName: s
   }
 }
 
+export async function checkUppercasePropertiesAction() {
+  try {
+    // 1. 전역 속성(property_list) 테이블에서 대문자가 포함된 속성 검색
+    const listResult = await query(
+      `SELECT property_name FROM property_list WHERE property_name ~ '[A-Z]'`
+    );
+    const dbProperties = listResult.rows.map(row => row.property_name);
+
+    // 2. 게시물(posts) 테이블 내부의 JSONB properties에서 대문자 키를 포함한 게시물 검색
+    const postsResult = await query(
+      `SELECT title, slug, key AS uppercase_key
+       FROM posts, jsonb_object_keys(COALESCE(properties, '{}'::jsonb)) AS key
+       WHERE key ~ '[A-Z]'`
+    );
+    const postProperties = postsResult.rows.map(row => ({
+      title: row.title || '제목 없음',
+      key: row.uppercase_key
+    }));
+
+    return { success: true, dbProperties, postProperties };
+  } catch (error) {
+    console.error('checkUppercasePropertiesAction error:', error);
+    return { success: false, message: '서버 오류가 발생했습니다' };
+  }
+}
+
+export async function autoNormalizeUppercasePropertiesAction() {
+  try {
+    // 1. 대문자가 포함된 모든 키 수집 (DB 전역 속성 + JSONB 내부 속성)
+    const listResult = await query(
+      `SELECT property_name FROM property_list WHERE property_name ~ '[A-Z]'`
+    );
+    const dbKeys = listResult.rows.map(row => row.property_name);
+
+    const postsResult = await query(
+      `SELECT DISTINCT key AS uppercase_key
+       FROM posts, jsonb_object_keys(COALESCE(properties, '{}'::jsonb)) AS key
+       WHERE key ~ '[A-Z]'`
+    );
+    const postKeys = postsResult.rows.map(row => row.uppercase_key);
+
+    const allKeys = Array.from(new Set([...dbKeys, ...postKeys]));
+
+    if (allKeys.length === 0) {
+      return { success: true, message: '변환할 속성이 없습니다' };
+    }
+
+    let successCount = 0;
+    let failureMessages = [];
+
+    // 2. 수집된 대문자 키들을 하나씩 소문자로 병합 (기존 renameGlobalPropertyAction의 안전한 형변환 로직 재활용)
+    for (const key of allKeys) {
+      const lowerKey = key.toLowerCase();
+      const res = await renameGlobalPropertyAction(key, lowerKey);
+      if (res.success) successCount++;
+      else failureMessages.push(`'${key}': ${res.message}`);
+    }
+
+    if (failureMessages.length > 0) return { success: false, message: `일부 변환 실패:\n${failureMessages.join('\n')}` };
+    return { success: true, message: `총 ${successCount}개의 속성을 성공적으로 변환했습니다!` };
+  } catch (error) {
+    console.error('autoNormalizeUppercasePropertiesAction error:', error);
+    return { success: false, message: '서버 오류가 발생했습니다' };
+  }
+}
+
+export async function syncAndCleanPropertiesAction() {
+  try {
+    await query('BEGIN');
+
+    // 1. Sync: 누락된 속성 추가 (posts 테이블의 JSONB 속에는 존재하지만, property_list 테이블에는 없는 키를 찾아 삽입)
+    const syncResult = await query(`
+      INSERT INTO property_list (property_name, property_type)
+      SELECT DISTINCT key, 'string'
+      FROM posts, jsonb_object_keys(COALESCE(properties, '{}'::jsonb)) AS key
+      ON CONFLICT (property_name) DO NOTHING
+      RETURNING property_name
+    `);
+    const addedCount = syncResult.rowCount || 0;
+
+    // 2. Garbage Collection: 잉여 속성 삭제
+    // 조건: 필수 속성(is_essential)이 아니고, 템플릿(template_property)에 연결되어 있지 않으며, 
+    // 어떠한 게시물(posts JSONB)에서도 사용되지 않는(Usage = 0) 속성만 안전하게 삭제
+    const cleanResult = await query(`
+      DELETE FROM property_list
+      WHERE (is_essential = false OR is_essential IS NULL)
+        AND property_id NOT IN (SELECT property_id FROM template_property)
+        AND property_name NOT IN (
+          SELECT DISTINCT key FROM posts, jsonb_object_keys(COALESCE(properties, '{}'::jsonb)) AS key
+        )
+      RETURNING property_name
+    `);
+    const removedCount = cleanResult.rowCount || 0;
+
+    await query('COMMIT');
+    
+    revalidatePath('/admin/property');
+    revalidatePath('/admin/template');
+
+    return { success: true, message: `동기화 및 정리 완료!\n\n- 누락된 속성 ${addedCount}개 추가됨\n- 잉여 속성 ${removedCount}개 삭제됨` };
+  } catch (error) {
+    await query('ROLLBACK');
+    console.error('syncAndCleanPropertiesAction error:', error);
+    return { success: false, message: '서버 오류가 발생했습니다' };
+  }
+}
+
+export async function previewSyncAndCleanPropertiesAction() {
+  try {
+    // 1. Preview Sync: 누락되어 추가될 속성 목록 조회
+    const syncPreviewResult = await query(`
+      SELECT DISTINCT key AS property_name
+      FROM posts, jsonb_object_keys(COALESCE(properties, '{}'::jsonb)) AS key
+      WHERE key NOT IN (SELECT property_name FROM property_list)
+    `);
+    const toAdd = syncPreviewResult.rows.map(row => row.property_name);
+
+    // 2. Preview Garbage Collection: 아무 곳에서도 쓰이지 않아 삭제될 속성 목록 조회
+    const cleanPreviewResult = await query(`
+      SELECT property_name FROM property_list
+      WHERE (is_essential = false OR is_essential IS NULL)
+        AND property_id NOT IN (SELECT property_id FROM template_property)
+        AND property_name NOT IN (SELECT DISTINCT key FROM posts, jsonb_object_keys(COALESCE(properties, '{}'::jsonb)) AS key)
+    `);
+    const toDelete = cleanPreviewResult.rows.map(row => row.property_name);
+
+    return { success: true, toAdd, toDelete };
+  } catch (error) {
+    console.error('previewSyncAndCleanPropertiesAction error:', error);
+    return { success: false, message: '서버 오류가 발생했습니다' };
+  }
+}
+
+export async function getPostsUsingPropertyAction(propertyName: string) {
+  try {
+    const result = await query(
+      'SELECT title FROM posts WHERE properties ? $1 ORDER BY title ASC',
+      [propertyName]
+    );
+    return result.rows.map(row => row.title || '제목 없음');
+  } catch (error) {
+    console.error('getPostsUsingPropertyAction error:', error);
+    return [];
+  }
+}
+
 export async function renameGlobalPropertyAction(oldName: string, newName: string) {
   if (!oldName || !newName || !newName.trim()) {
     return { success: false, message: 'Valid property names are required.' };
@@ -264,7 +410,7 @@ export async function renameGlobalPropertyAction(oldName: string, newName: strin
         console.error('Failed to find problematic posts:', checkErr);
       }
 
-      let message = `병합하려는 새 속성('${newTrimmed}')의 타입과 기존 데이터가 호환되지 않아 병합이 취소되었습니다.`;
+      let message = `병합하려는 새 속성('${newTrimmed}')의 타입과 기존 데이터가 호환되지 않아 병합이 취소되었습니다`;
       if (problemTitles.length > 0) {
         message += `\n\n[충돌 발생 게시물]\n- ${problemTitles.slice(0, 3).join('\n- ')}`;
         if (problemTitles.length > 3) message += `\n...외 ${problemTitles.length - 3}건`;
@@ -300,7 +446,7 @@ export async function togglePropertyEssentialAction(propertyName: string, isEsse
 export async function getEssentialPropertiesAction() {
   try {
     const result = await query('SELECT property_name FROM property_list WHERE is_essential = true');
-    // 문자열(속성명) 배열만 깔끔하게 추출해서 반환합니다.
+    // 문자열(속성명) 배열만 깔끔하게 추출해서 반환합니다
     return result.rows.map((row) => row.property_name);
   } catch (error) {
     console.error('getEssentialPropertiesAction error:', error);
@@ -408,7 +554,7 @@ export async function updatePropertyTypeAction(propertyName: string, newType: st
         console.error('Failed to find problematic posts:', checkErr);
       }
 
-      let message = `기존 데이터 중 '${newType}' 타입으로 변환할 수 없는 값이 포함되어 있어 변경이 취소되었습니다.`;
+      let message = `기존 데이터 중 '${newType}' 타입으로 변환할 수 없는 값이 포함되어 있어 변경이 취소되었습니다`;
       if (problemTitles.length > 0) {
         message += `\n\n[충돌 발생 게시물]\n- ${problemTitles.slice(0, 3).join('\n- ')}`;
         if (problemTitles.length > 3) message += `\n...외 ${problemTitles.length - 3}건`;
