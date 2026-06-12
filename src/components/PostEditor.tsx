@@ -29,6 +29,49 @@ const getTypeColor = (type: string) => {
   }
 };
 
+const ArrayTagInput = ({ id, tags, onChange }: { id?: string; tags: string[]; onChange: (tags: string[]) => void }) => {
+  const [inputValue, setInputValue] = useState('');
+
+  const addTag = (val: string) => {
+    const trimmed = val.trim();
+    if (trimmed && !tags.includes(trimmed)) {
+      onChange([...tags, trimmed]);
+    }
+    setInputValue('');
+  };
+
+  const removeTag = (indexToRemove: number) => {
+    onChange(tags.filter((_, index) => index !== indexToRemove));
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter' || e.key === 'Tab') {
+      e.preventDefault();
+      addTag(inputValue);
+    } else if (e.key === 'Backspace' && inputValue === '' && tags.length > 0) {
+      removeTag(tags.length - 1);
+    }
+  };
+
+  const handleBlur = () => {
+    addTag(inputValue);
+  };
+
+  return (
+    <div className="flex flex-wrap items-center gap-1.5 w-full rounded-md border-0 bg-transparent px-2 py-1 text-sm transition-colors hover:bg-gray-50 focus-within:bg-gray-50 min-h-[34px]">
+      {tags.map((tag, index) => (
+        <span key={index} className="inline-flex items-center gap-1 rounded-full bg-blue-100 px-2.5 py-0.5 text-xs font-medium text-blue-700 select-none">
+          {tag}
+          <button type="button" onClick={() => removeTag(index)} className="text-blue-400 hover:text-blue-600 focus:outline-none" title={`Remove ${tag}`}>
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" /></svg>
+          </button>
+        </span>
+      ))}
+      <input id={id} type="text" value={inputValue} onChange={(e) => setInputValue(e.target.value)} onKeyDown={handleKeyDown} onBlur={handleBlur} className="flex-1 bg-transparent min-w-[80px] border-0 p-0 text-sm text-gray-900 placeholder:text-gray-400 focus:ring-0 focus:outline-none" placeholder={tags.length === 0 ? "Empty" : ""} />
+    </div>
+  );
+};
+
 export default function PostEditor({ initialData, onSave, templates, essentialProps }: PostEditorProps) {
   const [formData, setFormData] = useState<Record<string, any>>(() => {
     const initial: Record<string, any> = {};
@@ -41,7 +84,7 @@ export default function PostEditor({ initialData, onSave, templates, essentialPr
         if (Array.isArray(val) && val.length === 0) return;
 
         if (Array.isArray(val)) {
-          initial[key] = val.join(', ');
+          initial[key] = val;
         } else {
           initial[key] = val;
         }
@@ -165,8 +208,12 @@ export default function PostEditor({ initialData, onSave, templates, essentialPr
             finalData[p.name] = Number(val);
           } else if (p.type === 'boolean') {
             finalData[p.name] = (val === true || val === 'true');
-          } else if (p.type === 'array' && typeof val === 'string') {
-            finalData[p.name] = val.split(',').map((s) => s.trim()).filter((s) => s.length > 0);
+          } else if (p.type === 'array') {
+            if (typeof val === 'string') {
+              finalData[p.name] = val.split(',').map((s) => s.trim()).filter((s) => s.length > 0);
+            } else if (Array.isArray(val)) {
+              finalData[p.name] = val.filter((s: string) => s.trim().length > 0);
+            }
           }
         }
       });
@@ -479,6 +526,18 @@ export default function PostEditor({ initialData, onSave, templates, essentialPr
                         required={isEssential}
                         className="block w-full max-w-[200px] rounded-md border-0 bg-transparent px-2 py-1.5 text-sm text-gray-900 hover:bg-gray-50 focus:bg-gray-50 focus:ring-0 focus:outline-none transition-colors"
                       />
+                    ) : propType === 'array' ? (
+                      <ArrayTagInput
+                        id={key}
+                        tags={
+                          Array.isArray(formData[key])
+                            ? formData[key]
+                            : typeof formData[key] === 'string' && formData[key]
+                            ? formData[key].split(',').map((s: string) => s.trim()).filter(Boolean)
+                            : []
+                        }
+                        onChange={(newTags) => setFormData((prev) => ({ ...prev, [key]: newTags }))}
+                      />
                     ) : (
                       <input
                         type="text"
@@ -514,9 +573,15 @@ export default function PostEditor({ initialData, onSave, templates, essentialPr
                             key={idx} 
                             onClick={() => {
                               const currentVal = formData[key] || '';
-                              const skills = String(currentVal).split(',').map(s => s.trim()).filter(Boolean);
+                              let skills: string[] = [];
+                              if (Array.isArray(currentVal)) {
+                                skills = [...currentVal];
+                              } else if (typeof currentVal === 'string' && currentVal) {
+                                skills = currentVal.split(',').map(s => s.trim()).filter(Boolean);
+                              }
+
                               if (!skills.includes(card.title)) {
-                                setFormData(prev => ({ ...prev, [key]: [...skills, card.title].join(', ') }));
+                                setFormData(prev => ({ ...prev, [key]: [...skills, card.title] }));
                               }
                             }}
                             className="inline-flex items-center rounded bg-gray-100/80 px-2 py-0.5 text-xs font-medium text-gray-600 cursor-pointer hover:bg-blue-50 hover:text-blue-600 transition-colors active:scale-95 select-none"
