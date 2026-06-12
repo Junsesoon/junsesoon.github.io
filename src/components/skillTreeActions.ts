@@ -101,3 +101,26 @@ export async function updateSkillTreeDomainOrdersAction(orders: { id: number; di
     return { success: false, message: 'Internal Server Error' };
   }
 }
+
+export async function getSkillTreeCardsAction() {
+  try {
+    const result = await query(`
+      SELECT p.slug, p.title, p.content, p.properties, sp.domain as category2, sp.sub_domain as category3, sp.parent_skill
+      FROM posts p
+      JOIN skilltree_posts sp ON p.post_id = sp.post_id
+      ORDER BY p.created_at DESC
+    `);
+    return result.rows.map((row) => ({
+      slug: row.slug,
+      title: row.title || 'Untitled',
+      content: row.content || '',
+      properties: row.properties || {},
+      category2: row.category2 || '',
+      category3: row.category3 || '',
+      parentSkill: Array.isArray(row.parent_skill) ? row.parent_skill.join(', ') : (row.parent_skill || ''),
+    }));
+  } catch (error) {
+    console.error('getSkillTreeCardsAction error:', error);
+    return [];
+  }
+}

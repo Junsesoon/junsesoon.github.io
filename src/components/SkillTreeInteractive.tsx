@@ -228,12 +228,12 @@ export default function SkillTreeInteractive({ nodes, COLUMNS, isAdmin }: Props)
                     )}
                   </div>
                   
-                  {Object.keys(selectedNode.frontmatter).some(key => ['startDate', 'endDate', 'summary'].includes(key)) && (
+                  {Object.keys(selectedNode.frontmatter).some(key => ['startdate', 'enddate', 'summary'].includes(key)) && (
                     <div className="mb-6 bg-gray-50 p-4 rounded-lg border border-gray-100 shadow-inner">
                       <h3 className="text-xs font-bold text-gray-500 mb-3 uppercase tracking-wider">INFO</h3>
                       <div className="space-y-2">
                         {Object.entries(selectedNode.frontmatter)
-                          .filter(([key]) => ['startDate', 'endDate', 'summary'].includes(key))
+                          .filter(([key]) => ['startdate', 'enddate', 'summary'].includes(key))
                           .map(([key, value]) => (
                             <div key={key} className="text-sm flex flex-col sm:flex-row sm:gap-2">
                               <span className="font-semibold text-gray-700 min-w-[120px] shrink-0">{key}:</span>

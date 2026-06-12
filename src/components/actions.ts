@@ -85,7 +85,7 @@ export async function createPostAction(data: PostFormData) {
         const domain = properties.category2 ? String(properties.category2) : null;
         const sub_domain = properties.category3 ? String(properties.category3) : null;
         
-        const techStartStr = String(properties.techStart || '');
+        const techStartStr = String(properties.techstart || properties.techStart || '');
         const techMatch = techStartStr.match(/\d{4}/);
         const tech_start = techMatch ? parseInt(techMatch[0], 10) : null;
 
@@ -105,7 +105,7 @@ export async function createPostAction(data: PostFormData) {
              parent_skill = EXCLUDED.parent_skill,
              child_skill = EXCLUDED.child_skill,
              updated_at = CURRENT_TIMESTAMP`,
-          [postId, domain, sub_domain, tech_start, toArray(properties.parentSkill), toArray(properties.childSkill)]
+          [postId, domain, sub_domain, tech_start, toArray(properties.parentskill || properties.parentSkill), toArray(properties.childskill || properties.childSkill)]
         );
       }
     }
@@ -116,42 +116,6 @@ export async function createPostAction(data: PostFormData) {
   } catch (error) {
     console.error('Failed to create post:', error);
     throw new Error('Database query failed.');
-  }
-}
-
-export async function addGlobalPropertyAction(propertyName: string, propertyType: string) {
-  if (!propertyName || !propertyName.trim()) {
-    return { success: false, message: 'Property name is required.' };
-  }
-
-  try {
-    await query(
-      `INSERT INTO property_list (property_name, property_type)
-       VALUES ($1, $2)
-       ON CONFLICT (property_name) DO NOTHING`,
-      [propertyName.trim(), propertyType]
-    );
-    return { success: true };
-  } catch (error: any) {
-    console.error('addGlobalPropertyAction error:', error);
-    return { success: false, message: 'Internal Server Error' };
-  }
-}
-
-export async function deleteGlobalPropertyAction(propertyName: string) {
-  if (!propertyName) {
-    return { success: false, message: 'Property name is required.' };
-  }
-
-  try {
-    await query(
-      'DELETE FROM property_list WHERE property_name = $1',
-      [propertyName.trim()]
-    );
-    return { success: true };
-  } catch (error: any) {
-    console.error('deleteGlobalPropertyAction error:', error);
-    return { success: false, message: 'Internal Server Error' };
   }
 }
 
@@ -273,7 +237,7 @@ export async function updatePostAction(originalSlug: string, data: PostFormData)
         const domain = properties.category2 ? String(properties.category2) : null;
         const sub_domain = properties.category3 ? String(properties.category3) : null;
         
-        const techStartStr = String(properties.techStart || '');
+        const techStartStr = String(properties.techstart || properties.techStart || '');
         const techMatch = techStartStr.match(/\d{4}/);
         const tech_start = techMatch ? parseInt(techMatch[0], 10) : null;
 
@@ -293,7 +257,7 @@ export async function updatePostAction(originalSlug: string, data: PostFormData)
              parent_skill = EXCLUDED.parent_skill,
              child_skill = EXCLUDED.child_skill,
              updated_at = CURRENT_TIMESTAMP`,
-          [postId, domain, sub_domain, tech_start, toArray(properties.parentSkill), toArray(properties.childSkill)]
+          [postId, domain, sub_domain, tech_start, toArray(properties.parentskill || properties.parentSkill), toArray(properties.childskill || properties.childSkill)]
         );
       } else {
         // 스킬 트리에서 다른 템플릿(일반 카테고리)으로 속성이 변경된 경우 연관 데이터 Clean-up
@@ -333,6 +297,8 @@ export async function addTemplateAction(templateName: string) {
       'INSERT INTO template_list (template_name) VALUES ($1)',
       [sanitizedName]
     );
+    revalidatePath('/admin/template');
+    revalidatePath('/admin/write'); // 글쓰기 페이지의 템플릿 목록도 갱신
     return { success: true };
   } catch (error: any) {
     console.error('addTemplateAction error:', error);
@@ -343,84 +309,19 @@ export async function addTemplateAction(templateName: string) {
   }
 }
 
-export async function addPropertyAction(templateName: string, propertyName: string, propertyType: string, isRequired: boolean) {
-  if (!templateName || !propertyName || !propertyName.trim()) {
-    return { success: false, message: 'Template name and property name are required.' };
+export async function deleteTemplateAction(templateName: string) {
+  if (!templateName) {
+    return { success: false, message: 'Template name is required.' };
   }
 
   try {
-    // 1. property_list에 없으면 새로 만들고, 있으면 타입을 덮어씌워 property_id를 가져옴
-    // 2. template_property 에 템플릿과 매핑 데이터 추가
-    await query(
-      `WITH prop AS (
-         INSERT INTO property_list (property_name, property_type) VALUES ($2, $3)
-         ON CONFLICT (property_name) DO UPDATE SET property_type = EXCLUDED.property_type
-         RETURNING property_id
-       )
-       INSERT INTO template_property (template_id, property_id, is_required)
-       SELECT template_id, prop.property_id, $4 FROM template_list, prop WHERE template_name = $1`,
-      [templateName.trim().toLowerCase(), propertyName.trim(), propertyType, isRequired]
-    );
+    // ON DELETE CASCADE 제약 조건에 의해 매핑된 template_property 데이터도 자동 삭제됩니다.
+    await query('DELETE FROM template_list WHERE template_name = $1', [templateName.trim().toLowerCase()]);
+    revalidatePath('/admin/template');
+    revalidatePath('/admin/write');
     return { success: true };
   } catch (error: any) {
-    console.error('addPropertyAction error:', error);
-    if (error.code === '23505') {
-      return { success: false, message: 'Property already exists in this template.' };
-    }
-    return { success: false, message: 'Internal Server Error' };
-  }
-}
-
-export async function deletePropertyAction(templateName: string, propertyName: string) {
-  if (!templateName || !propertyName) {
-    return { success: false, message: 'Template name and property name are required.' };
-  }
-
-  try {
-    await query(
-      `DELETE FROM template_property
-       WHERE template_id = (SELECT template_id FROM template_list WHERE template_name = $1)
-         AND property_id = (SELECT property_id FROM property_list WHERE property_name = $2)`,
-      [templateName.trim().toLowerCase(), propertyName.trim()]
-    );
-    return { success: true };
-  } catch (error: any) {
-    console.error('deletePropertyAction error:', error);
-    return { success: false, message: 'Internal Server Error' };
-  }
-}
-
-export async function renameGlobalPropertyAction(oldName: string, newName: string) {
-  if (!oldName || !newName || !newName.trim()) {
-    return { success: false, message: 'Valid property names are required.' };
-  }
-
-  try {
-    await query('BEGIN');
-
-    // 1. 전역 속성 테이블의 이름 변경
-    await query(
-      'UPDATE property_list SET property_name = $1 WHERE property_name = $2',
-      [newName.trim(), oldName]
-    );
-
-    // 2. 해당 속성을 가지고 있는( ? 연산자) 모든 게시물의 JSONB 업데이트
-    await query(
-      `UPDATE posts
-       SET properties = (properties - $2) || jsonb_build_object($1::text, properties->$2),
-           updated_at = CURRENT_TIMESTAMP
-       WHERE properties ? $2`,
-      [newName.trim(), oldName]
-    );
-
-    await query('COMMIT');
-    return { success: true };
-  } catch (error: any) {
-    await query('ROLLBACK');
-    console.error('renameGlobalPropertyAction error:', error);
-    if (error.code === '23505') {
-      return { success: false, message: 'Property name already exists.' };
-    }
+    console.error('deleteTemplateAction error:', error);
     return { success: false, message: 'Internal Server Error' };
   }
 }
@@ -449,46 +350,6 @@ export async function getTemplatesAction() {
   } catch (error) {
     console.error('getTemplatesAction error:', error);
     return {};
-  }
-}
-
-export async function togglePropertyEssentialAction(propertyName: string, isEssential: boolean) {
-  if (!propertyName) {
-    return { success: false, message: 'Property name is required.' };
-  }
-
-  try {
-    await query(
-      `INSERT INTO property_list (property_name, is_essential)
-       VALUES ($1, $2)
-       ON CONFLICT (property_name) DO UPDATE SET is_essential = EXCLUDED.is_essential`,
-      [propertyName, isEssential]
-    );
-    return { success: true };
-  } catch (error: any) {
-    console.error('togglePropertyEssentialAction error:', error);
-    return { success: false, message: 'Internal Server Error' };
-  }
-}
-
-export async function getEssentialPropertiesAction() {
-  try {
-    const result = await query('SELECT property_name FROM property_list WHERE is_essential = true');
-    // 문자열(속성명) 배열만 깔끔하게 추출해서 반환합니다.
-    return result.rows.map((row) => row.property_name);
-  } catch (error) {
-    console.error('getEssentialPropertiesAction error:', error);
-    return [];
-  }
-}
-
-export async function getAllPropertyNamesAction() {
-  try {
-    const result = await query('SELECT property_name FROM property_list ORDER BY property_name ASC');
-    return result.rows.map((row) => row.property_name);
-  } catch (error) {
-    console.error('getAllPropertyNamesAction error:', error);
-    return [];
   }
 }
 

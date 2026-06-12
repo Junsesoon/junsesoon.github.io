@@ -2,7 +2,8 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
-import { addSkillTreeDomainAction, getSkillTreeDomainsAction, deleteSkillTreeDomainAction, updateSkillTreeDomainAction, updateSkillTreeDomainOrdersAction } from './skillTreeActions';
+import { addSkillTreeDomainAction, getSkillTreeDomainsAction, deleteSkillTreeDomainAction, updateSkillTreeDomainAction, updateSkillTreeDomainOrdersAction, getSkillTreeCardsAction } from './skillTreeActions';
+import { createPostAction, deletePostAction, updatePostAction } from './actions';
 
 export default function SkillTreeManager() {
   const [title, setTitle] = useState('');
@@ -11,21 +12,46 @@ export default function SkillTreeManager() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [domains, setDomains] = useState<{ id: number; title: string; description: string; matchCategory2: string; displayOrder: number }[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isDomainsLoading, setIsDomainsLoading] = useState(true);
+  const [isCardsLoading, setIsCardsLoading] = useState(true);
   const [isSavingOrder, setIsSavingOrder] = useState(false);
+  const [skillCards, setSkillCards] = useState<{ slug: string; title: string; content: string; properties: any; category2: string; category3?: string; parentSkill?: string }[]>([]);
+  const [cardSortConfig, setCardSortConfig] = useState<{ key: string; order: 'asc' | 'desc' }>({ key: '', order: 'asc' });
+
+  // 새로 추가된 Skill Card Form 상태 관리
+  const [editingCardSlug, setEditingCardSlug] = useState<string | null>(null);
+  const [cardTitle, setCardTitle] = useState('');
+  const [cardSummary, setCardSummary] = useState('');
+  const [cardCat1, setCardCat1] = useState('skilltree');
+  const [cardCat2, setCardCat2] = useState('');
+  const [cardCat3, setCardCat3] = useState('');
+  const [cardCat4, setCardCat4] = useState('');
+  const [cardTechStart, setCardTechStart] = useState('');
+  const [cardParentSkill, setCardParentSkill] = useState('');
+  const [cardCreatedAt, setCardCreatedAt] = useState('');
+  const [cardModifiedAt, setCardModifiedAt] = useState('');
+  const [isCardSubmitting, setIsCardSubmitting] = useState(false);
 
   const dragItemIndex = useRef<number | null>(null);
   const dragOverItemIndex = useRef<number | null>(null);
 
   useEffect(() => {
     loadDomains();
+    loadCards();
   }, []);
 
   const loadDomains = async () => {
-    setIsLoading(true);
+    setIsDomainsLoading(true);
     const data = await getSkillTreeDomainsAction();
     setDomains(data as { id: number; title: string; description: string; matchCategory2: string; displayOrder: number }[]);
-    setIsLoading(false);
+    setIsDomainsLoading(false);
+  };
+
+  const loadCards = async () => {
+    setIsCardsLoading(true);
+    const data = await getSkillTreeCardsAction();
+    setSkillCards(data as { slug: string; title: string; content: string; properties: any; category2: string; category3?: string; parentSkill?: string }[]);
+    setIsCardsLoading(false);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -80,6 +106,87 @@ export default function SkillTreeManager() {
       loadDomains(); // 성공 시 도메인 목록 새로고침
     } else {
       alert(result.message || 'Failed to delete domain.');
+    }
+  };
+
+  const handleDeleteCard = async (slug: string, title: string) => {
+    if (!window.confirm(`Are you sure you want to delete the skill card '${title}'?`)) {
+      return;
+    }
+    try {
+      await deletePostAction(slug);
+      loadCards(); // 삭제 성공 시 리스트 갱신
+    } catch (error) {
+      alert('Failed to delete skill card.');
+    }
+  };
+
+  const handleCardClick = (card: { slug: string; title: string; content: string; properties: any; category2: string; category3?: string; parentSkill?: string }) => {
+    setEditingCardSlug(card.slug);
+    setCardTitle(card.title);
+    setCardSummary(card.properties?.summary || '');
+    setCardCat1(card.properties?.category1 || 'skilltree');
+    setCardCat2(card.category2 || '');
+    setCardCat3(card.category3 || '');
+    setCardCat4(card.properties?.category4 || '');
+    setCardTechStart(card.properties?.techstart || card.properties?.techStart || '');
+    setCardParentSkill(card.parentSkill || '');
+    setCardCreatedAt(card.properties?.date ? String(card.properties.date).split('T')[0] : '');
+    setCardModifiedAt(card.properties?.modified_at ? String(card.properties.modified_at).split('T')[0] : '');
+  };
+
+  const cancelCardEdit = () => {
+    setEditingCardSlug(null);
+    setCardTitle('');
+    setCardSummary('');
+    setCardCat1('skilltree');
+    setCardCat2('');
+    setCardCat3('');
+    setCardCat4('');
+    setCardTechStart('');
+    setCardParentSkill('');
+    setCardCreatedAt('');
+    setCardModifiedAt('');
+  };
+
+  const handleCardSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!cardTitle.trim()) {
+      alert('Title is required.');
+      return;
+    }
+
+    setIsCardSubmitting(true);
+    try {
+      const originalCard = editingCardSlug ? skillCards.find(c => c.slug === editingCardSlug) : null;
+
+      const formData = {
+        ...(originalCard ? originalCard.properties : {}),
+        title: cardTitle,
+        content: originalCard ? originalCard.content : '',
+        summary: cardSummary,
+        category1: cardCat1,
+        category2: cardCat2,
+        category3: cardCat3,
+        category4: cardCat4,
+        techstart: cardTechStart,
+        parentskill: cardParentSkill,
+        date: cardCreatedAt,
+        modified_at: cardModifiedAt,
+      };
+
+      if (editingCardSlug) {
+        await updatePostAction(editingCardSlug, formData as any);
+      } else {
+        await createPostAction(formData as any);
+      }
+      
+      cancelCardEdit();
+      loadCards(); // 생성/수정 성공 시 리스트 즉시 갱신
+    } catch (error) {
+      alert(editingCardSlug ? 'Failed to update skill card.' : 'Failed to add skill card.');
+    } finally {
+      setIsCardSubmitting(false);
     }
   };
 
@@ -167,8 +274,40 @@ export default function SkillTreeManager() {
     await handleDropCompletion();
   };
 
+  const handleCardSort = (key: string) => {
+    setCardSortConfig((prev) => ({
+      key,
+      order: prev.key === key && prev.order === 'asc' ? 'desc' : 'asc',
+    }));
+  };
+
+  const renderCardSortIcon = (key: string) => {
+    const isActive = cardSortConfig.key === key;
+    return (
+      <span className={`text-[10px] shrink-0 ml-1 ${isActive ? 'text-blue-600' : 'text-gray-300 group-hover:text-blue-400 transition-colors'}`}>
+        {isActive ? (cardSortConfig.order === 'asc' ? '▲' : '▼') : '↕'}
+      </span>
+    );
+  };
+
+  const sortedSkillCards = [...skillCards].sort((a, b) => {
+    if (!cardSortConfig.key) return 0;
+    let aVal: any = a[cardSortConfig.key as keyof typeof a];
+    let bVal: any = b[cardSortConfig.key as keyof typeof b];
+
+    if (!aVal) aVal = '';
+    if (!bVal) bVal = '';
+
+    if (typeof aVal === 'string') aVal = aVal.toLowerCase();
+    if (typeof bVal === 'string') bVal = bVal.toLowerCase();
+
+    if (aVal < bVal) return cardSortConfig.order === 'asc' ? -1 : 1;
+    if (aVal > bVal) return cardSortConfig.order === 'asc' ? 1 : -1;
+    return 0;
+  });
+
   return (
-    <div className="mx-auto max-w-6xl p-8 font-sans">
+    <div className="mx-auto w-full max-w-[1000px] p-4 sm:p-8 font-sans">
       <header className="mb-8 flex items-center justify-between border-b border-gray-200 pb-4">
         <div>
           <h1 className="text-3xl font-bold text-gray-800">Manage SkillTree</h1>
@@ -184,14 +323,16 @@ export default function SkillTreeManager() {
         </Link>
       </header>
 
-      <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
-        {/* 왼쪽: 새 스킬 트리 도메인 추가 폼 */}
-        <div className="md:col-span-1">
+      <div className="flex flex-col gap-8">
+        {/* --- 도메인 관리 영역 (1단) --- */}
+        <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
+          {/* 왼쪽: 새 스킬 트리 도메인 추가 폼 */}
+          <div className="md:col-span-1">
           <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
             <h2 className="mb-4 text-lg font-semibold text-gray-800">{editingId ? 'Edit Domain' : 'Add New Domain'}</h2>
             <form className="space-y-4" onSubmit={handleSubmit}>
               <div>
-                <label htmlFor="title" className="mb-1 block text-sm font-medium text-gray-700">Grid Title</label>
+                <label htmlFor="title" className="mb-1 block text-sm font-medium text-gray-700">Grid Name</label>
                 <input type="text" id="title" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="e.g. FrontEnd" className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500" required />
               </div>
               <div>
@@ -205,10 +346,10 @@ export default function SkillTreeManager() {
               </div>
               <div className="mt-4 flex gap-3">
                 <button type="submit" disabled={isSubmitting} className={`flex-1 rounded-md px-4 py-2 text-sm font-semibold text-white shadow-sm transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${isSubmitting ? 'bg-blue-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'}`}>
-                  {isSubmitting ? (editingId ? 'Updating...' : 'Adding...') : (editingId ? 'Update Domain' : 'Add Domain')}
+                  {isSubmitting ? (editingId ? 'Updating...' : 'Adding...') : (editingId ? 'Update' : 'Add Domain')}
                 </button>
                 {editingId && (
-                  <button type="button" onClick={cancelEdit} disabled={isSubmitting} className="flex-1 rounded-md bg-white border border-gray-300 px-4 py-2 text-sm font-semibold text-gray-700 shadow-sm transition-colors hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-200 focus:ring-offset-2">
+                  <button type="button" onClick={cancelEdit} disabled={isSubmitting} className="flex-1 rounded-md bg-white px-4 py-2 text-sm font-semibold text-gray-700 shadow-sm transition-colors hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-200 focus:ring-offset-2">
                     Cancel
                   </button>
                 )}
@@ -220,18 +361,19 @@ export default function SkillTreeManager() {
         {/* 오른쪽: 기존 도메인 관리 목록 */}
         <div className="md:col-span-2">
           <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
-            <table className="min-w-full divide-y divide-gray-200 text-left text-sm">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th scope="col" className="w-12 px-4 py-3 text-center font-semibold text-gray-400">#</th>
-                  <th scope="col" className="px-4 py-3 font-semibold text-gray-900">Title</th>
-                  <th scope="col" className="px-4 py-3 font-semibold text-gray-900">Description</th>
-                  <th scope="col" className="px-4 py-3 font-semibold text-gray-900">Match Cat2</th>
-                  <th scope="col" className="px-4 py-3 text-center font-semibold text-gray-900">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-200 bg-white">
-                {isLoading ? (
+            <div className="overflow-x-auto w-full">
+              <table className="w-full divide-y divide-gray-200 text-left text-sm table-fixed">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th scope="col" className="w-16 px-2 py-3 text-center font-semibold text-gray-400 align-middle">No</th>
+                    <th scope="col" className="px-2 py-3 font-semibold text-gray-900 align-middle truncate">Name</th>
+                    <th scope="col" className="w-48 px-2 py-3 font-semibold text-gray-900 align-middle truncate hidden md:table-cell">Description</th>
+                    <th scope="col" className="w-32 px-2 py-3 font-semibold text-gray-900 align-middle truncate hidden sm:table-cell">Match Cat2</th>
+                    <th scope="col" className="w-24 px-2 py-3 text-center font-semibold text-gray-900 align-middle">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-200 bg-white">
+                {isDomainsLoading ? (
                   <tr>
                     <td colSpan={5} className="px-4 py-8 text-center text-sm text-gray-500">Loading domains...</td>
                   </tr>
@@ -255,40 +397,49 @@ export default function SkillTreeManager() {
                       // 터치 드래그 중에 브라우저의 기본 스크롤 동작이 간섭하지 않도록 touch-none 적용
                       className="transition-colors hover:bg-gray-50 cursor-move touch-none"
                     >
-                      <td className="px-4 py-3 text-center">
+                      <td className="px-2 py-3 text-center truncate">
                         <div className="flex items-center justify-center gap-1.5" title="Drag to reorder">
-                          <svg className="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <svg className="h-4 w-4 text-gray-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" />
                           </svg>
                           <span className="text-xs font-semibold text-gray-400">{domain.displayOrder || index + 1}</span>
                         </div>
                       </td>
-                      <td className="px-4 py-3 font-medium text-gray-900">{domain.title}</td>
-                      <td className="px-4 py-3 text-gray-500 max-w-[200px] truncate">{domain.description}</td>
-                      <td className="px-4 py-3">
-                        <span className="inline-flex px-2 py-1 text-xs font-semibold text-blue-700">
+                      <td className="px-2 py-3 font-medium text-gray-900 truncate" title={domain.title}>{domain.title}</td>
+                      <td className="px-2 py-3 text-gray-500 truncate hidden md:table-cell" title={domain.description}>{domain.description}</td>
+                      <td className="px-2 py-3 truncate hidden sm:table-cell" title={domain.matchCategory2}>
+                        <span className="inline-block px-2 py-1 text-xs font-semibold text-blue-700 truncate max-w-full">
                           {domain.matchCategory2}
                         </span>
                       </td>
-                      <td className="px-4 py-3 text-center whitespace-nowrap">
-                        <button 
-                          onClick={() => handleEdit(domain)}
-                          className="mr-3 font-medium text-blue-600 hover:text-blue-800 transition-colors"
-                        >
-                          Edit
-                        </button>
-                        <button 
-                          onClick={() => handleDelete(domain.id, domain.title)}
-                          className="font-medium text-red-600 hover:text-red-800 transition-colors"
-                        >
-                          Delete
-                        </button>
+                      <td className="px-2 py-3 text-center whitespace-nowrap">
+                        <div className="flex items-center justify-center">
+                          <button 
+                            onClick={() => handleEdit(domain)}
+                            className="text-gray-400 hover:text-blue-600 hover:bg-blue-50 p-2 rounded-md transition-colors focus:outline-none"
+                            title={`Edit ${domain.title}`}
+                          >
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                              <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
+                            </svg>
+                          </button>
+                          <button 
+                            onClick={() => handleDelete(domain.id, domain.title)}
+                            className="text-gray-400 hover:text-red-600 hover:bg-red-50 p-2 rounded-md transition-colors focus:outline-none"
+                            title={`Delete ${domain.title}`}
+                          >
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                              <path fillRule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd" />
+                            </svg>
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))
                 )}
-              </tbody>
-            </table>
+                </tbody>
+              </table>
+            </div>
             <div className="flex items-center justify-between border-t border-gray-200 bg-gray-50 px-6 py-4 text-sm text-gray-500">
               <span>Total {domains.length} domains</span>
               {isSavingOrder && <span className="font-semibold text-blue-600 animate-pulse">Saving order...</span>}
@@ -296,6 +447,148 @@ export default function SkillTreeManager() {
           </div>
         </div>
       </div>
+
+      {/* --- 스킬 카드 관리 영역 (2단) --- */}
+      <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
+        {/* 왼쪽: 새 스킬 트리 카드 추가 폼 */}
+        <div className="md:col-span-1">
+          <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
+            <h2 className="mb-4 text-lg font-semibold text-gray-800">{editingCardSlug ? 'Edit Skill Card' : 'Add New Skill Card'}</h2>
+            <form className="space-y-4" onSubmit={handleCardSubmit}>
+              <div>
+                <label className="mb-1 block text-sm font-medium text-gray-700">Title</label>
+                <input type="text" placeholder="e.g. React" value={cardTitle} onChange={(e) => setCardTitle(e.target.value)} required className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500" />
+              </div>
+              <div>
+                <label className="mb-1 block text-sm font-medium text-gray-700">Summary</label>
+                <textarea rows={2} placeholder="Brief summary..." value={cardSummary} onChange={(e) => setCardSummary(e.target.value)} className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500" />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="mb-1 block text-sm font-medium text-gray-700">Category 1</label>
+                  <input type="text" placeholder="skilltree" value={cardCat1} onChange={(e) => setCardCat1(e.target.value)} className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500" />
+                </div>
+                <div>
+                  <label className="mb-1 block text-sm font-medium text-gray-700">Category 2</label>
+                  <input type="text" placeholder="domain" value={cardCat2} onChange={(e) => setCardCat2(e.target.value)} className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500" />
+                </div>
+                <div>
+                  <label className="mb-1 block text-sm font-medium text-gray-700">Category 3</label>
+                  <input type="text" placeholder="sub-domain" value={cardCat3} onChange={(e) => setCardCat3(e.target.value)} className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500" />
+                </div>
+                <div>
+                  <label className="mb-1 block text-sm font-medium text-gray-700">Category 4</label>
+                  <input type="text" placeholder="" value={cardCat4} onChange={(e) => setCardCat4(e.target.value)} className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500" />
+                </div>
+              </div>
+              <div>
+                <label className="mb-1 block text-sm font-medium text-gray-700">Tech Start</label>
+                <input type="text" placeholder="YYYY" value={cardTechStart} onChange={(e) => setCardTechStart(e.target.value)} className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500" />
+              </div>
+              <div>
+                <label className="mb-1 block text-sm font-medium text-gray-700">Parent Skill</label>
+                <input type="text" placeholder="skill1, skill2..." value={cardParentSkill} onChange={(e) => setCardParentSkill(e.target.value)} className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500" />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="mb-1 block text-sm font-medium text-gray-700">Created At</label>
+                  <input type="date" value={cardCreatedAt} onChange={(e) => setCardCreatedAt(e.target.value)} className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500" />
+                </div>
+                <div>
+                  <label className="mb-1 block text-sm font-medium text-gray-700">Modified At</label>
+                  <input type="date" value={cardModifiedAt} onChange={(e) => setCardModifiedAt(e.target.value)} className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500" />
+                </div>
+              </div>
+              <div className="mt-4 flex gap-3">
+                <button type="submit" disabled={isCardSubmitting} className={`flex-1 rounded-md px-4 py-2 text-sm font-semibold text-white shadow-sm transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${isCardSubmitting ? 'bg-blue-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'}`}>
+                  {isCardSubmitting ? (editingCardSlug ? 'Updating...' : 'Adding...') : (editingCardSlug ? 'Update' : 'Add Skill Card')}
+                </button>
+                {editingCardSlug && (
+                  <button type="button" onClick={cancelCardEdit} disabled={isCardSubmitting} className="flex-1 rounded-md bg-white px-4 py-2 text-sm font-semibold text-gray-700 shadow-sm transition-colors hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-200 focus:ring-offset-2">
+                    Cancel
+                  </button>
+                )}
+              </div>
+            </form>
+          </div>
+        </div>
+
+        {/* 오른쪽: 스킬 카드 목록 테이블 */}
+        <div className="md:col-span-2">
+          <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
+            <div className="overflow-x-auto w-full">
+              <table className="w-full divide-y divide-gray-200 text-left text-sm table-fixed">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th scope="col" className="w-12 px-2 py-3 text-center font-semibold text-gray-400 align-middle">No</th>
+                  <th scope="col" className="px-2 py-3 font-semibold text-gray-900 align-middle truncate cursor-pointer select-none group hover:bg-gray-200 transition-colors" onClick={() => handleCardSort('title')}>
+                    <div className="flex items-center">Name {renderCardSortIcon('title')}</div>
+                  </th>
+                  <th scope="col" className="w-24 px-2 py-3 font-semibold text-gray-900 align-middle truncate hidden sm:table-cell cursor-pointer select-none group hover:bg-gray-200 transition-colors" onClick={() => handleCardSort('category2')}>
+                    <div className="flex items-center">Domain {renderCardSortIcon('category2')}</div>
+                  </th>
+                  <th scope="col" className="w-28 px-2 py-3 font-semibold text-gray-900 align-middle truncate hidden md:table-cell cursor-pointer select-none group hover:bg-gray-200 transition-colors" onClick={() => handleCardSort('category3')}>
+                    <div className="flex items-center">Sub Domain {renderCardSortIcon('category3')}</div>
+                  </th>
+                  <th scope="col" className="w-32 px-2 py-3 font-semibold text-gray-900 align-middle truncate hidden lg:table-cell cursor-pointer select-none group hover:bg-gray-200 transition-colors" onClick={() => handleCardSort('parentSkill')}>
+                    <div className="flex items-center">Parent Skill {renderCardSortIcon('parentSkill')}</div>
+                  </th>
+                  <th scope="col" className="w-24 px-2 py-3 text-center font-semibold text-gray-900 align-middle">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-200 bg-white">
+                {isCardsLoading ? (
+                  <tr>
+                    <td colSpan={6} className="px-4 py-8 text-center text-sm text-gray-500">Loading cards...</td>
+                  </tr>
+                ) : skillCards.length === 0 ? (
+                  <tr>
+                    <td colSpan={6} className="px-4 py-8 text-center text-sm text-gray-500">No skill cards found.</td>
+                  </tr>
+                ) : (
+                  sortedSkillCards.map((card, index) => (
+                    <tr key={index} className={`transition-colors hover:bg-gray-50 cursor-pointer ${editingCardSlug === card.slug ? 'bg-blue-50' : ''}`} onClick={() => handleCardClick(card)}>
+                      <td className="px-2 py-3 text-center text-gray-500 truncate">{index + 1}</td>
+                      <td className="px-2 py-3 font-medium text-gray-900 truncate" title={card.title}>{card.title}</td>
+                      <td className="px-2 py-3 text-gray-500 truncate hidden sm:table-cell" title={card.category2 || ''}>{card.category2 || '-'}</td>
+                      <td className="px-2 py-3 text-gray-500 truncate hidden md:table-cell" title={card.category3 || ''}>{card.category3 || '-'}</td>
+                      <td className="px-2 py-3 text-gray-500 truncate hidden lg:table-cell" title={card.parentSkill}>{card.parentSkill || '-'}</td>
+                      <td className="px-2 py-3 text-center whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
+                        <div className="flex items-center justify-center">
+                          <Link 
+                            href={`/admin/edit/${card.slug.split('/').map(encodeURIComponent).join('/')}?redirect=/admin/skilltree`}
+                            className="text-gray-400 hover:text-blue-600 hover:bg-blue-50 p-2 rounded-md transition-colors focus:outline-none block"
+                            title={`Edit ${card.title}`}
+                          >
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                              <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
+                            </svg>
+                          </Link>
+                          <button 
+                            type="button" 
+                            onClick={() => handleDeleteCard(card.slug, card.title)}
+                            className="text-gray-400 hover:text-red-600 hover:bg-red-50 p-2 rounded-md transition-colors focus:outline-none"
+                            title={`Delete ${card.title}`}
+                          >
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                              <path fillRule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd" />
+                            </svg>
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+            </div>
+            <div className="flex items-center justify-between border-t border-gray-200 bg-gray-50 px-6 py-4 text-sm text-gray-500">
+              <span>Total {skillCards.length} cards</span>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
+  </div>
   );
 }

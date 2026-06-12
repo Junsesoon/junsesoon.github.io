@@ -3,10 +3,10 @@ import Link from 'next/link';
 import { query } from '../../../../infra/db';
 import PropertyManager, { PropertyWithCount } from '@/components/PropertyManager';
 
-const BASE_PROPS = ['title', 'category1', 'summary', 'content', 'category2', 'category3', 'category4', 'tags', 'parentSkill', 'childSkill', 'techStart', 'project_name'];
+const BASE_PROPS = ['title', 'category1', 'summary', 'content', 'category2', 'category3', 'category4', 'tags', 'parentskill', 'childskill', 'techstart', 'projectname'];
 
 export default async function PropertyManagementPage() {
-  const propertiesMap = new Map<string, { count: number; is_essential: boolean }>();
+  const propertiesMap = new Map<string, { count: number; is_essential: boolean; type?: string }>();
 
   // 1. 기본 속성 초기화
   BASE_PROPS.forEach(prop => propertiesMap.set(prop, { count: 0, is_essential: false }));
@@ -19,14 +19,17 @@ export default async function PropertyManagementPage() {
 
   try {
     // 2. 템플릿에 등록된 속성 가져오기
-    const result = await query('SELECT property_name, is_essential FROM property_list');
+    const result = await query('SELECT property_name, is_essential, property_type FROM property_list');
     result.rows.forEach((row) => {
       const targetKey = getOriginalKey(row.property_name);
       if (!propertiesMap.has(targetKey)) {
-        propertiesMap.set(targetKey, { count: 0, is_essential: row.is_essential });
+        propertiesMap.set(targetKey, { count: 0, is_essential: row.is_essential, type: row.property_type });
       } else {
         const existing = propertiesMap.get(targetKey);
-        if (existing) existing.is_essential = row.is_essential;
+        if (existing) {
+          existing.is_essential = row.is_essential;
+          existing.type = row.property_type;
+        }
       }
     });
   } catch (error) {
@@ -52,11 +55,11 @@ export default async function PropertyManagementPage() {
 
   // 맵을 배열로 변환 후 알파벳 순 정렬
   const allProperties: PropertyWithCount[] = Array.from(propertiesMap.entries())
-    .map(([name, data]) => ({ name, count: data.count, is_essential: data.is_essential }))
+    .map(([name, data]) => ({ name, count: data.count, is_essential: data.is_essential, type: data.type }))
     .sort((a, b) => a.name.localeCompare(b.name));
 
   return (
-    <div className="mx-auto max-w-6xl p-8 font-sans">
+    <div className="mx-auto w-full max-w-[1000px] p-4 sm:p-8 font-sans">
       <header className="mb-8 flex items-center justify-between border-b border-gray-200 pb-4">
         <div>
           <h1 className="text-3xl font-bold text-gray-800">Manage Properties</h1>

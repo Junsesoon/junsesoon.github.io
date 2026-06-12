@@ -39,17 +39,15 @@ export default async function SkillTreeGrid({ title, description, matchCategory2
       const serializedData = JSON.parse(JSON.stringify(post.metadata));
 
       let parents: string[] = [];
-      // 속성명의 대소문자(ParentSkill, parentskill 등) 구분 없이 안전하게 값을 가져옵니다.
-      const parentKey = Object.keys(post.metadata).find(k => k.toLowerCase() === 'parentskill');
-      const parentSkill = parentKey ? post.metadata[parentKey] : undefined;
+      const parentSkill = post.metadata.parentskill;
       if (parentSkill) {
         parents = (Array.isArray(parentSkill) ? parentSkill : [parentSkill])
           .map(p => String(p).trim());
       }
 
       let yearStr = '';
-      if (post.metadata.techStart) {
-        const startStr = String(post.metadata.techStart);
+      if (post.metadata.techstart) {
+        const startStr = String(post.metadata.techstart);
         const match = startStr.match(/\d{4}/);
         yearStr = match ? match[0] : startStr;
       }

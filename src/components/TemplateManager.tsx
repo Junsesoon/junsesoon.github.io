@@ -1,7 +1,8 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { addTemplateAction, addPropertyAction, deletePropertyAction, getAllPropertyNamesAction } from './actions';
+import { addTemplateAction, deleteTemplateAction } from './actions';
+import { addPropertyAction, deletePropertyAction, getAllPropertiesWithTypesAction, updatePropertyTypeAction } from './propertyActions';
 
 export type Property = {
   propertyName: string;
@@ -11,15 +12,28 @@ export type Property = {
 
 export type TemplatesState = Record<string, Property[]>;
 
+const getTypeColor = (type: string) => {
+  switch (type) {
+    case 'string': return 'text-emerald-500';
+    case 'number': return 'text-amber-500';
+    case 'boolean': return 'text-rose-500';
+    case 'array': return 'text-cyan-500';
+    case 'date': return 'text-violet-500';
+    default: return 'text-gray-500';
+  }
+};
+
+const SYSTEM_PROPS = ['title', 'category1', 'summary', 'content', 'category2', 'category3', 'category4', 'tags', 'parentskill', 'childskill', 'techstart', 'projectname', 'location'];
+
 export default function TemplateManager({ initialTemplates }: { initialTemplates: TemplatesState }) {
   // DB Fetch State Data
   const [templates, setTemplates] = useState<TemplatesState>(initialTemplates);
-  const [globalProps, setGlobalProps] = useState<string[]>([]);
+  const [globalProps, setGlobalProps] = useState<{name: string, type: string}[]>([]);
 
   useEffect(() => {
-    getAllPropertyNamesAction().then((names) => {
-      if (names && names.length > 0) {
-        setGlobalProps(names);
+    getAllPropertiesWithTypesAction().then((props) => {
+      if (props && props.length > 0) {
+        setGlobalProps(props);
       }
     });
   }, []);
@@ -58,8 +72,17 @@ export default function TemplateManager({ initialTemplates }: { initialTemplates
     setIsAddingTemplate(false);
   };
 
-  const handleDeleteTemplate = (templateToDelete: string) => {
+  const handleDeleteTemplate = async (templateToDelete: string) => {
     if (!window.confirm(`Are you sure you want to delete the template '${templateToDelete}' and all its properties?`)) return;
+
+    setIsSaving(true);
+    const result = await deleteTemplateAction(templateToDelete);
+    setIsSaving(false);
+
+    if (!result.success) {
+      alert(result.message);
+      return;
+    }
 
     setTemplates((prev) => {
       const next = { ...prev };
@@ -138,6 +161,26 @@ export default function TemplateManager({ initialTemplates }: { initialTemplates
         (prop) => prop.propertyName !== propertyNameToDelete
       ),
     }));
+  };
+
+  const handleUpdateType = async (propertyName: string, newType: string) => {
+    const result = await updatePropertyTypeAction(propertyName, newType);
+    if (!result.success) {
+      alert(result.message);
+      return;
+    }
+
+    // 전체 템플릿 목록 순회하며 동일한 글로벌 속성의 타입 일괄 업데이트
+    setTemplates((prev) => {
+      const next = { ...prev };
+      Object.keys(next).forEach((tempName) => {
+        next[tempName] = next[tempName].map((prop) =>
+          prop.propertyName === propertyName ? { ...prop, type: newType } : prop
+        );
+      });
+      return next;
+    });
+    setGlobalProps((prev) => prev.map(p => p.name === propertyName ? { ...p, type: newType } : p));
   };
 
   return (
@@ -227,13 +270,26 @@ export default function TemplateManager({ initialTemplates }: { initialTemplates
               </div>
             ) : (
               <ul className="border border-gray-200 rounded-xl overflow-hidden bg-white divide-y divide-gray-200">
-                {currentProperties.map((prop) => (
+                {currentProperties.map((prop) => {
+                  const isSystemProp = SYSTEM_PROPS.includes(prop.propertyName);
+                  return (
                   <li key={prop.propertyName} className="flex items-center justify-between p-4 hover:bg-gray-50 transition-colors">
                     <div className="flex items-center space-x-4">
+                      <select
+                        value={prop.type || 'string'}
+                        onChange={(e) => handleUpdateType(prop.propertyName, e.target.value)}
+                        className={`${getTypeColor(prop.type || 'string')} font-semibold text-xs bg-gray-100 px-1 py-0.5 rounded border border-gray-200 capitalize w-[68px] text-center shrink-0 appearance-none focus:outline-none focus:ring-1 focus:ring-blue-500 focus:bg-white ${isSystemProp ? 'cursor-not-allowed opacity-70' : 'cursor-pointer hover:bg-gray-200 transition-colors'}`}
+                        title={isSystemProp ? "System property type cannot be changed" : "Click to edit type"}
+                        disabled={isSystemProp}
+                        style={{ textAlignLast: 'center' }}
+                      >
+                        <option value="string" className="text-gray-900 font-medium">String</option>
+                        <option value="number" className="text-gray-900 font-medium">Number</option>
+                        <option value="boolean" className="text-gray-900 font-medium">Boolean</option>
+                        <option value="date" className="text-gray-900 font-medium">Date</option>
+                        <option value="array" className="text-gray-900 font-medium">Array</option>
+                      </select>
                       <span className="font-mono text-gray-900 font-medium text-base">{prop.propertyName}</span>
-                      <span className="text-gray-500 text-sm bg-gray-100 px-2 py-0.5 rounded border border-gray-200 capitalize">
-                        {prop.type}
-                      </span>
                       {prop.isRequired ? (
                         <span className="bg-blue-50 text-blue-700 border border-blue-200 px-2 py-0.5 rounded text-xs font-semibold uppercase tracking-wide">
                           Required
@@ -255,7 +311,8 @@ export default function TemplateManager({ initialTemplates }: { initialTemplates
                       </svg>
                     </button>
                   </li>
-                ))}
+                  );
+                })}
               </ul>
             )}
           </div>
@@ -274,7 +331,14 @@ export default function TemplateManager({ initialTemplates }: { initialTemplates
                   list="global-props-list"
                   value={newPropertyName}
                   disabled={isSaving}
-                  onChange={(e) => setNewPropertyName(e.target.value)}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    setNewPropertyName(val);
+                    const existingProp = globalProps.find(p => p.name === val.trim());
+                    if (existingProp) {
+                      setNewType(existingProp.type);
+                    }
+                  }}
                   placeholder="e.g., sourceCodeUrl"
                   className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 bg-white"
                   required
@@ -282,7 +346,7 @@ export default function TemplateManager({ initialTemplates }: { initialTemplates
                 />
                 <datalist id="global-props-list">
                   {globalProps.map((prop) => (
-                    <option key={prop} value={prop} />
+                    <option key={prop.name} value={prop.name} />
                   ))}
                 </datalist>
               </div>
@@ -294,15 +358,15 @@ export default function TemplateManager({ initialTemplates }: { initialTemplates
                 <select
                   id="propType"
                   value={newType}
-                  disabled={isSaving}
+                  disabled={isSaving || globalProps.some(p => p.name === newPropertyName.trim())}
                   onChange={(e) => setNewType(e.target.value)}
-                  className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 bg-white appearance-none cursor-pointer"
+                  className={`block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 bg-white appearance-none cursor-pointer disabled:opacity-50 font-semibold ${getTypeColor(newType)}`}
                 >
-                  <option value="string">String</option>
-                  <option value="number">Number</option>
-                  <option value="boolean">Boolean</option>
-                  <option value="date">Date</option>
-                  <option value="array">Array</option>
+                  <option value="string" className="text-gray-900 font-medium">String</option>
+                  <option value="number" className="text-gray-900 font-medium">Number</option>
+                  <option value="boolean" className="text-gray-900 font-medium">Boolean</option>
+                  <option value="date" className="text-gray-900 font-medium">Date</option>
+                  <option value="array" className="text-gray-900 font-medium">Array</option>
                 </select>
               </div>
 

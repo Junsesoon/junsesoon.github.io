@@ -10,7 +10,7 @@ export default async function AdminDashboardPage({ searchParams }: { searchParam
   const order = params?.order || 'desc';
 
   // 안전한 정렬 파라미터 매핑 (SQL Injection 방지)
-  const validSortKeys = ['title', 'location', 'category1', 'category2', 'date', 'likes_count'];
+  const validSortKeys = ['title', 'location', 'category1', 'category2', 'date', 'likes_count', 'views_count'];
   const safeSort = validSortKeys.includes(sort) ? sort : 'date';
   const safeOrder = order === 'asc' ? 'ASC' : 'DESC';
 
@@ -21,6 +21,9 @@ export default async function AdminDashboardPage({ searchParams }: { searchParam
       break;
     case 'likes_count':
       orderByClause = `ORDER BY likes_count ${safeOrder}`;
+      break;
+    case 'views_count':
+      orderByClause = `ORDER BY views_count ${safeOrder}`;
       break;
     case 'date':
       // 기존 매핑 로직(props.date || props.startDate || row.created_at)과 호환
@@ -33,7 +36,7 @@ export default async function AdminDashboardPage({ searchParams }: { searchParam
       break;
   }
 
-  const { rows: fetchedPosts } = await query(`SELECT slug, title, properties, created_at, likes_count FROM posts ${orderByClause}`);
+  const { rows: fetchedPosts } = await query(`SELECT slug, title, properties, created_at, likes_count, views_count FROM posts ${orderByClause}`);
 
   const mappedPosts = fetchedPosts.map((row) => {
     const props = row.properties || {};
@@ -45,6 +48,7 @@ export default async function AdminDashboardPage({ searchParams }: { searchParam
       category2: props.category2 || '',
       date: props.date || props.startDate || row.created_at,
       likes_count: row.likes_count,
+      views_count: row.views_count,
     };
   });
 
@@ -92,7 +96,7 @@ export default async function AdminDashboardPage({ searchParams }: { searchParam
   ];
 
   return (
-    <div className="mx-auto max-w-7xl p-8 font-sans">
+    <div className="mx-auto w-full max-w-[1000px] p-4 sm:p-8 font-sans">
       <header className="mb-8 flex flex-col sm:flex-row sm:items-start justify-between border-b border-gray-200 pb-4 gap-4">
         <div>
           <h1 className="text-3xl font-bold text-gray-800">Admin Dashboard</h1>
@@ -117,14 +121,14 @@ export default async function AdminDashboardPage({ searchParams }: { searchParam
       <div className="mb-8 grid grid-cols-1 gap-6 md:grid-cols-2">
         {/* 통계 카드 1: 전체 게시물 수 */}
         <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
-          <h2 className="mb-2 text-lg font-semibold text-gray-700">Total Posts</h2>
-          <p className="text-4xl font-bold text-blue-600">{posts.length}</p>
+          <p className="text-4xl font-bold text-center text-blue-600">{posts.length}</p>
+          <h2 className="mb-0 text-lg text-center font-semibold text-gray-700">Total Posts</h2>
         </div>
 
         {/* 통계 카드 2: 임시 저장 (Drafts) */}
         <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
-          <h2 className="mb-2 text-lg font-semibold text-gray-700">Drafts</h2>
-          <p className="text-4xl font-bold text-yellow-500">0</p>
+          <p className="text-4xl font-bold text-center text-yellow-500">0</p>
+          <h2 className="mb-0 text-lg text-center font-semibold text-gray-700">Drafts</h2>
         </div>
       </div>
 
@@ -132,8 +136,8 @@ export default async function AdminDashboardPage({ searchParams }: { searchParam
       <div className="mb-8 grid grid-cols-1 gap-6 md:grid-cols-3">
         {statCards.map((stat, idx) => (
           <div key={idx} className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
-            <h2 className="mb-2 text-lg font-semibold text-gray-700">{stat.label}</h2>
-            <p className="text-4xl font-bold text-gray-800">{stat.value}</p>
+            <p className="text-4xl font-bold text-center text-gray-800">{stat.value}</p>
+            <h2 className="mb-0 text-lg font-semibold text-center text-gray-700">{stat.label}</h2>
           </div>
         ))}
       </div>

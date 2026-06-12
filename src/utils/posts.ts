@@ -28,39 +28,54 @@ function normalizeCategoryValue(value: string) {
 }
 
 function rowToMetadata(row: any): FrontMatter {
-  const props = row.properties || {};
-  
+  const props = row.properties ? { ...row.properties } : {};
+
+  // Normalize old camelCase/snake_case properties to lowercase for safe reading
+  if (props.parentSkill) { props.parentskill = props.parentSkill; delete props.parentSkill; }
+  if (props.parent_skill) { props.parentskill = props.parent_skill; delete props.parent_skill; }
+  if (props.childSkill) { props.childskill = props.childSkill; delete props.childSkill; }
+  if (props.child_skill) { props.childskill = props.child_skill; delete props.child_skill; }
+  if (props.techStart) { props.techstart = props.techStart; delete props.techStart; }
+  if (props.tech_start) { props.techstart = props.tech_start; delete props.tech_start; }
+  if (props.project_name) { props.projectname = props.project_name; delete props.project_name; }
+  if (props.projectName) { props.projectname = props.projectName; delete props.projectName; }
+  if (props.startDate) { props.startdate = props.startDate; delete props.startDate; }
+  if (props.endDate) { props.enddate = props.endDate; delete props.endDate; }
+  if (props.docVer) { props.docver = props.docVer; delete props.docVer; }
+  if (props.doc_ver) { props.docver = props.doc_ver; delete props.doc_ver; }
+  if (props.parentId) { props.parentid = props.parentId; delete props.parentId; }
+
   // 기존 UI와의 호환성을 위해 properties(JSONB) 내부 데이터를 FrontMatter 포맷으로 전개
   return {
     ...props,
     title: row.title || props.title || titleFromSlug(row.slug),
-    parentId: props.parentId || null,
-    startDate: props.startDate || props.date || dateString(row.created_at) || null,
-    endDate: props.endDate || props.modified_at || dateString(row.updated_at) || null,
-    project: props.project || props.project_name || null,
+    parentid: props.parentid || null,
+    startdate: props.startdate || props.date || dateString(row.created_at) || null,
+    enddate: props.enddate || props.modified_at || dateString(row.updated_at) || null,
+    project: props.project || props.projectname || null,
     category1: props.category1 || null,
     category2: props.category2 || null,
     category3: props.category3 || null,
     category4: props.category4 || null,
     summary: props.summary || '',
     tags: props.tags || [],
-    docVer: props.docVer || props.doc_ver || null,
+    docver: props.docver || null,
   };
 }
 
 function rowToPost(row: any): Post {
-  const props = row.properties || {};
+  const metadata = rowToMetadata(row);
   return {
     post_id: row.post_id,
     likes_count: row.likes_count,
     views_count: row.views_count,
     slug: row.slug,
-    title: row.title || props.title || titleFromSlug(row.slug),
-    excerpt: props.summary || '',
-    date: dateString(props.startDate || props.date || row.created_at),
-    category1: props.category1 || null,
-    category2: props.category2 || null,
-    metadata: props,
+    title: metadata.title,
+    excerpt: metadata.summary || '',
+    date: dateString(metadata.startdate || metadata.date || row.created_at),
+    category1: metadata.category1 || null,
+    category2: metadata.category2 || null,
+    metadata: metadata,
   };
 }
 
@@ -92,8 +107,8 @@ export const getAllPosts = async (
 
   // JSONB의 날짜 기준으로 JS 내림차순 정렬
   rows.sort((a, b) => {
-    const dateA = a.properties?.date || a.properties?.startDate || dateString(a.created_at);
-    const dateB = b.properties?.date || b.properties?.startDate || dateString(b.created_at);
+    const dateA = a.properties?.date || a.properties?.startdate || a.properties?.startDate || dateString(a.created_at);
+    const dateB = b.properties?.date || b.properties?.startdate || b.properties?.startDate || dateString(b.created_at);
     if (dateA !== dateB) return dateB.localeCompare(dateA);
     return a.slug.localeCompare(b.slug);
   });
@@ -125,8 +140,8 @@ export const getCategoryPosts = async (category: string, mode: string = 'blog'):
   let rows = result.rows;
 
   rows.sort((a, b) => {
-    const dateA = a.properties?.date || a.properties?.startDate || dateString(a.created_at);
-    const dateB = b.properties?.date || b.properties?.startDate || dateString(b.created_at);
+    const dateA = a.properties?.date || a.properties?.startdate || a.properties?.startDate || dateString(a.created_at);
+    const dateB = b.properties?.date || b.properties?.startdate || b.properties?.startDate || dateString(b.created_at);
     if (dateA !== dateB) return dateB.localeCompare(dateA);
     return a.slug.localeCompare(b.slug);
   });
@@ -207,9 +222,9 @@ export const getSkillTreePosts = async (matchCategory2: string): Promise<DbPost[
         category1: 'skilltree',
         category2: row.domain,
         category3: row.sub_domain,
-        techStart: row.tech_start ? String(row.tech_start) : metadata.techStart,
-        parentSkill: row.parent_skill,
-        childSkill: row.child_skill,
+        techstart: row.tech_start ? String(row.tech_start) : metadata.techstart,
+        parentskill: row.parent_skill || metadata.parentskill,
+        childskill: row.child_skill || metadata.childskill,
       },
     };
   });
