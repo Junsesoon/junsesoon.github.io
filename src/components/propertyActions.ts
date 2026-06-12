@@ -136,26 +136,69 @@ export async function renameGlobalPropertyAction(oldName: string, newName: strin
       const targetId = targetPropResult.rows[0].property_id;
 
       // 병합 시 타겟 타입에 맞춘 안전한 형변환 캐스팅 준비
-      let castSql = `to_jsonb(properties->>$2)`; 
+      let castSql = `
+        COALESCE(
+          to_jsonb(
+            NULLIF(TRIM(BOTH ', ' FROM concat_ws(', ', 
+              NULLIF(
+                CASE WHEN jsonb_typeof(properties->$1) = 'array' THEN array_to_string(ARRAY(SELECT jsonb_array_elements_text(properties->$1)), ', ')
+                     ELSE properties->>$1 END,
+              ''),
+              NULLIF(
+                CASE WHEN jsonb_typeof(properties->$2) = 'array' THEN array_to_string(ARRAY(SELECT jsonb_array_elements_text(properties->$2)), ', ')
+                     ELSE properties->>$2 END,
+              '')
+            )), '')
+          ),
+          '""'::jsonb
+        )
+      `; 
       if (targetType === 'number') {
-        castSql = `to_jsonb((properties->>$2)::numeric)`;
+        castSql = `
+          COALESCE(
+            to_jsonb(COALESCE(CASE WHEN properties ? $1 AND properties->>$1 <> '' THEN (properties->>$1)::numeric ELSE NULL END, CASE WHEN properties ? $2 AND properties->>$2 <> '' THEN (properties->>$2)::numeric ELSE NULL END)),
+            '""'::jsonb
+          )
+        `;
       } else if (targetType === 'boolean') {
-        castSql = `to_jsonb((properties->>$2)::boolean)`;
+        castSql = `
+          COALESCE(
+            to_jsonb(COALESCE(CASE WHEN properties ? $1 AND properties->>$1 <> '' THEN (properties->>$1)::boolean ELSE NULL END, CASE WHEN properties ? $2 AND properties->>$2 <> '' THEN (properties->>$2)::boolean ELSE NULL END)),
+            '""'::jsonb
+          )
+        `;
       } else if (targetType === 'date') {
-        castSql = `to_jsonb((properties->>$2)::timestamp)`;
+        castSql = `
+          COALESCE(
+            to_jsonb(COALESCE(CASE WHEN properties ? $1 AND properties->>$1 <> '' THEN (properties->>$1)::timestamp ELSE NULL END, CASE WHEN properties ? $2 AND properties->>$2 <> '' THEN (properties->>$2)::timestamp ELSE NULL END)),
+            '""'::jsonb
+          )
+        `;
       } else if (targetType === 'array') {
         castSql = `
-          CASE 
-            WHEN jsonb_typeof(properties->$2) = 'array' THEN properties->$2
-            ELSE to_jsonb(string_to_array(properties->>$2, ','))
-          END
+          COALESCE(
+            (SELECT to_jsonb(array_agg(DISTINCT trim(x))) FROM (
+              SELECT jsonb_array_elements_text(
+                CASE WHEN jsonb_typeof(properties->$1) = 'array' THEN properties->$1
+                     WHEN properties->>$1 = '' OR NOT (properties ? $1) THEN '[]'::jsonb
+                     ELSE to_jsonb(ARRAY(SELECT trim(y) FROM unnest(string_to_array(properties->>$1, ',')) AS y)) END
+              ) as x
+              UNION
+              SELECT jsonb_array_elements_text(
+                CASE WHEN jsonb_typeof(properties->$2) = 'array' THEN properties->$2
+                     WHEN properties->>$2 = '' OR NOT (properties ? $2) THEN '[]'::jsonb
+                     ELSE to_jsonb(ARRAY(SELECT trim(y) FROM unnest(string_to_array(properties->>$2, ',')) AS y)) END
+              ) as x
+            ) t WHERE trim(x) <> ''),
+            '[]'::jsonb
+          )
         `;
       }
 
-      // 2. 게시물 JSONB 데이터 동기화 (새 속성이 이미 있으면 유지, 없으면 기존 값을 변환해서 병합)
+      // 2. 게시물 JSONB 데이터 동기화 (기존 값과 병합될 값을 타겟 타입에 맞게 안전하게 포맷팅 및 결합)
       await query(
         `UPDATE posts
-         SET properties = jsonb_set(properties - $2, ARRAY[$1::text], COALESCE(properties->$1, ${castSql})),
+         SET properties = jsonb_set(properties - $2, ARRAY[$1::text], ${castSql}),
              updated_at = CURRENT_TIMESTAMP
          WHERE properties ? $2`,
         [newTrimmed, oldName]
@@ -196,22 +239,23 @@ export async function renameGlobalPropertyAction(oldName: string, newName: strin
     if (error.code === '22P02' || error.code === '22007') {
       let problemTitles: string[] = [];
       try {
-        const checkResult = await query('SELECT title, properties->>$1 as val FROM posts WHERE properties ? $1', [oldName]);
+        const checkResult = await query('SELECT title, properties->>$1 as val1, properties->>$2 as val2 FROM posts WHERE properties ? $1 OR properties ? $2', [oldName, newTrimmed]);
         const targetPropResult = await query('SELECT property_type FROM property_list WHERE property_name = $1', [newTrimmed]);
         const newType = targetPropResult.rows[0]?.property_type || 'string';
 
         for (const row of checkResult.rows) {
-          const val = row.val;
-          if (val === null || val === undefined) continue;
-          
           let isInvalid = false;
-          if (newType === 'number') {
-            if (val.trim() === '' || isNaN(Number(val))) isInvalid = true;
-          } else if (newType === 'boolean') {
-            const lowerVal = val.trim().toLowerCase();
-            if (!['true', 'false', 't', 'f', 'yes', 'no', 'y', 'n', '1', '0'].includes(lowerVal)) isInvalid = true;
-          } else if (newType === 'date') {
-            if (isNaN(Date.parse(val))) isInvalid = true;
+          for (const val of [row.val1, row.val2]) {
+            if (val === null || val === undefined || val.trim() === '') continue;
+            
+            if (newType === 'number') {
+              if (isNaN(Number(val))) isInvalid = true;
+            } else if (newType === 'boolean') {
+              const lowerVal = val.trim().toLowerCase();
+              if (!['true', 'false', 't', 'f', 'yes', 'no', 'y', 'n', '1', '0'].includes(lowerVal)) isInvalid = true;
+            } else if (newType === 'date') {
+              if (isNaN(Date.parse(val))) isInvalid = true;
+            }
           }
           
           if (isInvalid) problemTitles.push(row.title || '제목 없음');
@@ -299,7 +343,13 @@ export async function updatePropertyTypeAction(propertyName: string, newType: st
     );
 
     // 2. posts 테이블의 기존 JSONB 데이터 형변환 (안전한 캐스팅)
-    let castSql = `to_jsonb(properties->>$1)`; // string (기본)
+    let castSql = `
+      CASE 
+        WHEN jsonb_typeof(properties->$1) = 'array' THEN 
+          to_jsonb(array_to_string(ARRAY(SELECT jsonb_array_elements_text(properties->$1)), ', '))
+        ELSE to_jsonb(properties->>$1)
+      END
+    `; // string (기본)
     if (newType === 'number') {
       castSql = `to_jsonb((properties->>$1)::numeric)`;
     } else if (newType === 'boolean') {
@@ -310,7 +360,8 @@ export async function updatePropertyTypeAction(propertyName: string, newType: st
       castSql = `
         CASE 
           WHEN jsonb_typeof(properties->$1) = 'array' THEN properties->$1
-          ELSE to_jsonb(string_to_array(properties->>$1, ','))
+          WHEN properties->>$1 = '' THEN '[]'::jsonb
+          ELSE to_jsonb(ARRAY(SELECT trim(x) FROM unnest(string_to_array(properties->>$1, ',')) AS x))
         END
       `;
     }

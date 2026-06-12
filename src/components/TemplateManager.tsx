@@ -23,6 +23,8 @@ const getTypeColor = (type: string) => {
   }
 };
 
+const SYSTEM_PROPS = ['title', 'category1', 'summary', 'content', 'category2', 'category3', 'category4', 'tags', 'parentSkill', 'childSkill', 'techStart', 'project_name', 'location'];
+
 export default function TemplateManager({ initialTemplates }: { initialTemplates: TemplatesState }) {
   // DB Fetch State Data
   const [templates, setTemplates] = useState<TemplatesState>(initialTemplates);
@@ -268,14 +270,17 @@ export default function TemplateManager({ initialTemplates }: { initialTemplates
               </div>
             ) : (
               <ul className="border border-gray-200 rounded-xl overflow-hidden bg-white divide-y divide-gray-200">
-                {currentProperties.map((prop) => (
+                {currentProperties.map((prop) => {
+                  const isSystemProp = SYSTEM_PROPS.includes(prop.propertyName);
+                  return (
                   <li key={prop.propertyName} className="flex items-center justify-between p-4 hover:bg-gray-50 transition-colors">
                     <div className="flex items-center space-x-4">
                       <select
                         value={prop.type || 'string'}
                         onChange={(e) => handleUpdateType(prop.propertyName, e.target.value)}
-                        className={`${getTypeColor(prop.type || 'string')} font-semibold text-xs bg-gray-100 px-1 py-0.5 rounded border border-gray-200 capitalize w-[68px] text-center shrink-0 cursor-pointer hover:bg-gray-200 transition-colors appearance-none focus:outline-none focus:ring-1 focus:ring-blue-500 focus:bg-white`}
-                        title="Click to edit type"
+                        className={`${getTypeColor(prop.type || 'string')} font-semibold text-xs bg-gray-100 px-1 py-0.5 rounded border border-gray-200 capitalize w-[68px] text-center shrink-0 appearance-none focus:outline-none focus:ring-1 focus:ring-blue-500 focus:bg-white ${isSystemProp ? 'cursor-not-allowed opacity-70' : 'cursor-pointer hover:bg-gray-200 transition-colors'}`}
+                        title={isSystemProp ? "System property type cannot be changed" : "Click to edit type"}
+                        disabled={isSystemProp}
                         style={{ textAlignLast: 'center' }}
                       >
                         <option value="string" className="text-gray-900 font-medium">String</option>
@@ -306,7 +311,8 @@ export default function TemplateManager({ initialTemplates }: { initialTemplates
                       </svg>
                     </button>
                   </li>
-                ))}
+                  );
+                })}
               </ul>
             )}
           </div>
