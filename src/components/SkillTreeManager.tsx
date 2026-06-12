@@ -16,6 +16,7 @@ export default function SkillTreeManager() {
   const [isCardsLoading, setIsCardsLoading] = useState(true);
   const [isSavingOrder, setIsSavingOrder] = useState(false);
   const [skillCards, setSkillCards] = useState<{ slug: string; title: string; content: string; properties: any; category2: string; category3?: string; parentSkill?: string }[]>([]);
+  const [cardSortConfig, setCardSortConfig] = useState<{ key: string; order: 'asc' | 'desc' }>({ key: '', order: 'asc' });
 
   // 새로 추가된 Skill Card Form 상태 관리
   const [editingCardSlug, setEditingCardSlug] = useState<string | null>(null);
@@ -273,6 +274,38 @@ export default function SkillTreeManager() {
     await handleDropCompletion();
   };
 
+  const handleCardSort = (key: string) => {
+    setCardSortConfig((prev) => ({
+      key,
+      order: prev.key === key && prev.order === 'asc' ? 'desc' : 'asc',
+    }));
+  };
+
+  const renderCardSortIcon = (key: string) => {
+    const isActive = cardSortConfig.key === key;
+    return (
+      <span className={`text-[10px] shrink-0 ml-1 ${isActive ? 'text-blue-600' : 'text-gray-300 group-hover:text-blue-400 transition-colors'}`}>
+        {isActive ? (cardSortConfig.order === 'asc' ? '▲' : '▼') : '↕'}
+      </span>
+    );
+  };
+
+  const sortedSkillCards = [...skillCards].sort((a, b) => {
+    if (!cardSortConfig.key) return 0;
+    let aVal: any = a[cardSortConfig.key as keyof typeof a];
+    let bVal: any = b[cardSortConfig.key as keyof typeof b];
+
+    if (!aVal) aVal = '';
+    if (!bVal) bVal = '';
+
+    if (typeof aVal === 'string') aVal = aVal.toLowerCase();
+    if (typeof bVal === 'string') bVal = bVal.toLowerCase();
+
+    if (aVal < bVal) return cardSortConfig.order === 'asc' ? -1 : 1;
+    if (aVal > bVal) return cardSortConfig.order === 'asc' ? 1 : -1;
+    return 0;
+  });
+
   return (
     <div className="mx-auto w-full max-w-[1000px] p-4 sm:p-8 font-sans">
       <header className="mb-8 flex items-center justify-between border-b border-gray-200 pb-4">
@@ -488,10 +521,18 @@ export default function SkillTreeManager() {
               <thead className="bg-gray-50">
                 <tr>
                   <th scope="col" className="w-12 px-2 py-3 text-center font-semibold text-gray-400 align-middle">No</th>
-                  <th scope="col" className="px-2 py-3 font-semibold text-gray-900 align-middle truncate">Name</th>
-                  <th scope="col" className="w-24 px-2 py-3 font-semibold text-gray-900 align-middle truncate hidden sm:table-cell">Domain</th>
-                  <th scope="col" className="w-28 px-2 py-3 font-semibold text-gray-900 align-middle truncate hidden md:table-cell">Sub Domain</th>
-                  <th scope="col" className="w-32 px-2 py-3 font-semibold text-gray-900 align-middle truncate hidden lg:table-cell">Parent Skill</th>
+                  <th scope="col" className="px-2 py-3 font-semibold text-gray-900 align-middle truncate cursor-pointer select-none group hover:bg-gray-200 transition-colors" onClick={() => handleCardSort('title')}>
+                    <div className="flex items-center">Name {renderCardSortIcon('title')}</div>
+                  </th>
+                  <th scope="col" className="w-24 px-2 py-3 font-semibold text-gray-900 align-middle truncate hidden sm:table-cell cursor-pointer select-none group hover:bg-gray-200 transition-colors" onClick={() => handleCardSort('category2')}>
+                    <div className="flex items-center">Domain {renderCardSortIcon('category2')}</div>
+                  </th>
+                  <th scope="col" className="w-28 px-2 py-3 font-semibold text-gray-900 align-middle truncate hidden md:table-cell cursor-pointer select-none group hover:bg-gray-200 transition-colors" onClick={() => handleCardSort('category3')}>
+                    <div className="flex items-center">Sub Domain {renderCardSortIcon('category3')}</div>
+                  </th>
+                  <th scope="col" className="w-32 px-2 py-3 font-semibold text-gray-900 align-middle truncate hidden lg:table-cell cursor-pointer select-none group hover:bg-gray-200 transition-colors" onClick={() => handleCardSort('parentSkill')}>
+                    <div className="flex items-center">Parent Skill {renderCardSortIcon('parentSkill')}</div>
+                  </th>
                   <th scope="col" className="w-24 px-2 py-3 text-center font-semibold text-gray-900 align-middle">Actions</th>
                 </tr>
               </thead>
@@ -505,7 +546,7 @@ export default function SkillTreeManager() {
                     <td colSpan={6} className="px-4 py-8 text-center text-sm text-gray-500">No skill cards found.</td>
                   </tr>
                 ) : (
-                  skillCards.map((card, index) => (
+                  sortedSkillCards.map((card, index) => (
                     <tr key={index} className={`transition-colors hover:bg-gray-50 cursor-pointer ${editingCardSlug === card.slug ? 'bg-blue-50' : ''}`} onClick={() => handleCardClick(card)}>
                       <td className="px-2 py-3 text-center text-gray-500 truncate">{index + 1}</td>
                       <td className="px-2 py-3 font-medium text-gray-900 truncate" title={card.title}>{card.title}</td>
