@@ -12,6 +12,13 @@ CREATE TABLE IF NOT EXISTS skilltree_domains (
 );
 
 -- 2. 기존 스킬 트리 게시물 확장 테이블의 이름을 skilltree_posts로 변경하여 용도 명확화
-ALTER TABLE IF EXISTS skilltree RENAME TO skilltree_posts;
+DO $$ 
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_tables WHERE tablename = 'skilltree_posts') THEN
+        ALTER TABLE IF EXISTS skilltree RENAME TO skilltree_posts;
+    ELSE
+        DROP TABLE IF EXISTS skilltree CASCADE;
+    END IF;
+END $$;
 
 COMMIT;
