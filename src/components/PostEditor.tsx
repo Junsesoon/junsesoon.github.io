@@ -16,7 +16,7 @@ export interface PostEditorProps {
 }
 
 const FIXED_PROPS = ['title', 'content'];
-const PREDEFINED_PROPS = ['category1', 'summary', 'category2', 'category3', 'category4', 'tags', 'parentSkill', 'childSkill', 'techStart', 'project_name', 'location'];
+const PREDEFINED_PROPS = ['category1', 'summary', 'category2', 'category3', 'category4', 'tags', 'parentskill', 'childskill', 'techstart', 'projectname', 'location'];
 
 const getTypeColor = (type: string) => {
   switch (type) {
@@ -77,8 +77,8 @@ export default function PostEditor({ initialData, onSave, templates, essentialPr
   const [globalProps, setGlobalProps] = useState<{name: string, type: string}[]>(() => {
     return PREDEFINED_PROPS.map(name => {
       let type = 'string';
-      if (['tags', 'parentSkill', 'childSkill'].includes(name)) type = 'array';
-      else if (['techStart', 'date', 'created_at', 'updated_at'].includes(name)) type = 'date';
+      if (['tags', 'parentskill', 'childskill'].includes(name)) type = 'array';
+      else if (['techstart', 'startdate', 'enddate', 'date', 'created_at', 'updated_at'].includes(name)) type = 'date';
       return { name, type };
     });
   });
@@ -505,7 +505,7 @@ export default function PostEditor({ initialData, onSave, templates, essentialPr
                   </div>
                   
                   {/* 연결 가능한 카드 목록 나열 (Tag Autocomplete) */}
-                  {(key.toLowerCase() === 'parentskill' || key.toLowerCase() === 'childskill') && skillCards.length > 0 && (
+                  {(key === 'parentskill' || key === 'childskill') && skillCards.length > 0 && (
                     <div className="flex flex-wrap gap-1.5 px-2 py-1 mt-1">
                       {skillCards
                         .filter((card) => !formData.category2 || card.category2 === formData.category2)

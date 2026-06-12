@@ -15,8 +15,8 @@ interface PropertyManagerProps {
 }
 
 const getPredefinedType = (name: string) => {
-  if (['tags', 'parentSkill', 'childSkill'].includes(name)) return 'array';
-  if (['techStart', 'date', 'created_at', 'updated_at'].includes(name)) return 'date';
+  if (['tags', 'parentskill', 'childskill'].includes(name)) return 'array';
+  if (['techstart', 'startdate', 'enddate', 'date', 'created_at', 'updated_at'].includes(name)) return 'date';
   return 'string';
 };
 
@@ -31,7 +31,7 @@ const getTypeColor = (type: string) => {
   }
 };
 
-const SYSTEM_PROPS = ['title', 'category1', 'summary', 'content', 'category2', 'category3', 'category4', 'tags', 'parentSkill', 'childSkill', 'techStart', 'project_name', 'location'];
+const SYSTEM_PROPS = ['title', 'category1', 'summary', 'content', 'category2', 'category3', 'category4', 'tags', 'parentskill', 'childskill', 'techstart', 'projectname', 'location'];
 
 export default function PropertyManager({ properties }: PropertyManagerProps) {
   const [localProperties, setLocalProperties] = useState<PropertyWithCount[]>(properties);

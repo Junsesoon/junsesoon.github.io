@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { query } from '../../../../infra/db';
 import PropertyManager, { PropertyWithCount } from '@/components/PropertyManager';
 
-const BASE_PROPS = ['title', 'category1', 'summary', 'content', 'category2', 'category3', 'category4', 'tags', 'parentSkill', 'childSkill', 'techStart', 'project_name'];
+const BASE_PROPS = ['title', 'category1', 'summary', 'content', 'category2', 'category3', 'category4', 'tags', 'parentskill', 'childskill', 'techstart', 'projectname'];
 
 export default async function PropertyManagementPage() {
   const propertiesMap = new Map<string, { count: number; is_essential: boolean; type?: string }>();

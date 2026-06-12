@@ -85,7 +85,7 @@ export async function createPostAction(data: PostFormData) {
         const domain = properties.category2 ? String(properties.category2) : null;
         const sub_domain = properties.category3 ? String(properties.category3) : null;
         
-        const techStartStr = String(properties.techStart || '');
+        const techStartStr = String(properties.techstart || properties.techStart || '');
         const techMatch = techStartStr.match(/\d{4}/);
         const tech_start = techMatch ? parseInt(techMatch[0], 10) : null;
 
@@ -105,7 +105,7 @@ export async function createPostAction(data: PostFormData) {
              parent_skill = EXCLUDED.parent_skill,
              child_skill = EXCLUDED.child_skill,
              updated_at = CURRENT_TIMESTAMP`,
-          [postId, domain, sub_domain, tech_start, toArray(properties.parentSkill), toArray(properties.childSkill)]
+          [postId, domain, sub_domain, tech_start, toArray(properties.parentskill || properties.parentSkill), toArray(properties.childskill || properties.childSkill)]
         );
       }
     }
@@ -237,7 +237,7 @@ export async function updatePostAction(originalSlug: string, data: PostFormData)
         const domain = properties.category2 ? String(properties.category2) : null;
         const sub_domain = properties.category3 ? String(properties.category3) : null;
         
-        const techStartStr = String(properties.techStart || '');
+        const techStartStr = String(properties.techstart || properties.techStart || '');
         const techMatch = techStartStr.match(/\d{4}/);
         const tech_start = techMatch ? parseInt(techMatch[0], 10) : null;
 
@@ -257,7 +257,7 @@ export async function updatePostAction(originalSlug: string, data: PostFormData)
              parent_skill = EXCLUDED.parent_skill,
              child_skill = EXCLUDED.child_skill,
              updated_at = CURRENT_TIMESTAMP`,
-          [postId, domain, sub_domain, tech_start, toArray(properties.parentSkill), toArray(properties.childSkill)]
+          [postId, domain, sub_domain, tech_start, toArray(properties.parentskill || properties.parentSkill), toArray(properties.childskill || properties.childSkill)]
         );
       } else {
         // 스킬 트리에서 다른 템플릿(일반 카테고리)으로 속성이 변경된 경우 연관 데이터 Clean-up
