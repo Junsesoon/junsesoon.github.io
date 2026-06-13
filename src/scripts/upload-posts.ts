@@ -74,7 +74,7 @@ async function insertPostDetails(postId: string, frontmatter: Frontmatter) {
   const cat1 = firstString(frontmatter.category1)?.trim().toLowerCase().replace(/[-\s_]+/g, '');
   
   if (cat1 === 'skilltree') {
-    const techStartStr = String(firstString(frontmatter.techStart) || '');
+    const techStartStr = String(firstString(frontmatter.techstart) || firstString(frontmatter.techStart) || '');
     const techMatch = techStartStr.match(/\d{4}/);
     const tech_start = techMatch ? parseInt(techMatch[0], 10) : null;
 
@@ -95,8 +95,8 @@ async function insertPostDetails(postId: string, frontmatter: Frontmatter) {
         firstString(frontmatter.category2),
         firstString(frontmatter.category3),
         tech_start,
-        toStringArray(frontmatter.parentSkill),
-        toStringArray(frontmatter.childSkill),
+        toStringArray(frontmatter.parentskill || frontmatter.parentSkill),
+        toStringArray(frontmatter.childskill || frontmatter.childSkill),
       ],
     );
   }

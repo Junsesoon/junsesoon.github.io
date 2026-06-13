@@ -34,7 +34,7 @@ export default async function CategoryTemplatePage() {
       <header className="mb-8 flex items-center justify-between border-b border-gray-200 pb-4">
         <div>
           <h1 className="text-3xl font-bold text-gray-800">Manage Templates</h1>
-          <p className="mt-2 text-sm text-gray-500">Manage front-matter property requirements for each post category.</p>
+          <p className="mt-2 text-sm text-gray-500">Manage front-matter property requirements for each post category</p>
         </div>
         <Link
           href="/admin"
