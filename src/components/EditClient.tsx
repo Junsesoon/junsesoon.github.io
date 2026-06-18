@@ -42,6 +42,10 @@ export default function EditClient({ post, originalSlug }: { post: any; original
     }
   };
 
+  const handleCancel = () => {
+    router.push(redirectPath);
+  };
+
   return (
     <div className="mx-auto w-full max-w-[1000px] p-4 sm:p-8 font-sans">
       <header className="mb-8 flex flex-col sm:flex-row sm:items-start justify-between border-b border-gray-200 pb-4 gap-4">
@@ -57,7 +61,7 @@ export default function EditClient({ post, originalSlug }: { post: any; original
         </Link>
       </header>
 
-      <PostEditor initialData={initialData} onSave={handleSave} />
+      <PostEditor initialData={initialData} onSave={handleSave} onCancel={handleCancel} />
     </div>
   );
 }

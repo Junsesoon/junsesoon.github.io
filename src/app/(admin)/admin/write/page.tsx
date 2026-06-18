@@ -24,8 +24,7 @@ export default function WritePostPage() {
       
       if (formData._isDraft) {
         alert('임시저장 되었습니다.');
-        // 임시저장 후에는 계속 이어서 작성할 수 있도록 Edit 모드로 자연스럽게 전환합니다.
-        router.replace(`/admin/edit/${result.slug}`);
+        router.push('/admin');
       } else {
         alert('게시물이 성공적으로 작성 및 저장되었습니다!');
         router.push('/admin');
@@ -34,6 +33,10 @@ export default function WritePostPage() {
       console.error('Save failed:', error);
       alert('게시물 저장 중 오류가 발생했습니다. (콘솔 확인)');
     }
+  };
+
+  const handleCancel = () => {
+    router.push('/admin');
   };
 
   return (
@@ -51,7 +54,12 @@ export default function WritePostPage() {
         </Link>
       </header>
 
-      <PostEditor onSave={handleSave} templates={templates} essentialProps={essentialProps} />
+      <PostEditor
+        onSave={handleSave}
+        onCancel={handleCancel}
+        templates={templates}
+        essentialProps={essentialProps}
+      />
     </div>
   );
 }
