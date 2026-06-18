@@ -20,6 +20,9 @@
 
 # 블로그 운영을 위한 테스트 코드
 ```bash
+# Local run
+npm run dev:poll
+
 # DB test code
 npx tsx src/infra/db-test.ts
 

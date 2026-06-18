@@ -1,0 +1,16 @@
+# * Robots.txt for incheon-people.com *
+# ------------------------------------
+
+User-agent: *
+Allow: /
+
+# 딜레이
+Crawl-delay: 1
+
+# 제외 대상
+Disallow: /admin/
+Disallow: /api/
+Disallow: /protected/
+
+# 사이트맵
+Sitemap: https://www.incheon-people.com/sitemap.xml

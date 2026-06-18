@@ -18,6 +18,9 @@
 ### api 라우트
 - `app/api/upload/route.ts`: Cloudflare R2 스토리지에 마크다운 에디터의 이미지를 업로드하거나 작성 중 취소된 불필요한 이미지를 삭제하는 서버리스 API 엔드포인트입니다. 로컬 파일명 노출과 중복을 방지하기 위해 UUID를 활용하여 안전한 Object Key를 생성합니다.
 
+### 특수 파일 (Special Files)
+- `app/sitemap.ts`: Next.js Metadata API를 활용하여 검색 엔진 크롤러를 위한 `sitemap.xml`을 동적으로 생성하는 파일입니다. DB의 게시물 데이터를 조회하여 정적 라우트와 동적 라우트(블로그, 포트폴리오 등)의 URL 및 메타데이터를 자동으로 매핑합니다.
+
 ## 참고사항
 - App 라우트는 렌더링 시점에 더 이상 `public/posts` 폴더의 마크다운 파일을 읽어오지 않습니다
 - 렌더링 성능 최적화를 위해 `force-dynamic` 대신 ISR(`export const revalidate = 1200`) 및 SSG(`generateStaticParams`) 캐싱 전략을 적용하여 데이터베이스 커넥션 고갈을 방지합니다
