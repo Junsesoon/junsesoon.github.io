@@ -193,7 +193,7 @@ export default function PostEditor({ initialData, onSave, templates, essentialPr
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent | React.MouseEvent, isDraft: boolean = false) => {
     e.preventDefault();
     setIsSubmitting(true);
 
@@ -218,14 +218,14 @@ export default function PostEditor({ initialData, onSave, templates, essentialPr
         }
       });
 
-      if (!finalData.title?.trim()) {
+      if (!isDraft && !finalData.title?.trim()) {
         alert('제목(Title)은 필수 항목입니다.');
         setIsSubmitting(false);
         return;
       }
 
       // 2. 필수 속성(essential) 미입력 시 저장 차단 (프론트엔드 검증 방어선)
-      if (essentialProps) {
+      if (!isDraft && essentialProps) {
         for (const ep of essentialProps) {
           if (FIXED_PROPS.includes(ep)) continue;
           const val = finalData[ep];
@@ -262,6 +262,9 @@ export default function PostEditor({ initialData, onSave, templates, essentialPr
           body: JSON.stringify({ urls: deletedUrls }),
         }).catch((err) => console.error('Failed to delete orphaned images:', err));
       }
+
+      // 상위 컴포넌트(EditClient 등)에서 임시저장 여부를 알 수 있도록 플래그 추가
+      finalData._isDraft = isDraft;
 
       await onSave(finalData);
     } finally {
@@ -417,7 +420,7 @@ export default function PostEditor({ initialData, onSave, templates, essentialPr
   };
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col font-sans w-full">
+    <form onSubmit={(e) => handleSubmit(e, false)} className="flex flex-col font-sans w-full">
       <div className="flex flex-col w-full">
         {/* Template Selector (새 글 작성 등 templates prop이 제공된 경우에만 노출) */}
         {templates && Object.keys(templates).length > 0 && (
@@ -696,7 +699,26 @@ export default function PostEditor({ initialData, onSave, templates, essentialPr
       </div>
 
       {/* Submit Button */}
-      <div className="flex justify-end pt-4">
+      <div className="flex justify-end gap-3 pt-4">
+        <button
+          type="button"
+          disabled={isSubmitting || isUploading}
+          className={`inline-flex items-center justify-center rounded-md border border-gray-300 bg-white px-6 py-3 text-sm font-semibold text-gray-700 shadow-sm transition-colors focus:outline-none focus:ring-2 focus:ring-gray-200 focus:ring-offset-2 ${
+            (isSubmitting || isUploading) ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-50'
+          }`}
+        >
+          Cancel
+        </button>
+        <button
+          type="button"
+          onClick={(e) => handleSubmit(e, true)}
+          disabled={isSubmitting || isUploading}
+          className={`inline-flex items-center justify-center rounded-md border border-gray-300 bg-white px-6 py-3 text-sm font-semibold text-gray-700 shadow-sm transition-colors focus:outline-none focus:ring-2 focus:ring-gray-200 focus:ring-offset-2 ${
+            (isSubmitting || isUploading) ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-50'
+          }`}
+        >
+          Draft
+        </button>
         <button
           type="submit"
           disabled={isSubmitting || isUploading}

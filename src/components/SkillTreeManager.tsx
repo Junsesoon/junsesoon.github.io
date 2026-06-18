@@ -3,7 +3,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { addSkillTreeDomainAction, getSkillTreeDomainsAction, deleteSkillTreeDomainAction, updateSkillTreeDomainAction, updateSkillTreeDomainOrdersAction, getSkillTreeCardsAction } from './skillTreeActions';
-import { createPostAction, deletePostAction, updatePostAction } from './actions';
+import { deletePostAction } from './actions';
+import { createPostAction, updatePostAction } from './postActions';
 
 export default function SkillTreeManager() {
   const [title, setTitle] = useState('');

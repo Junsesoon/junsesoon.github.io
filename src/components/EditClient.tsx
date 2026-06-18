@@ -4,7 +4,7 @@ import React from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import PostEditor, { PostFormData } from '@/components/PostEditor';
-import { updatePostAction } from './actions';
+import { updatePostAction } from './postActions';
 
 export default function EditClient({ post, originalSlug }: { post: any; originalSlug: string }) {
   const router = useRouter();
@@ -15,17 +15,27 @@ export default function EditClient({ post, originalSlug }: { post: any; original
   // 최상위 속성(title, category 등)과 metadata를 병합하여 에디터에 전달합니다.
   const { id, slug, created_at, updated_at, posted_at, metadata, content, ...rest } = post;
 
+  // 임시저장된 데이터가 존재할 경우 우선적으로 불러옵니다.
+  const hasDraft = !!metadata?.draft_content;
+
   const initialData: PostFormData = {
     ...(metadata || {}),
+    ...(hasDraft ? metadata.draft_properties : {}),
     ...rest,
-    content: content || '',
+    title: hasDraft ? metadata.draft_title : (metadata?.title || ''),
+    content: hasDraft ? metadata.draft_content : (content || ''),
   };
 
   const handleSave = async (formData: PostFormData) => {
     try {
       await updatePostAction(originalSlug, formData);
-      alert('게시물이 성공적으로 수정되었습니다!');
-      router.push(redirectPath);
+      if (formData._isDraft) {
+        alert('임시저장 되었습니다.');
+        // UX: 임시저장 시 페이지 이동 없이 현재 에디터 화면에 계속 머물게 합니다.
+      } else {
+        alert('게시물이 성공적으로 수정 및 발행되었습니다!');
+        router.push(redirectPath);
+      }
     } catch (error) {
       console.error('Update failed:', error);
       alert('게시물 수정 중 오류가 발생했습니다. (콘솔 확인)');

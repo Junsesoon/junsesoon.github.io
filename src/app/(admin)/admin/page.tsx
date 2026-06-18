@@ -10,7 +10,7 @@ export default async function AdminDashboardPage({ searchParams }: { searchParam
   const order = params?.order || 'desc';
 
   // 안전한 정렬 파라미터 매핑 (SQL Injection 방지)
-  const validSortKeys = ['title', 'location', 'category1', 'category2', 'date', 'likes_count', 'views_count'];
+  const validSortKeys = ['title', 'location', 'category1', 'category2', 'date', 'likes_count', 'views_count', 'post_status'];
   const safeSort = validSortKeys.includes(sort) ? sort : 'date';
   const safeOrder = order === 'asc' ? 'ASC' : 'DESC';
 
@@ -18,6 +18,14 @@ export default async function AdminDashboardPage({ searchParams }: { searchParam
   switch (safeSort) {
     case 'title':
       orderByClause = `ORDER BY title ${safeOrder}`;
+      break;
+    case 'post_status':
+      // Draft(1), Editing(2), Published(3) 순서로 명확하게 분리하여 정렬합니다.
+      orderByClause = `ORDER BY CASE 
+        WHEN post_status = 'draft' THEN 1 
+        WHEN post_status = 'editing' THEN 2 
+        ELSE 3 
+      END ${safeOrder}`;
       break;
     case 'likes_count':
       orderByClause = `ORDER BY likes_count ${safeOrder}`;
@@ -36,7 +44,7 @@ export default async function AdminDashboardPage({ searchParams }: { searchParam
       break;
   }
 
-  const { rows: fetchedPosts } = await query(`SELECT slug, title, properties, created_at, likes_count, views_count FROM posts ${orderByClause}`);
+  const { rows: fetchedPosts } = await query(`SELECT slug, title, properties, created_at, likes_count, views_count, post_status, draft_content FROM posts ${orderByClause}`);
 
   const mappedPosts = fetchedPosts.map((row) => {
     const props = row.properties || {};
@@ -49,6 +57,13 @@ export default async function AdminDashboardPage({ searchParams }: { searchParam
       date: props.date || props.startDate || row.created_at,
       likes_count: row.likes_count,
       views_count: row.views_count,
+      post_status: row.post_status,
+      has_draft: !!row.draft_content,
+      metadata: {
+        ...props,
+        post_status: row.post_status,
+        has_draft: !!row.draft_content,
+      }
     };
   });
 
@@ -127,7 +142,7 @@ export default async function AdminDashboardPage({ searchParams }: { searchParam
 
         {/* 통계 카드 2: 임시 저장 (Drafts) */}
         <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
-          <p className="text-4xl font-bold text-center text-yellow-500">0</p>
+          <p className="text-4xl font-bold text-center text-yellow-500">{posts.filter(p => p.post_status === 'draft' || p.post_status === 'editing').length}</p>
           <h2 className="mb-0 text-lg text-center font-semibold text-gray-700">Drafts</h2>
         </div>
       </div>

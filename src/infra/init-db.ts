@@ -16,7 +16,8 @@ async function initDatabase() {
       '006_schema_views.sql', 
       '007_schema_visitors.sql',
       '008_schema_post_title.sql',
-      '009_schema_skilltree_domains.sql'
+      '009_schema_skilltree_domains.sql',
+      '010_schema_post_drafts.sql'
     ];
 
     for (const script of scripts) {

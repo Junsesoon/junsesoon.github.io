@@ -7,7 +7,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = 'https://www.incheon-people.com'; // 실제 운영하시는 도메인으로 변경해 주세요.
 
   // 1. 정적 라우트 설정 (메인 페이지, 스킬트리 등)
-  const staticRoutes = ['', '/blog', '/skilltree'].map((route) => ({
+  const staticRoutes = ['', '/blog', '/cs', '/data', '/language', '/infra', '/tools', '/skilltree'].map((route) => ({
     url: `${baseUrl}${route}`,
     lastModified: new Date(),
     changeFrequency: 'daily' as const,

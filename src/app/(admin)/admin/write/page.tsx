@@ -4,7 +4,8 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import PostEditor, { PostFormData } from '@/components/PostEditor';
-import { createPostAction, getTemplatesAction } from '../../../../components/actions';
+import { getTemplatesAction } from '../../../../components/actions';
+import { createPostAction } from '../../../../components/postActions';
 import { getEssentialPropertiesAction } from '../../../../components/propertyActions';
 
 export default function WritePostPage() {
@@ -19,11 +20,16 @@ export default function WritePostPage() {
 
   const handleSave = async (formData: PostFormData) => {
     try {
-      // 1. 방금 구현한 서버 액션을 호출하여 실제 DB에 저장
-      await createPostAction(formData);
+      const result = await createPostAction(formData);
       
-      alert('게시물이 성공적으로 작성 및 저장되었습니다!');
-      router.push('/admin'); // 2. 저장 완료 후 관리자 대시보드로 복귀 (revalidatePath에 의해 자동으로 최신 목록이 반영됩니다)
+      if (formData._isDraft) {
+        alert('임시저장 되었습니다.');
+        // 임시저장 후에는 계속 이어서 작성할 수 있도록 Edit 모드로 자연스럽게 전환합니다.
+        router.replace(`/admin/edit/${result.slug}`);
+      } else {
+        alert('게시물이 성공적으로 작성 및 저장되었습니다!');
+        router.push('/admin');
+      }
     } catch (error) {
       console.error('Save failed:', error);
       alert('게시물 저장 중 오류가 발생했습니다. (콘솔 확인)');
