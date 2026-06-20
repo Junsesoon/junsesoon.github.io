@@ -1,11 +1,13 @@
 # infra folder readme
-수정일: 2026-06-02
+수정일: 2026-06-20
 - 데이터베이스 연결 및 외부 서비스를 관리하는 인프라 계층입니다
 
 ## 파일 목록
-- `infra/db.ts`: 중앙 집중식 데이터베이스 연결 관리자입니다. 애플리케이션 전체에서 데이터베이스 연결을 효율적으로 관리하고 재사용하기 위해 `pg`(node-postgres)를 사용하여 타입이 지정된 커넥션 풀(connection pool)을 구현합니다. 이제 런타임 게시물 렌더링은 `src/utils/posts.ts`를 통해 이 연결에 의존합니다
-- `infra/test-db.ts`: 데이터베이스 연결 진단 유틸리티입니다. 하트비트 쿼리(`SELECT NOW()`)를 실행하여 PostgreSQL 인스턴스에 대한 연결 상태, 환경 변수 및 인증 정보가 올바른지 확인합니다
-- `infra/init-db.ts`: `src/scripts/` 폴더에 분리된 도메인별 스키마 생성 SQL 스크립트 파일(`001_schema_posts.sql`, `002_schema_properties.sql`, `003_schema_templates.sql`)을 순차적으로 실행하여 데이터베이스를 안전하게 초기화합니다. 반복 실행이 가능하도록 멱등성(Idempotency)이 고려되어 있습니다.
+- `infra/neon.ts`: Neon DB(PostgreSQL) 연결 관리자입니다. 애플리케이션 전체에서 데이터베이스 연결을 효율적으로 관리하고 재사용하기 위해 `pg` 커넥션 풀을 구현합니다.
+- `infra/neon-test.ts`: Neon DB 연결 진단 유틸리티입니다. 하트비트 쿼리(`SELECT NOW()`) 및 현재 데이터베이스에 존재하는 모든 테이블 목록을 출력합니다.
+- `infra/neon-db.ts`: `src/scripts/neon/` 폴더 내의 스키마 생성 SQL 스크립트를 파일명 순서대로 동적 실행하여 데이터베이스를 안전하게 초기화합니다.
+- `infra/turso-init.ts`: `src/scripts/turso/` 폴더 내의 SQLite용 SQL 스크립트를 순차 분할 실행하여 Turso 데이터베이스를 안전하게 마이그레이션합니다.
+- `infra/turso-test.ts`: Turso DB(SQLite) 연결 진단 유틸리티입니다. 서버 시간과 현재 생성되어 있는 테이블 목록을 출력합니다.
 - `infra/r2.ts`: Cloudflare R2 스토리지 연동을 위한 AWS SDK S3 클라이언트 설정 파일입니다. 버킷 이름, 공개 URL 등 관련 환경 변수를 캡슐화하여 제공합니다.
 - `infra/r2-test.ts`: R2 스토리지 인스턴스에 대한 연결 상태, 환경 변수 및 인증 정보(접근 권한)가 올바르게 설정되었는지 확인하는 진단 테스트 스크립트입니다.
 

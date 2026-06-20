@@ -1,5 +1,5 @@
 import SkillTreeGrid from '@/components/SkillTreeGrid';
-import { query } from '../../../infra/db';
+import { query } from '../../../infra/neon';
 
 export const revalidate = 3600;
 

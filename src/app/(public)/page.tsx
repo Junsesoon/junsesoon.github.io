@@ -1,5 +1,5 @@
 import { getAllPosts } from '../../utils/posts';
-import { query } from '../../infra/db';
+import { query } from '../../infra/neon';
 import BlogStats from '../../components/BlogStats';
 import PostList from '../../components/PostList';
 

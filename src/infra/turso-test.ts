@@ -1,26 +1,15 @@
 import 'dotenv/config';
-import { createClient } from '@libsql/client';
+import { client } from './turso';
 
 async function testTursoConnection() {
-  const url = process.env.TURSO_DB_URL;
-  const token = process.env.TURSO_AUTH_TOKEN;
-
-  if (!url || !token) {
-    console.error('❌ 환경 변수가 설정되지 않았습니다. .env 파일에 TURSO_DB_URL 및 TURSO_AUTH_TOKEN을 설정해주세요.');
-    return;
-  }
+  const dbEnv = process.env.DB_ENV || 'local';
 
   try {
-    console.log(`🛠️  Turso DB 연결을 시도합니다... (URL: ${url})`);
+    console.log(`🛠️  Turso (${dbEnv.toUpperCase()}) DB 연결을 시도합니다...`);
     
-    const client = createClient({
-      url: url,
-      authToken: token,
-    });
-
     // SQLite/Turso의 현재 시간 조회
     const res = await client.execute("SELECT datetime('now', '+9 hours') as now");
-    console.log(`✅ Turso DB 연결 성공!`);
+    console.log(`✅ Turso (${dbEnv.toUpperCase()}) DB 연결 성공!`);
     console.log("데이터베이스 서버 시간 (KST):", res.rows[0].now);
 
     // 생성된 테이블 리스트 조회
@@ -38,7 +27,9 @@ async function testTursoConnection() {
       });
     }
   } catch (err) {
-    console.error(`❌ Turso DB 연결 실패:`, err);
+    console.error(`❌ Turso (${dbEnv.toUpperCase()}) DB 연결 실패:`, err);
+  } finally {
+    client.close();
   }
 }
 

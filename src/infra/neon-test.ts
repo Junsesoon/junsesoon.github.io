@@ -1,5 +1,5 @@
 import 'dotenv/config';
-import { query } from "./db.js";
+import { query } from "./neon.js";
 
 // DB 연결 테스트 함수
 async function testDBConnection() {

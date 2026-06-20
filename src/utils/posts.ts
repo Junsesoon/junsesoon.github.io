@@ -4,7 +4,7 @@ import remarkGfm from 'remark-gfm';
 import remarkRehype from 'remark-rehype';
 import rehypeHighlight from 'rehype-highlight';
 import rehypeStringify from 'rehype-stringify';
-import { query } from '../infra/db';
+import { query } from '../infra/neon';
 import { Post, PostFilterOptions, FrontMatter, DbPost, DbPostRow } from '../types/blog';
 import { titleFromSlug } from './parser';
 

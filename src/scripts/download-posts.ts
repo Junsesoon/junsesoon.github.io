@@ -1,6 +1,6 @@
 import fs from 'fs';
 import path from 'path';
-import { query } from '../infra/db';
+import { query } from '../infra/neon';
 
 async function downloadPosts() {
   // 파일을 저장할 public/download-posts 디렉터리 경로 설정

@@ -1,7 +1,7 @@
 import 'dotenv/config';
 import fs from 'fs';
 import path from 'path';
-import { pool } from './db';
+import { pool } from './neon';
 
 async function initDatabase() {
   try {

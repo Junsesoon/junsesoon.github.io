@@ -1,6 +1,6 @@
 import React from 'react';
 import Link from 'next/link';
-import { query } from '../../../../infra/db';
+import { query } from '../../../../infra/neon';
 import PropertyManager, { PropertyWithCount } from '@/components/PropertyManager';
 
 const BASE_PROPS = ['title', 'category1', 'summary', 'content', 'category2', 'category3', 'category4', 'tags', 'parentskill', 'childskill', 'techstart', 'projectname'];

@@ -1,6 +1,6 @@
 import 'dotenv/config';
 import path from 'path';
-import { pool } from '../infra/db';
+import { pool } from '../infra/neon';
 import {
   firstString,
   Frontmatter,

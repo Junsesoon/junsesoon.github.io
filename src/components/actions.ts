@@ -1,6 +1,6 @@
 'use server';
 
-import { query } from '../infra/db';
+import { query } from '../infra/neon';
 
 import { revalidatePath } from 'next/cache';
 import { cookies, headers } from 'next/headers';

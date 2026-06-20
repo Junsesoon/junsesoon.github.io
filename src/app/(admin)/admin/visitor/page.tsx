@@ -1,6 +1,6 @@
 import React from 'react';
 import Link from 'next/link';
-import { query } from '../../../../infra/db';
+import { query } from '../../../../infra/neon';
 import VisitorManager from '@/components/VisitorManager';
 
 export const dynamic = 'force-dynamic';

@@ -1,6 +1,6 @@
 import React from 'react';
 import Link from 'next/link';
-import { query } from '../../../infra/db';
+import { query } from '../../../infra/neon';
 import { logoutAction } from '../../../components/actions';
 import PostListClient from '../../../components/PostListClient';
 

@@ -2,7 +2,7 @@
 
 import { revalidatePath } from 'next/cache';
 import { headers } from 'next/headers';
-import { query } from '../infra/db';
+import { query } from '../infra/neon';
 
 // IP 및 세션 기반 Rate Limit 기록용 (In-memory)
 // 10초당 최대 5회까지만 허용

@@ -1,33 +1,20 @@
 import 'dotenv/config';
 import fs from 'fs';
 import path from 'path';
-import { createClient } from '@libsql/client';
+import { client } from './turso';
 
 async function initTursoDatabase() {
-  const url = process.env.TURSO_DB_URL;
-  const token = process.env.TURSO_AUTH_TOKEN;
-
-  if (!url || !token) {
-    console.error('❌ 환경 변수가 설정되지 않았습니다. .env 파일에 TURSO_DB_URL 및 TURSO_AUTH_TOKEN을 설정해주세요.');
-    return;
-  }
-
-  const client = createClient({
-    url: url,
-    authToken: token,
-  });
-
+  const dbEnv = process.env.DB_ENV || 'local';
   const scriptsDir = path.join(process.cwd(), 'src/scripts/turso');
 
   try {
-    console.log('🏁 Starting Turso database initialization...');
+    console.log(`🏁 Starting Turso (${dbEnv.toUpperCase()}) database initialization...`);
 
     if (!fs.existsSync(scriptsDir)) {
       console.error(`❌ Turso 스크립트 디렉터리를 찾을 수 없습니다: ${scriptsDir}`);
       return;
     }
 
-    // turso 폴더 아래의 모든 .sql 파일들을 가져와 알파벳(숫자)순 정렬
     const scripts = fs.readdirSync(scriptsDir)
       .filter(file => file.endsWith('.sql'))
       .sort((a, b) => a.localeCompare(b));
@@ -45,8 +32,6 @@ async function initTursoDatabase() {
       console.log(`[${scriptIdx + 1}/${scripts.length}] Reading script: ${script}...`);
       const query = fs.readFileSync(scriptPath, 'utf8');
       
-      // SQLite/Libsql은 단일 execute에서 세미콜론이 포함된 다중 DDL 명령을 일괄 실행하지 못하므로,
-      // 세미콜론 기준으로 분할하여 각각 실행합니다.
       const statements = query
         .split(';')
         .map(stmt => stmt.trim())
@@ -61,9 +46,11 @@ async function initTursoDatabase() {
       }
     }
 
-    console.log('✅ Turso Database initialized successfully!');
+    console.log(`✅ Turso (${dbEnv.toUpperCase()}) Database initialized successfully!`);
   } catch (error) {
-    console.error('❌ Failed to initialize Turso database:', error);
+    console.error(`❌ Failed to initialize Turso (${dbEnv.toUpperCase()}) database:`, error);
+  } finally {
+    client.close();
   }
 }
 

@@ -1,7 +1,7 @@
 import React from 'react';
 import Link from 'next/link';
 import TemplateManager, { TemplatesState } from '@/components/TemplateManager';
-import { query } from '../../../../infra/db';
+import { query } from '../../../../infra/neon';
 
 export const dynamic = 'force-dynamic'; // 항상 최신 DB 데이터를 패칭하도록 보장
 
