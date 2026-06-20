@@ -95,14 +95,14 @@ export default function VisitorManager({ initialVisitors, totalVisitors, todayVi
     });
 
     const standardMockList: VisitorDetails[] = [
-      { visitor_id: 901, ip_address: '121.138.45.102', session_id: '9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb6d', visited_date: '2026-06-20', location: '🇰🇷 Seoul, KR', browser: 'Chrome / macOS', status: 'Allowed' },
-      { visitor_id: 902, ip_address: '54.210.12.9', session_id: '1a2b3c4d-5e6f-7a8b-9c0d-1e2f3a4b5c6d', visited_date: '2026-06-20', location: '🇺🇸 California, US', browser: 'Safari / iOS', status: 'Allowed' },
-      { visitor_id: 903, ip_address: '198.51.100.42', session_id: '8f9e0d1c-2b3a-4f5e-6d7c-8b9a0e1f2c3d', visited_date: '2026-06-19', location: '🇯🇵 Tokyo, JP', browser: 'Firefox / Linux', status: 'Blocked', reason: 'Abnormal request headers (Bot)' },
-      { visitor_id: 904, ip_address: '203.229.112.5', session_id: 'd3b07384-d113-4c9f-a2e9-4e5a953e7f41', visited_date: '2026-06-19', location: '🇰🇷 Busan, KR', browser: 'Chrome / Android', status: 'Allowed' },
-      { visitor_id: 905, ip_address: '185.190.140.12', session_id: 'f4g5h6i7-j8k9-l0m1-n2o3-p4q5r6s7t8u9', visited_date: '2026-06-18', location: '🇩🇪 Frankfurt, DE', browser: 'Edge / Windows', status: 'Allowed' },
-      { visitor_id: 906, ip_address: '103.28.162.25', session_id: 'a1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d', visited_date: '2026-06-18', location: '🇸🇬 Singapore, SG', browser: 'Chrome / Windows', status: 'Allowed' },
-      { visitor_id: 907, ip_address: '82.165.17.84', session_id: '7d6e5c4b-3a2b-1c0d-9e8f-7a6b5c4d3e2f', visited_date: '2026-06-17', location: '🇬🇧 London, GB', browser: 'Safari / macOS', status: 'Allowed' },
-      { visitor_id: 908, ip_address: '45.138.228.10', session_id: 'e9d8c7b6-a5f4-3e2d-1c0b-9a8f7e6d5c4b', visited_date: '2026-06-17', location: '🇷🇺 Moscow, RU', browser: 'Chrome / Windows', status: 'Blocked', reason: 'Spam script detection' },
+      { visitor_id: 901, ip_address: '121.138.45.102', session_id: '9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb6d', visited_date: '2026-06-20', location: 'Seoul, KR', browser: 'Chrome / macOS', status: 'Allowed' },
+      { visitor_id: 902, ip_address: '54.210.12.9', session_id: '1a2b3c4d-5e6f-7a8b-9c0d-1e2f3a4b5c6d', visited_date: '2026-06-20', location: 'California, US', browser: 'Safari / iOS', status: 'Allowed' },
+      { visitor_id: 903, ip_address: '198.51.100.42', session_id: '8f9e0d1c-2b3a-4f5e-6d7c-8b9a0e1f2c3d', visited_date: '2026-06-19', location: 'Tokyo, JP', browser: 'Firefox / Linux', status: 'Blocked', reason: 'Abnormal request headers (Bot)' },
+      { visitor_id: 904, ip_address: '203.229.112.5', session_id: 'd3b07384-d113-4c9f-a2e9-4e5a953e7f41', visited_date: '2026-06-19', location: 'Busan, KR', browser: 'Chrome / Android', status: 'Allowed' },
+      { visitor_id: 905, ip_address: '185.190.140.12', session_id: 'f4g5h6i7-j8k9-l0m1-n2o3-p4q5r6s7t8u9', visited_date: '2026-06-18', location: 'Frankfurt, DE', browser: 'Edge / Windows', status: 'Allowed' },
+      { visitor_id: 906, ip_address: '103.28.162.25', session_id: 'a1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d', visited_date: '2026-06-18', location: 'Singapore, SG', browser: 'Chrome / Windows', status: 'Allowed' },
+      { visitor_id: 907, ip_address: '82.165.17.84', session_id: '7d6e5c4b-3a2b-1c0d-9e8f-7a6b5c4d3e2f', visited_date: '2026-06-17', location: 'London, GB', browser: 'Safari / macOS', status: 'Allowed' },
+      { visitor_id: 908, ip_address: '45.138.228.10', session_id: 'e9d8c7b6-a5f4-3e2d-1c0b-9a8f7e6d5c4b', visited_date: '2026-06-17', location: 'Moscow, RU', browser: 'Chrome / Windows', status: 'Blocked', reason: 'Spam script detection' },
     ];
 
     // DB 데이터가 있는 경우 우선 노출하며, 부족한 경우 모의 데이터를 채워줍니다.
@@ -115,7 +115,7 @@ export default function VisitorManager({ initialVisitors, totalVisitors, todayVi
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<'All' | 'Allowed' | 'Blocked'>('All');
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 6;
+  const itemsPerPage = 5;
 
   // IP 차단 규칙 리스트
   const [blockRules, setBlockRules] = useState<BlockRule[]>(initialBlockRules);
@@ -293,7 +293,7 @@ export default function VisitorManager({ initialVisitors, totalVisitors, todayVi
   }, [searchQuery, statusFilter]);
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       {/* 토스트 노티피케이션 컨테이너 */}
       <div className="fixed bottom-4 right-4 z-50 flex flex-col gap-2 max-w-sm">
         {toasts.map(toast => (
@@ -551,8 +551,9 @@ export default function VisitorManager({ initialVisitors, totalVisitors, todayVi
         </div>
       </div>
 
-      {/* 탭 인터페이스 */}
-      <div className="border-b border-gray-200">
+      <div className="space-y-3">
+        {/* 탭 인터페이스 */}
+        <div className="border-b border-gray-200 flex flex-col sm:flex-row justify-between items-center pb-2 sm:pb-0 gap-4">
         <nav className="flex space-x-6" aria-label="Tabs">
           <button
             onClick={() => setActiveTab('logs')}
@@ -575,31 +576,27 @@ export default function VisitorManager({ initialVisitors, totalVisitors, todayVi
             Security Rules ({blockRules.length})
           </button>
         </nav>
-      </div>
 
-      {/* 탭 1: 로그 매니저 */}
-      {activeTab === 'logs' && (
-        <div className="space-y-4">
-          {/* 컨트롤 바 */}
-          <div className="flex flex-col sm:flex-row gap-4 justify-between items-center bg-white p-4 rounded-xl border border-gray-200">
+        {activeTab === 'logs' && (
+          <div className="flex flex-col sm:flex-row gap-3 items-center w-full sm:w-auto pb-2 sm:pb-0 justify-end">
             {/* 검색 */}
-            <div className="relative w-full sm:w-80">
+            <div className="relative w-full sm:w-64">
               <input
                 type="text"
                 placeholder="Search IP, Session ID or Country..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full rounded-lg border border-gray-300 bg-white py-2 pl-9 pr-4 text-sm text-gray-900 placeholder-gray-400 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                className="w-full rounded-lg border border-gray-300 bg-white py-1.5 pl-8 pr-4 text-xs text-gray-900 placeholder-gray-400 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
               />
-              <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                <svg className="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="absolute inset-y-0 left-0 flex items-center pl-2.5 pointer-events-none">
+                <svg className="h-3.5 w-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                 </svg>
               </div>
             </div>
 
             {/* 필터 탭 */}
-            <div className="flex gap-2 w-full sm:w-auto justify-end">
+            <div className="flex gap-1 w-full sm:w-auto justify-end">
               {(['All', 'Allowed', 'Blocked'] as const).map((filter) => (
                 <button
                   key={filter}
@@ -615,7 +612,12 @@ export default function VisitorManager({ initialVisitors, totalVisitors, todayVi
               ))}
             </div>
           </div>
+        )}
+      </div>
 
+      {/* 탭 1: 로그 매니저 */}
+      {activeTab === 'logs' && (
+        <div className="space-y-4">
           {/* 테이블 컨테이너 */}
           <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white shadow-sm">
             {filteredVisitors.length === 0 ? (
@@ -627,89 +629,97 @@ export default function VisitorManager({ initialVisitors, totalVisitors, todayVi
               </div>
             ) : (
               <table className="w-full border-collapse text-left text-sm text-gray-500">
-                <thead className="bg-gray-50 text-xs font-bold text-gray-700 uppercase border-b border-gray-200">
+                <thead className="bg-white text-xs font-bold text-gray-700 uppercase">
                   <tr>
-                    <th scope="col" className="px-6 py-3">ID</th>
-                    <th scope="col" className="px-6 py-3">Location & IP Address</th>
-                    <th scope="col" className="px-6 py-3">Session Key</th>
-                    <th scope="col" className="px-6 py-3">Date Visited</th>
-                    <th scope="col" className="px-6 py-3">Device / Client</th>
-                    <th scope="col" className="px-6 py-3">Status</th>
-                    <th scope="col" className="px-6 py-3 text-right">Actions</th>
+                    <th scope="col" className="px-3 py-2 text-center">ID</th>
+                    <th scope="col" className="px-3 py-2 text-center">IP Address</th>
+                    <th scope="col" className="px-3 py-2 text-center">Location</th>
+                    <th scope="col" className="px-3 py-2 text-center">Session Key</th>
+                    <th scope="col" className="px-3 py-2 text-center min-w-[120px] whitespace-nowrap">Date</th>
+                    <th scope="col" className="px-3 py-2 text-center">Client</th>
+                    <th scope="col" className="px-3 py-2 text-center">Device</th>
+                    <th scope="col" className="px-3 py-2 text-center w-24">Status</th>
+                    <th scope="col" className="px-3 py-2 text-center">Actions</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-150 border-t border-gray-200">
-                  {paginatedVisitors.map((visitor) => (
-                    <tr key={visitor.visitor_id} className="hover:bg-gray-50 transition-colors">
-                      <td className="px-6 py-4 font-mono text-xs text-slate-400">
-                        #VIS-{visitor.visitor_id}
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="font-semibold text-gray-900">{visitor.ip_address}</div>
-                        <div className="text-xs text-gray-400 font-medium">{visitor.location}</div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="flex items-center gap-1.5">
-                          <span className="font-mono text-xs max-w-[120px] truncate" title={visitor.session_id}>
-                            {visitor.session_id}
-                          </span>
-                          <button
-                            onClick={() => handleCopy(visitor.session_id)}
-                            className="p-1 text-gray-400 hover:text-indigo-600 hover:bg-gray-100 rounded transition-all focus:outline-none"
-                            title="Copy UUID"
-                          >
-                            <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
-                            </svg>
-                          </button>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 text-xs font-semibold text-gray-700">
-                        {visitor.visited_date}
-                      </td>
-                      <td className="px-6 py-4 text-xs">
-                        <span className="bg-slate-100 text-slate-700 px-2 py-0.5 rounded font-medium">
-                          {visitor.browser}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4">
-                        <span
-                          className={`inline-flex items-center gap-1.5 rounded-full px-2 py-1 text-xs font-semibold ${
-                            visitor.status === 'Allowed'
-                              ? 'bg-emerald-50 text-emerald-700'
-                              : 'bg-rose-50 text-rose-700'
-                          }`}
-                          title={visitor.reason}
-                        >
-                          <span className={`h-1.5 w-1.5 rounded-full ${visitor.status === 'Allowed' ? 'bg-emerald-500' : 'bg-rose-500'}`} />
-                          {visitor.status}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 text-right">
-                        <div className="flex justify-end gap-2">
-                          <button
-                            onClick={() => handleToggleBlock(visitor.ip_address, visitor.status)}
-                            className={`px-2.5 py-1 text-xs font-semibold rounded-md border transition-all ${
+                <tbody className="">
+                  {paginatedVisitors.map((visitor) => {
+                    const [client, device] = (visitor.browser || '').split(' / ');
+                    return (
+                      <tr key={visitor.visitor_id} className="hover:bg-gray-50 transition-colors">
+                        <td className="px-3 py-2 font-mono text-xs text-slate-400 text-center">
+                          #VIS-{visitor.visitor_id}
+                        </td>
+                        <td className="px-3 py-2 text-center font-semibold text-gray-900">
+                          {visitor.ip_address}
+                        </td>
+                        <td className="px-3 py-2 text-center text-xs text-gray-500 font-medium">
+                          {visitor.location}
+                        </td>
+                        <td className="px-3 py-2">
+                          <div className="flex items-center justify-center gap-1.5">
+                            <span className="font-mono text-xs max-w-[120px] truncate" title={visitor.session_id}>
+                              {visitor.session_id}
+                            </span>
+                            <button
+                              onClick={() => handleCopy(visitor.session_id)}
+                              className="p-1 text-gray-400 hover:text-indigo-600 hover:bg-gray-100 rounded transition-all focus:outline-none"
+                              title="Copy UUID"
+                            >
+                              <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
+                              </svg>
+                            </button>
+                          </div>
+                        </td>
+                        <td className="px-3 py-2 text-xs font-semibold text-gray-700 text-center whitespace-nowrap">
+                          {visitor.visited_date}
+                        </td>
+                        <td className="px-3 py-2 text-center text-xs text-gray-700 whitespace-nowrap">
+                          {client}
+                        </td>
+                        <td className="px-3 py-2 text-center text-xs text-gray-500 whitespace-nowrap">
+                          {device}
+                        </td>
+                        <td className="px-3 py-2 text-center">
+                          <span
+                            className={`inline-flex items-center gap-1.5 rounded-full px-2 py-1 text-xs font-semibold ${
                               visitor.status === 'Allowed'
-                                ? 'border-rose-200 text-rose-600 hover:bg-rose-50'
-                                : 'border-emerald-200 text-emerald-600 hover:bg-emerald-50'
+                                ? 'bg-emerald-50 text-emerald-700'
+                                : 'bg-rose-50 text-rose-700'
                             }`}
+                            title={visitor.reason}
                           >
-                            {visitor.status === 'Allowed' ? 'Block IP' : 'Allow'}
-                          </button>
-                          <button
-                            onClick={() => handleDeleteLog(visitor.visitor_id)}
-                            className="p-1 text-gray-400 hover:text-rose-600 hover:bg-rose-50 rounded transition-all focus:outline-none"
-                            title="Delete Log"
-                          >
-                            <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                            </svg>
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
+                            <span className={`h-1.5 w-1.5 rounded-full ${visitor.status === 'Allowed' ? 'bg-emerald-500' : 'bg-rose-500'}`} />
+                            {visitor.status}
+                          </span>
+                        </td>
+                        <td className="px-3 py-2 text-center">
+                          <div className="flex justify-center gap-2">
+                            <button
+                              onClick={() => handleToggleBlock(visitor.ip_address, visitor.status)}
+                              className={`px-2.5 py-1 text-xs font-semibold rounded-md border transition-all ${
+                                visitor.status === 'Allowed'
+                                  ? 'border-rose-200 text-rose-600 hover:bg-rose-50'
+                                  : 'border-emerald-200 text-emerald-600 hover:bg-emerald-50'
+                              }`}
+                            >
+                              {visitor.status === 'Allowed' ? 'Block' : 'Allow'}
+                            </button>
+                            <button
+                              onClick={() => handleDeleteLog(visitor.visitor_id)}
+                              className="p-1 text-gray-400 hover:text-rose-600 hover:bg-rose-50 rounded transition-all focus:outline-none"
+                              title="Delete Log"
+                            >
+                              <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                              </svg>
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             )}
@@ -855,6 +865,7 @@ export default function VisitorManager({ initialVisitors, totalVisitors, todayVi
           </div>
         </div>
       )}
+      </div>
     </div>
   );
 }
