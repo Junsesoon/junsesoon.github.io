@@ -6,7 +6,7 @@ import { getVisitorDashboardData } from '@/components/visitorActions';
 export const dynamic = 'force-dynamic';
 
 export default async function VisitorManagementPage() {
-  const { visitors, totalVisitors, todayVisitors, activeVisitors, blockRules } = await getVisitorDashboardData();
+  const { visitors, totalVisitors, todayVisitors, activeVisitors, blockRules, weeklyIncreaseRate } = await getVisitorDashboardData();
 
   return (
     <div className="mx-auto w-full max-w-[1000px] p-4 sm:p-8 font-sans">
@@ -29,6 +29,7 @@ export default async function VisitorManagementPage() {
         todayVisitors={todayVisitors} 
         activeVisitors={activeVisitors} 
         initialBlockRules={blockRules}
+        weeklyIncreaseRate={weeklyIncreaseRate}
       />
     </div>
   );

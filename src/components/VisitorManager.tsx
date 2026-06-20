@@ -30,6 +30,7 @@ interface VisitorManagerProps {
   todayVisitors: number;
   activeVisitors: number;
   initialBlockRules: BlockRule[];
+  weeklyIncreaseRate: number;
 }
 
 // IP 기반 디바이스/위치 정보를 매핑하는 헬퍼 함수
@@ -80,10 +81,10 @@ const getDetailsFromIp = (ip: string, id: number) => {
   };
 };
 
-export default function VisitorManager({ initialVisitors, totalVisitors, todayVisitors, activeVisitors, initialBlockRules }: VisitorManagerProps) {
-  // 1. 초기 방문자 데이터 구성 (DB 데이터 + 모의 데이터 믹스)
+export default function VisitorManager({ initialVisitors, totalVisitors, todayVisitors, activeVisitors, initialBlockRules, weeklyIncreaseRate }: VisitorManagerProps) {
+  // 1. 초기 방문자 데이터 구성 (DB 데이터만 사용하도록 목업 데이터 제거)
   const defaultMockVisitors: VisitorDetails[] = useMemo(() => {
-    const dbList = initialVisitors.map(v => {
+    return initialVisitors.map(v => {
       const details = getDetailsFromIp(v.ip_address, v.visitor_id);
       return {
         ...v,
@@ -93,20 +94,6 @@ export default function VisitorManager({ initialVisitors, totalVisitors, todayVi
         reason: details.reason
       };
     });
-
-    const standardMockList: VisitorDetails[] = [
-      { visitor_id: 901, ip_address: '121.138.45.102', session_id: '9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb6d', visited_date: '2026-06-20', location: 'Seoul, KR', browser: 'Chrome / macOS', status: 'Allowed' },
-      { visitor_id: 902, ip_address: '54.210.12.9', session_id: '1a2b3c4d-5e6f-7a8b-9c0d-1e2f3a4b5c6d', visited_date: '2026-06-20', location: 'California, US', browser: 'Safari / iOS', status: 'Allowed' },
-      { visitor_id: 903, ip_address: '198.51.100.42', session_id: '8f9e0d1c-2b3a-4f5e-6d7c-8b9a0e1f2c3d', visited_date: '2026-06-19', location: 'Tokyo, JP', browser: 'Firefox / Linux', status: 'Blocked', reason: 'Abnormal request headers (Bot)' },
-      { visitor_id: 904, ip_address: '203.229.112.5', session_id: 'd3b07384-d113-4c9f-a2e9-4e5a953e7f41', visited_date: '2026-06-19', location: 'Busan, KR', browser: 'Chrome / Android', status: 'Allowed' },
-      { visitor_id: 905, ip_address: '185.190.140.12', session_id: 'f4g5h6i7-j8k9-l0m1-n2o3-p4q5r6s7t8u9', visited_date: '2026-06-18', location: 'Frankfurt, DE', browser: 'Edge / Windows', status: 'Allowed' },
-      { visitor_id: 906, ip_address: '103.28.162.25', session_id: 'a1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d', visited_date: '2026-06-18', location: 'Singapore, SG', browser: 'Chrome / Windows', status: 'Allowed' },
-      { visitor_id: 907, ip_address: '82.165.17.84', session_id: '7d6e5c4b-3a2b-1c0d-9e8f-7a6b5c4d3e2f', visited_date: '2026-06-17', location: 'London, GB', browser: 'Safari / macOS', status: 'Allowed' },
-      { visitor_id: 908, ip_address: '45.138.228.10', session_id: 'e9d8c7b6-a5f4-3e2d-1c0b-9a8f7e6d5c4b', visited_date: '2026-06-17', location: 'Moscow, RU', browser: 'Chrome / Windows', status: 'Blocked', reason: 'Spam script detection' },
-    ];
-
-    // DB 데이터가 있는 경우 우선 노출하며, 부족한 경우 모의 데이터를 채워줍니다.
-    return [...dbList, ...standardMockList.filter(m => !dbList.some(d => d.ip_address === m.ip_address))];
   }, [initialVisitors]);
 
   // 로컬 상태 정의
@@ -326,7 +313,9 @@ export default function VisitorManager({ initialVisitors, totalVisitors, todayVi
           <p className="text-sm font-semibold text-gray-500">Total Visitors</p>
           <div className="mt-2 flex items-baseline gap-2">
             <span className="text-3xl font-bold tracking-tight text-gray-800">{totalVisitors}</span>
-            <span className="text-xs font-semibold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded">+12.4%</span>
+            <span className={`text-xs font-semibold px-1.5 py-0.5 rounded ${weeklyIncreaseRate >= 0 ? 'text-emerald-600 bg-emerald-50' : 'text-rose-600 bg-rose-50'}`}>
+              {weeklyIncreaseRate >= 0 ? '+' : ''}{weeklyIncreaseRate.toFixed(1)}%
+            </span>
           </div>
           <p className="mt-1 text-xs text-gray-400">Total unique sessions cached</p>
         </div>
