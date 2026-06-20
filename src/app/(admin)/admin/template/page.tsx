@@ -1,7 +1,7 @@
 import React from 'react';
 import Link from 'next/link';
 import TemplateManager, { TemplatesState } from '@/components/TemplateManager';
-import { query } from '../../../../infra/db';
+import { query } from '../../../../infra/neon';
 
 export const dynamic = 'force-dynamic'; // 항상 최신 DB 데이터를 패칭하도록 보장
 
@@ -34,7 +34,7 @@ export default async function CategoryTemplatePage() {
       <header className="mb-8 flex items-center justify-between border-b border-gray-200 pb-4">
         <div>
           <h1 className="text-3xl font-bold text-gray-800">Manage Templates</h1>
-          <p className="mt-2 text-sm text-gray-500">Manage front-matter property requirements for each post category.</p>
+          <p className="mt-2 text-sm text-gray-500">Manage front-matter property requirements for each post category</p>
         </div>
         <Link
           href="/admin"

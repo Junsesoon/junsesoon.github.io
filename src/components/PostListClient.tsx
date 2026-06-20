@@ -2,7 +2,8 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { deletePostAction, batchUpdateLocationAction } from './actions';
+import { batchUpdateLocationAction } from './actions';
+import { deletePostAction } from './postActions';
 
 interface Post {
   slug: string;
@@ -13,6 +14,12 @@ interface Post {
   date: string | number | Date;
   likes_count?: number;
   views_count?: number;
+  post_status?: string;
+  has_draft?: boolean;
+  metadata?: {
+    post_status?: string;
+    has_draft?: boolean;
+  };
 }
 
 interface PostListClientProps {
@@ -120,13 +127,11 @@ export default function PostListClient({ posts, sort, order }: PostListClientPro
                 {renderHeader('location', 'Location', 'w-20 hidden sm:table-cell')}
                 {renderHeader('category1', 'Cat1', 'w-24 hidden md:table-cell')}
                 {renderHeader('category2', 'Cat2', 'w-24 hidden lg:table-cell')}
-                <th scope="col" className="w-21 py-1 font-semibold text-gray-900 align-middle truncate hidden lg:table-cell">
-                  Status
-                </th>
-                {renderHeader('date', 'Date', 'w-22 hidden md:table-cell')}
-                {renderHeader('views_count', 'View', 'w-13 hidden lg:table-cell')}
-                {renderHeader('likes_count', 'Like', 'w-13 hidden lg:table-cell')}
-                <th scope="col" className="w-20 py-1 text-center font-semibold text-gray-900 align-middle truncate">
+                {renderHeader('post_status', 'Status', 'w-24 hidden lg:table-cell')}
+                {renderHeader('date', 'Date', 'w-24 hidden md:table-cell')}
+                {renderHeader('views_count', 'View', 'w-16 hidden lg:table-cell')}
+                {renderHeader('likes_count', 'Like', 'w-16 hidden lg:table-cell')}
+                <th scope="col" className="w-16 py-1 text-center font-semibold text-gray-900 align-middle truncate">
                   Action
                 </th>
               </tr>
@@ -171,8 +176,23 @@ export default function PostListClient({ posts, sort, order }: PostListClientPro
                     <td className="py-1 text-gray-600 whitespace-normal break-words hidden lg:table-cell" title={post.category2 || ''}>
                       {post.category2 || '-'}
                     </td>
-                    <td className="py-1 truncate hidden lg:table-cell">
-                      <span className="inline-flex items-center rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-800">Published</span>
+                  <td className="py-1 hidden lg:table-cell">
+                    {(post.metadata?.post_status === 'draft' || post.post_status === 'draft') ? (
+                      <span className="inline-flex items-center gap-1.5 rounded-full border border-gray-200 bg-gray-50 px-2.5 py-0.5 text-xs font-medium text-gray-700">
+                        <span className="h-1.5 w-1.5 rounded-full bg-gray-400"></span>
+                        Draft
+                      </span>
+                    ) : (post.metadata?.post_status === 'editing' || post.post_status === 'editing') ? (
+                      <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-200 bg-amber-50 px-2.5 py-0.5 text-xs font-medium text-amber-700">
+                        <span className="h-1.5 w-1.5 rounded-full bg-amber-500"></span>
+                        Editing
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center gap-1.5 rounded-full border border-green-200 bg-green-50 px-2.5 py-0.5 text-xs font-medium text-green-700">
+                        <span className="h-1.5 w-1.5 rounded-full bg-green-500"></span>
+                        Published
+                      </span>
+                    )}
                     </td>
                     <td className="py-1 text-gray-500 truncate hidden md:table-cell">{new Date(post.date).toLocaleDateString('ko-KR')}</td>
                     <td className="py-1 text-gray-500 truncate hidden lg:table-cell">
@@ -192,11 +212,25 @@ export default function PostListClient({ posts, sort, order }: PostListClientPro
                         <span className="font-medium text-gray-700 truncate">{Number(post.likes_count ?? 0).toLocaleString()}</span>
                       </div>
                     </td>
-                    <td className="py-1 text-center overflow-hidden whitespace-nowrap">
-                      <Link href={`/admin/edit/${post.slug.split('/').map(encodeURIComponent).join('/')}`} className="mr-3 font-medium text-blue-600 transition-colors hover:text-blue-800">Edit</Link>
-                      <form action={deletePostAction.bind(null, post.slug)} className="inline">
-                        <button type="submit" className="font-medium text-red-600 transition-colors hover:text-red-800">Del</button>
-                      </form>
+                    <td className="py-1 text-center whitespace-nowrap">
+                      <div className="flex items-center justify-center">
+                        <Link 
+                          href={`/admin/edit/${post.slug.split('/').map(encodeURIComponent).join('/')}`}
+                          className="text-gray-400 hover:text-blue-600 hover:bg-blue-50 p-1.5 rounded-md transition-colors focus:outline-none block"
+                          title={`Edit ${post.title}`}
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                            <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
+                          </svg>
+                        </Link>
+                        <form action={deletePostAction.bind(null, post.slug)} className="inline" onSubmit={(e) => { if (!window.confirm(`Are you sure you want to delete '${post.title}'?`)) e.preventDefault(); }}>
+                          <button type="submit" className="text-gray-400 hover:text-red-600 hover:bg-red-50 p-1.5 rounded-md transition-colors focus:outline-none" title={`Delete ${post.title}`}>
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                              <path fillRule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd" />
+                            </svg>
+                          </button>
+                        </form>
+                      </div>
                     </td>
                   </tr>
                 ))

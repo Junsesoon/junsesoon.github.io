@@ -4,7 +4,7 @@ import remarkGfm from 'remark-gfm';
 import remarkRehype from 'remark-rehype';
 import rehypeHighlight from 'rehype-highlight';
 import rehypeStringify from 'rehype-stringify';
-import { query } from '../infra/db';
+import { query } from '../infra/neon';
 import { Post, PostFilterOptions, FrontMatter, DbPost, DbPostRow } from '../types/blog';
 import { titleFromSlug } from './parser';
 
@@ -60,6 +60,8 @@ function rowToMetadata(row: any): FrontMatter {
     summary: props.summary || '',
     tags: props.tags || [],
     docver: props.docver || null,
+    post_status: row.post_status,
+    has_draft: !!row.draft_content,
   };
 }
 
@@ -90,7 +92,8 @@ function hasNormalizedCategory(value: string | null, category: string) {
 }
 
 export const getTotalPostCount = async (): Promise<number> => {
-  const result = await query<{ count: string }>(`SELECT COUNT(*) FROM posts`);
+  // 통계에는 발행된 글(post_status가 published 또는 editing)만 집계합니다.
+  const result = await query<{ count: string }>(`SELECT COUNT(*) FROM posts WHERE post_status IN ('published', 'editing')`);
   return parseInt(result.rows[0].count, 10);
 };
 
@@ -99,7 +102,7 @@ export const getAllPosts = async (
   filters: PostFilterOptions = {},
 ): Promise<Post[]> => {
   const result = await query<any>(`
-    SELECT post_id, likes_count, views_count, slug, title, content, properties, created_at, updated_at
+    SELECT post_id, likes_count, views_count, slug, title, content, properties, created_at, updated_at, post_status, draft_content
     FROM posts
   `);
 
@@ -112,6 +115,11 @@ export const getAllPosts = async (
     if (dateA !== dateB) return dateB.localeCompare(dateA);
     return a.slug.localeCompare(b.slug);
   });
+
+  // 관리자(admin) 모드가 아닐 경우 공개된 글만 필터링
+  if (mode !== 'admin') {
+    rows = rows.filter((row) => row.post_status === 'published' || row.post_status === 'editing');
+  }
 
   if (mode === 'blog') {
     rows = rows.filter((row) => {
@@ -133,7 +141,7 @@ export const getAllPosts = async (
 
 export const getCategoryPosts = async (category: string, mode: string = 'blog'): Promise<Post[]> => {
   const result = await query<any>(`
-    SELECT post_id, likes_count, views_count, slug, title, content, properties, created_at, updated_at
+    SELECT post_id, likes_count, views_count, slug, title, content, properties, created_at, updated_at, post_status, draft_content
     FROM posts
   `);
 
@@ -145,6 +153,10 @@ export const getCategoryPosts = async (category: string, mode: string = 'blog'):
     if (dateA !== dateB) return dateB.localeCompare(dateA);
     return a.slug.localeCompare(b.slug);
   });
+
+  if (mode !== 'admin') {
+    rows = rows.filter((row) => row.post_status === 'published' || row.post_status === 'editing');
+  }
 
   rows = rows.filter((row) => {
     if (mode === 'portfolio') {
@@ -160,7 +172,8 @@ export const getCategoryPosts = async (category: string, mode: string = 'blog'):
 export const getDbPostBySlug = async (slug: string): Promise<DbPost | null> => {
   const result = await query<any>(
     `
-      SELECT post_id, likes_count, views_count, slug, title, content, properties, created_at, updated_at
+      SELECT post_id, likes_count, views_count, slug, title, content, properties, created_at, updated_at,
+             post_status, draft_title, draft_content, draft_properties
       FROM posts
       WHERE slug = $1
       LIMIT 1
@@ -177,7 +190,12 @@ export const getDbPostBySlug = async (slug: string): Promise<DbPost | null> => {
     views_count: row.views_count,
     slug: row.slug,
     content: row.content,
-    metadata: rowToMetadata(row),
+    metadata: {
+      ...rowToMetadata(row),
+      draft_title: row.draft_title || null,
+      draft_content: row.draft_content || null,
+      draft_properties: row.draft_properties || null,
+    },
   };
 };
 
@@ -194,6 +212,8 @@ export const getSkillTreePosts = async (matchCategory2: string): Promise<DbPost[
         p.properties, 
         p.created_at, 
         p.updated_at,
+        p.post_status,
+        p.draft_content,
         s.domain,
         s.sub_domain,
         s.tech_start,
@@ -203,6 +223,7 @@ export const getSkillTreePosts = async (matchCategory2: string): Promise<DbPost[
       JOIN skilltree_posts s ON p.post_id = s.post_id
       WHERE LOWER(s.domain) = LOWER($1)
         AND p.properties->>'category4' IS NULL
+        AND p.post_status IN ('published', 'editing')
       ORDER BY s.tech_start ASC NULLS LAST, p.title ASC
     `,
     [matchCategory2],
@@ -230,11 +251,16 @@ export const getSkillTreePosts = async (matchCategory2: string): Promise<DbPost[
   });
 };
 
-export const getPostData = async (id: string) => {
+export const getPostData = async (id: string, mode: string = 'blog') => {
   const post = await getDbPostBySlug(id);
 
   if (!post) {
     throw new Error(`Post not found: ${id}`);
+  }
+
+  // 관리자 모드가 아니면서 비공개 상태(새 글 작성 중 임시저장 등)인 경우 접근 차단
+  if (mode !== 'admin' && post.metadata.post_status !== 'published' && post.metadata.post_status !== 'editing') {
+    throw new Error(`Post is not published: ${id}`);
   }
 
   const processedContent = await unified()

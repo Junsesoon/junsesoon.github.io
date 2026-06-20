@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { addSkillTreeDomainAction, getSkillTreeDomainsAction, deleteSkillTreeDomainAction, updateSkillTreeDomainAction, updateSkillTreeDomainOrdersAction, getSkillTreeCardsAction } from './skillTreeActions';
-import { createPostAction, deletePostAction, updatePostAction } from './actions';
+import { createPostAction, updatePostAction, deletePostAction } from './postActions';
 
 export default function SkillTreeManager() {
   const [title, setTitle] = useState('');
@@ -125,7 +125,7 @@ export default function SkillTreeManager() {
     setEditingCardSlug(card.slug);
     setCardTitle(card.title);
     setCardSummary(card.properties?.summary || '');
-    setCardCat1(card.properties?.category1 || 'skilltree');
+    setCardCat1(card.properties?.category1 || 'skill tree');
     setCardCat2(card.category2 || '');
     setCardCat3(card.category3 || '');
     setCardCat4(card.properties?.category4 || '');
@@ -139,7 +139,7 @@ export default function SkillTreeManager() {
     setEditingCardSlug(null);
     setCardTitle('');
     setCardSummary('');
-    setCardCat1('skilltree');
+    setCardCat1('skill tree');
     setCardCat2('');
     setCardCat3('');
     setCardCat4('');
@@ -312,7 +312,7 @@ export default function SkillTreeManager() {
         <div>
           <h1 className="text-3xl font-bold text-gray-800">Manage SkillTree</h1>
           <p className="mt-2 text-sm text-gray-500">
-            스킬 트리 페이지에 노출될 카테고리(그리드) 목록과 설명을 관리합니다.
+            스킬 트리 페이지에 노출될 카테고리(그리드) 목록과 설명을 관리합니다
           </p>
         </div>
         <Link
@@ -342,7 +342,7 @@ export default function SkillTreeManager() {
               <div>
                 <label htmlFor="matchCategory" className="mb-1 block text-sm font-medium text-gray-700">Match Category2</label>
                 <input type="text" id="matchCategory" value={matchCategory2} onChange={(e) => setMatchCategory2(e.target.value)} placeholder="e.g. FrontEnd" className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500" required />
-                <p className="mt-1 text-xs text-gray-500">게시물의 <span className="font-semibold text-gray-700">category2</span> 속성과 일치해야 해당 그리드에 카드가 표시됩니다.</p>
+                <p className="mt-1 text-xs text-gray-500">게시물의 <span className="font-semibold text-gray-700">category2</span> 속성과 일치해야 해당 그리드에 카드가 표시됩니다</p>
               </div>
               <div className="mt-4 flex gap-3">
                 <button type="submit" disabled={isSubmitting} className={`flex-1 rounded-md px-4 py-2 text-sm font-semibold text-white shadow-sm transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${isSubmitting ? 'bg-blue-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'}`}>

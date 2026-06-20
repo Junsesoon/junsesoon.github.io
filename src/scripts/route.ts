@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { query } from '../infra/db';
+import { query } from '../infra/neon';
 
 export async function GET() {
   try {

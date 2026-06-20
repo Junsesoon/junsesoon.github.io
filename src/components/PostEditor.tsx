@@ -11,6 +11,7 @@ export interface PostFormData {
 export interface PostEditorProps {
   initialData?: PostFormData;
   onSave: (formData: PostFormData) => Promise<void>;
+  onCancel?: () => void;
   templates?: Record<string, { propertyName: string; isRequired: boolean }[]>;
   essentialProps?: string[];
 }
@@ -72,7 +73,7 @@ const ArrayTagInput = ({ id, tags, onChange }: { id?: string; tags: string[]; on
   );
 };
 
-export default function PostEditor({ initialData, onSave, templates, essentialProps }: PostEditorProps) {
+export default function PostEditor({ initialData, onSave, onCancel, templates, essentialProps }: PostEditorProps) {
   const [formData, setFormData] = useState<Record<string, any>>(() => {
     const initial: Record<string, any> = {};
     if (initialData) {
@@ -154,6 +155,7 @@ export default function PostEditor({ initialData, onSave, templates, essentialPr
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [uploadedImages, setUploadedImages] = useState<string[]>([]);
   const [selectedTemplate, setSelectedTemplate] = useState<string>('');
+  const [isDirty, setIsDirty] = useState(false);
 
   // 전역 필수 속성(essentialProps) 자동 렌더링 주입 로직
   useEffect(() => {
@@ -191,9 +193,10 @@ export default function PostEditor({ initialData, onSave, templates, essentialPr
     const name = target.name;
     const value = target.type === 'checkbox' ? target.checked : target.value;
     setFormData((prev) => ({ ...prev, [name]: value }));
+    setIsDirty(true);
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent | React.MouseEvent, isDraft: boolean = false) => {
     e.preventDefault();
     setIsSubmitting(true);
 
@@ -218,14 +221,14 @@ export default function PostEditor({ initialData, onSave, templates, essentialPr
         }
       });
 
-      if (!finalData.title?.trim()) {
+      if (!isDraft && !finalData.title?.trim()) {
         alert('제목(Title)은 필수 항목입니다.');
         setIsSubmitting(false);
         return;
       }
 
       // 2. 필수 속성(essential) 미입력 시 저장 차단 (프론트엔드 검증 방어선)
-      if (essentialProps) {
+      if (!isDraft && essentialProps) {
         for (const ep of essentialProps) {
           if (FIXED_PROPS.includes(ep)) continue;
           const val = finalData[ep];
@@ -263,7 +266,11 @@ export default function PostEditor({ initialData, onSave, templates, essentialPr
         }).catch((err) => console.error('Failed to delete orphaned images:', err));
       }
 
+      // 상위 컴포넌트(EditClient 등)에서 임시저장 여부를 알 수 있도록 플래그 추가
+      finalData._isDraft = isDraft;
+
       await onSave(finalData);
+      setIsDirty(false); // 저장에 성공하면 수정 상태 초기화
     } finally {
       setIsSubmitting(false);
     }
@@ -324,6 +331,7 @@ export default function PostEditor({ initialData, onSave, templates, essentialPr
     const newContent = currentContent.substring(0, start) + textToInsert + currentContent.substring(end);
     
     setFormData((prev) => ({ ...prev, content: newContent }));
+    setIsDirty(true);
 
     setTimeout(() => {
       textarea.selectionStart = textarea.selectionEnd = start + textToInsert.length;
@@ -345,6 +353,7 @@ export default function PostEditor({ initialData, onSave, templates, essentialPr
           console.error('Failed to register global property type:', error);
         }
       }
+      setIsDirty(true);
     }
     setNewPropName('');
     setNewPropType('string');
@@ -358,6 +367,7 @@ export default function PostEditor({ initialData, onSave, templates, essentialPr
       delete next[propToRemove]; // 제거 시 formData에서도 완전히 제외
       return next;
     });
+    setIsDirty(true);
   };
 
   const handleTemplateChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -414,10 +424,20 @@ export default function PostEditor({ initialData, onSave, templates, essentialPr
 
     setActiveProps(newActiveProps);
     setFormData(newFormData);
+    setIsDirty(true);
+  };
+
+  const handleCancelClick = () => {
+    if (isDirty) {
+      if (!window.confirm('작성 중인 변경 내용이 모두 폐기됩니다. 취소하시겠습니까?')) {
+        return;
+      }
+    }
+    if (onCancel) onCancel();
   };
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col font-sans w-full">
+    <form onSubmit={(e) => handleSubmit(e, false)} className="flex flex-col font-sans w-full">
       <div className="flex flex-col w-full">
         {/* Template Selector (새 글 작성 등 templates prop이 제공된 경우에만 노출) */}
         {templates && Object.keys(templates).length > 0 && (
@@ -536,7 +556,10 @@ export default function PostEditor({ initialData, onSave, templates, essentialPr
                             ? formData[key].split(',').map((s: string) => s.trim()).filter(Boolean)
                             : []
                         }
-                        onChange={(newTags) => setFormData((prev) => ({ ...prev, [key]: newTags }))}
+                    onChange={(newTags) => {
+                      setFormData((prev) => ({ ...prev, [key]: newTags }));
+                      setIsDirty(true);
+                    }}
                       />
                     ) : (
                       <input
@@ -582,6 +605,7 @@ export default function PostEditor({ initialData, onSave, templates, essentialPr
 
                               if (!skills.includes(card.title)) {
                                 setFormData(prev => ({ ...prev, [key]: [...skills, card.title] }));
+                            setIsDirty(true);
                               }
                             }}
                             className="inline-flex items-center rounded bg-gray-100/80 px-2 py-0.5 text-xs font-medium text-gray-600 cursor-pointer hover:bg-blue-50 hover:text-blue-600 transition-colors active:scale-95 select-none"
@@ -696,7 +720,27 @@ export default function PostEditor({ initialData, onSave, templates, essentialPr
       </div>
 
       {/* Submit Button */}
-      <div className="flex justify-end pt-4">
+      <div className="flex justify-end gap-3 pt-4">
+        <button
+          type="button"
+          onClick={handleCancelClick}
+          disabled={isSubmitting || isUploading}
+          className={`inline-flex items-center justify-center rounded-md border border-gray-300 bg-white px-6 py-3 text-sm font-semibold text-gray-700 shadow-sm transition-colors focus:outline-none focus:ring-2 focus:ring-gray-200 focus:ring-offset-2 ${
+            (isSubmitting || isUploading) ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-50'
+          }`}
+        >
+          Cancel
+        </button>
+        <button
+          type="button"
+          onClick={(e) => handleSubmit(e, true)}
+          disabled={isSubmitting || isUploading}
+          className={`inline-flex items-center justify-center rounded-md border border-gray-300 bg-white px-6 py-3 text-sm font-semibold text-gray-700 shadow-sm transition-colors focus:outline-none focus:ring-2 focus:ring-gray-200 focus:ring-offset-2 ${
+            (isSubmitting || isUploading) ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-50'
+          }`}
+        >
+          Draft
+        </button>
         <button
           type="submit"
           disabled={isSubmitting || isUploading}

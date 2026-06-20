@@ -1,6 +1,6 @@
 import fs from 'fs';
 import path from 'path';
-import { query } from '../infra/db';
+import { query } from '../infra/neon';
 
 async function downloadPosts() {
   // 파일을 저장할 public/download-posts 디렉터리 경로 설정
@@ -13,16 +13,37 @@ async function downloadPosts() {
 
   console.log('🏃‍♂️ 데이터베이스에서 모든 게시물을 가져오는 중...');
   
-  // 변경된 단일 테이블 스키마: 한 번의 쿼리로 모든 게시물의 데이터와 속성(JSONB)을 조회합니다.
-  const result = await query<{ slug: string; title: string; content: string; properties: any }>(
-    'SELECT slug, title, content, properties FROM posts'
+  // posts 테이블과 스킬트리 메타데이터가 분리된 skilltree_posts 테이블을 JOIN하여 완전한 데이터를 조회합니다.
+  const result = await query<any>(
+    `SELECT 
+       p.slug, p.title, p.content, p.properties,
+       s.domain, s.sub_domain, s.tech_start, s.parent_skill, s.child_skill
+     FROM posts p
+     LEFT JOIN skilltree_posts s ON p.post_id = s.post_id`
   );
   const posts = result.rows;
 
   console.log(`Found ${posts.length} posts. Starting download to local md files...`);
 
   for (const post of posts) {
-    const { slug, title, content, properties } = post;
+    const { slug, title, content, properties, domain, sub_domain, tech_start, parent_skill, child_skill } = post;
+
+    // JSONB 속성을 복사한 뒤, skilltree_posts 테이블의 최신 값으로 덮어씌워 동기화합니다.
+    const finalProps = properties ? { ...properties } : {};
+    
+    if (domain !== null && domain !== undefined) finalProps.category2 = domain;
+    if (sub_domain !== null && sub_domain !== undefined) finalProps.category3 = sub_domain;
+    if (tech_start !== null && tech_start !== undefined) finalProps.techstart = tech_start;
+    if (parent_skill !== null && parent_skill !== undefined) {
+      finalProps.parentskill = parent_skill;
+      delete finalProps.parentSkill; // 중복 키 방지
+      delete finalProps.parent_skill;
+    }
+    if (child_skill !== null && child_skill !== undefined) {
+      finalProps.childskill = child_skill;
+      delete finalProps.childSkill;
+      delete finalProps.child_skill;
+    }
 
     // YAML Frontmatter 구성 로직
     let mdContent = '---\n';
@@ -33,8 +54,8 @@ async function downloadPosts() {
       mdContent += `title: ${escapedTitle}\n`;
     }
 
-    if (properties && typeof properties === 'object') {
-      for (const [key, value] of Object.entries(properties)) {
+    if (finalProps && typeof finalProps === 'object') {
+      for (const [key, value] of Object.entries(finalProps)) {
         if (key === 'title') continue; // properties 내부의 중복된 title은 건너뜀
         if (value === null || value === undefined || value === '') continue;
         

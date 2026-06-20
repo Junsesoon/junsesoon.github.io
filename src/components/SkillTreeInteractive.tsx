@@ -103,10 +103,10 @@ export default function SkillTreeInteractive({ nodes, COLUMNS, isAdmin }: Props)
               id: `${parentName}-${childNode.file.replace(/\.[^/.]+$/, "")}`,
               parentName: parentName,
               childName: childNode.title.toLowerCase(),
-              x1: parentPos.col * 120 + 100, // Right center of parent
-              y1: parentPos.row * 70 + 25, // Middle Y of parent
-              x2: childPos.col * 120,       // Left center of child
-              y2: childPos.row * 70 + 25,  // Middle Y of child
+              x1: parentPos.col * 110 + 100, // Right center of parent (col * 110 + width)
+              y1: parentPos.row * 60 + 25,   // Middle Y of parent (row * 60 + half_height)
+              x2: childPos.col * 110,        // Left center of child (col * 110)
+              y2: childPos.row * 60 + 25,    // Middle Y of child (row * 60 + half_height)
             });
           }
         });
@@ -163,7 +163,7 @@ export default function SkillTreeInteractive({ nodes, COLUMNS, isAdmin }: Props)
           style={{
             gridTemplateColumns: `repeat(${maxCols}, 100px)`,
             gridTemplateRows: `repeat(${maxRows}, 50px)`,
-            gap: '20px',
+            gap: '10px',
           }}
         >
           {nodesArray.map((nodeInfo) => {

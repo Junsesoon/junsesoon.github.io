@@ -45,3 +45,13 @@ Thumbs.db
 
 # 📚 개발문서(아키텍처, 시퀀스 다이어그램 등)
 .docx
+
+# 🗃️ 로컬 데이터베이스 파일
+/local.db
+/local.db-journal
+/local.db-shm
+/local.db-wal
+/visitLog.db
+/visitLog.db-journal
+/visitLog.db-shm
+/visitLog.db-wal

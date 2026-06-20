@@ -24,7 +24,15 @@ const getPoolConfig = (): PoolConfig => {
   };
 };
 
-export const pool = new Pool(getPoolConfig());
+const globalForPg = globalThis as unknown as {
+  pgPool: Pool | undefined;
+};
+
+export const pool = globalForPg.pgPool ?? new Pool(getPoolConfig());
+
+if (process.env.NODE_ENV !== 'production') {
+  globalForPg.pgPool = pool;
+}
 
 // 외부에서 db.query() 호출 시 사용할 함수
 export const query = <T extends QueryResultRow = QueryResultRow>(

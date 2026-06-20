@@ -1,6 +1,6 @@
 'use server';
 
-import { query } from '../infra/db';
+import { query } from '../infra/neon';
 import { revalidatePath } from 'next/cache';
 
 export async function addSkillTreeDomainAction(title: string, description: string, matchCategory2: string, displayOrder: number = 0) {

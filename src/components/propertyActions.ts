@@ -1,7 +1,7 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import { query } from '../infra/db';
+import { query } from '../infra/neon';
 
 export async function addGlobalPropertyAction(propertyName: string, propertyType: string) {
   if (!propertyName || !propertyName.trim()) {
