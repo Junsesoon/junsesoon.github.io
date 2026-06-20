@@ -170,9 +170,9 @@ export default async function AdminDashboardPage({ searchParams }: { searchParam
           <Link href="/admin/template" className="flex items-center justify-center rounded-lg border border-gray-200 bg-white p-6 shadow-sm transition-all hover:-translate-y-1 hover:shadow-md">
             <span className="text-lg font-semibold text-gray-700">Templates</span>
           </Link>
-          <div className="flex items-center justify-center rounded-lg border border-dashed border-gray-300 bg-gray-50 p-6 text-gray-400">
-            <span className="text-lg font-semibold">Place Holder</span>
-          </div>
+          <Link href="/admin/visitor" className="flex items-center justify-center rounded-lg border border-gray-200 bg-white p-6 shadow-sm transition-all hover:-translate-y-1 hover:shadow-md">
+            <span className="text-lg font-semibold text-gray-700">Visitor</span>
+          </Link>
           <div className="flex items-center justify-center rounded-lg border border-dashed border-gray-300 bg-gray-50 p-6 text-gray-400">
             <span className="text-lg font-semibold">Place Holder</span>
           </div>
