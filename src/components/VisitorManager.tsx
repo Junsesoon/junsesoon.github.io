@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useMemo } from 'react';
+import { addBlockRule, removeBlockRule } from './visitorActions';
 
 export interface DBVisitor {
   visitor_id: number;
@@ -25,6 +26,10 @@ interface BlockRule {
 
 interface VisitorManagerProps {
   initialVisitors: DBVisitor[];
+  totalVisitors: number;
+  todayVisitors: number;
+  activeVisitors: number;
+  initialBlockRules: BlockRule[];
 }
 
 // IP 기반 디바이스/위치 정보를 매핑하는 헬퍼 함수
@@ -75,7 +80,7 @@ const getDetailsFromIp = (ip: string, id: number) => {
   };
 };
 
-export default function VisitorManager({ initialVisitors }: VisitorManagerProps) {
+export default function VisitorManager({ initialVisitors, totalVisitors, todayVisitors, activeVisitors, initialBlockRules }: VisitorManagerProps) {
   // 1. 초기 방문자 데이터 구성 (DB 데이터 + 모의 데이터 믹스)
   const defaultMockVisitors: VisitorDetails[] = useMemo(() => {
     const dbList = initialVisitors.map(v => {
@@ -112,24 +117,8 @@ export default function VisitorManager({ initialVisitors }: VisitorManagerProps)
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 6;
 
-  // 모의 실시간 방문객 수
-  const [liveCount, setLiveCount] = useState(3);
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setLiveCount(prev => {
-        const change = Math.random() > 0.5 ? 1 : -1;
-        const next = prev + change;
-        return next < 1 ? 1 : next > 8 ? 8 : next;
-      });
-    }, 4500);
-    return () => clearInterval(interval);
-  }, []);
-
-  // 모의 IP 차단 규칙 리스트
-  const [blockRules, setBlockRules] = useState<BlockRule[]>([
-    { id: 'rule-1', ip_address: '198.51.100.42', reason: 'Abnormal request headers (Bot)', created_at: '2026-06-19 14:23:11' },
-    { id: 'rule-2', ip_address: '45.138.228.10', reason: 'Spam script detection', created_at: '2026-06-17 09:12:45' }
-  ]);
+  // IP 차단 규칙 리스트
+  const [blockRules, setBlockRules] = useState<BlockRule[]>(initialBlockRules);
 
   // 새로운 규칙 입력용
   const [newRuleIp, setNewRuleIp] = useState('');
@@ -153,32 +142,43 @@ export default function VisitorManager({ initialVisitors }: VisitorManagerProps)
   };
 
   // IP 차단 토글
-  const handleToggleBlock = (ip: string, currentStatus: 'Allowed' | 'Blocked') => {
+  const handleToggleBlock = async (ip: string, currentStatus: 'Allowed' | 'Blocked') => {
     const newStatus: 'Allowed' | 'Blocked' = currentStatus === 'Allowed' ? 'Blocked' : 'Allowed';
     
-    setVisitors(prev => prev.map(v => {
-      if (v.ip_address === ip) {
-        return {
-          ...v,
-          status: newStatus,
-          reason: newStatus === 'Blocked' ? 'Administrator manual block' : undefined
-        };
-      }
-      return v;
-    }));
-
+    let res;
     if (newStatus === 'Blocked') {
-      const nowStr = new Date().toISOString().replace('T', ' ').substring(0, 19);
-      setBlockRules(prev => [...prev, {
-        id: `rule-${Date.now()}`,
-        ip_address: ip,
-        reason: 'Administrator manual block',
-        created_at: nowStr
-      }]);
-      showToast(`IP ${ip} has been blocked.`, 'warning');
+      res = await addBlockRule(ip, 'Administrator manual block');
     } else {
-      setBlockRules(prev => prev.filter(r => r.ip_address !== ip));
-      showToast(`IP ${ip} has been unblocked.`, 'success');
+      res = await removeBlockRule(ip);
+    }
+
+    if (res.success) {
+      setVisitors(prev => prev.map(v => {
+        if (v.ip_address === ip) {
+          return {
+            ...v,
+            status: newStatus,
+            reason: newStatus === 'Blocked' ? 'Administrator manual block' : undefined
+          };
+        }
+        return v;
+      }));
+
+      if (newStatus === 'Blocked') {
+        const nowStr = new Date().toISOString().replace('T', ' ').substring(0, 19);
+        setBlockRules(prev => [...prev, {
+          id: `rule-${Date.now()}-${ip}`,
+          ip_address: ip,
+          reason: 'Administrator manual block',
+          created_at: nowStr
+        }]);
+        showToast(`IP ${ip} has been blocked.`, 'warning');
+      } else {
+        setBlockRules(prev => prev.filter(r => r.ip_address !== ip));
+        showToast(`IP ${ip} has been unblocked.`, 'success');
+      }
+    } else {
+      showToast(`Failed to update block status for ${ip} on DB.`, 'warning');
     }
   };
 
@@ -189,7 +189,7 @@ export default function VisitorManager({ initialVisitors }: VisitorManagerProps)
   };
 
   // 차단 규칙 추가
-  const handleAddRule = (e: React.FormEvent) => {
+  const handleAddRule = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newRuleIp.trim()) return;
 
@@ -205,41 +205,51 @@ export default function VisitorManager({ initialVisitors }: VisitorManagerProps)
       return;
     }
 
-    const nowStr = new Date().toISOString().replace('T', ' ').substring(0, 19);
-    const newRule: BlockRule = {
-      id: `rule-${Date.now()}`,
-      ip_address: newRuleIp,
-      reason: newRuleReason,
-      created_at: nowStr
-    };
+    const res = await addBlockRule(newRuleIp, newRuleReason);
+    if (res.success) {
+      const nowStr = new Date().toISOString().replace('T', ' ').substring(0, 19);
+      const newRule: BlockRule = {
+        id: `rule-${Date.now()}-${newRuleIp}`,
+        ip_address: newRuleIp,
+        reason: newRuleReason,
+        created_at: nowStr
+      };
 
-    setBlockRules(prev => [newRule, ...prev]);
+      setBlockRules(prev => [newRule, ...prev]);
 
-    // 방문자 로그에도 반영
-    setVisitors(prev => prev.map(v => {
-      if (v.ip_address === newRuleIp) {
-        return { ...v, status: 'Blocked', reason: newRuleReason };
-      }
-      return v;
-    }));
+      // 방문자 로그에도 반영
+      setVisitors(prev => prev.map(v => {
+        if (v.ip_address === newRuleIp) {
+          return { ...v, status: 'Blocked', reason: newRuleReason };
+        }
+        return v;
+      }));
 
-    showToast(`Manually blocked IP ${newRuleIp}.`, 'warning');
-    setNewRuleIp('');
+      showToast(`Manually blocked IP ${newRuleIp}.`, 'warning');
+      setNewRuleIp('');
+    } else {
+      showToast('Failed to add block rule to DB.', 'warning');
+    }
   };
 
   // 차단 규칙 삭제
-  const handleRemoveRule = (id: string, ip: string) => {
-    setBlockRules(prev => prev.filter(r => r.id !== id));
-    
-    // 방문자 로그 해제
-    setVisitors(prev => prev.map(v => {
-      if (v.ip_address === ip) {
-        return { ...v, status: 'Allowed', reason: undefined };
-      }
-      return v;
-    }));
+  const handleRemoveRule = async (id: string, ip: string) => {
+    const res = await removeBlockRule(ip);
+    if (res.success) {
+      setBlockRules(prev => prev.filter(r => r.ip_address !== ip));
+      
+      // 방문자 로그 해제
+      setVisitors(prev => prev.map(v => {
+        if (v.ip_address === ip) {
+          return { ...v, status: 'Allowed', reason: undefined };
+        }
+        return v;
+      }));
 
-    showToast(`IP ${ip} has been removed from blocklist.`, 'success');
+      showToast(`IP ${ip} has been removed from blocklist.`, 'success');
+    } else {
+      showToast('Failed to remove block rule from DB.', 'warning');
+    }
   };
 
   // 7일간의 방문 트렌드 통계 생성
@@ -315,7 +325,7 @@ export default function VisitorManager({ initialVisitors }: VisitorManagerProps)
           <div className="absolute top-0 right-0 h-16 w-16 bg-violet-50/50 rounded-bl-full" />
           <p className="text-sm font-semibold text-gray-500">Total Visitors</p>
           <div className="mt-2 flex items-baseline gap-2">
-            <span className="text-3xl font-bold tracking-tight text-gray-800">{visitors.length + 2373}</span>
+            <span className="text-3xl font-bold tracking-tight text-gray-800">{totalVisitors}</span>
             <span className="text-xs font-semibold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded">+12.4%</span>
           </div>
           <p className="mt-1 text-xs text-gray-400">Total unique sessions cached</p>
@@ -329,10 +339,10 @@ export default function VisitorManager({ initialVisitors }: VisitorManagerProps)
           </div>
           <p className="text-sm font-semibold text-gray-500">Active Right Now</p>
           <div className="mt-2 flex items-baseline gap-2">
-            <span className="text-3xl font-bold tracking-tight text-gray-800">{liveCount}</span>
-            <span className="text-xs font-medium text-emerald-600">live user{(liveCount > 1) ? 's' : ''}</span>
+            <span className="text-3xl font-bold tracking-tight text-gray-800">{activeVisitors}</span>
+            <span className="text-xs font-medium text-emerald-600">active user{(activeVisitors !== 1) ? 's' : ''}</span>
           </div>
-          <p className="mt-1 text-xs text-gray-400">Mocking active site users</p>
+          <p className="mt-1 text-xs text-gray-400">Active sessions in last 30m</p>
         </div>
 
         {/* 전체 로그 목록 */}
@@ -340,7 +350,7 @@ export default function VisitorManager({ initialVisitors }: VisitorManagerProps)
           <p className="text-sm font-semibold text-gray-500">Today's Visitors</p>
           <div className="mt-2 flex items-baseline gap-2">
             <span className="text-3xl font-bold tracking-tight text-gray-800">
-              {visitors.filter(v => v.visited_date === '2026-06-20').length + 15}
+              {todayVisitors}
             </span>
             <span className="text-xs font-medium text-gray-400">unique IPs</span>
           </div>

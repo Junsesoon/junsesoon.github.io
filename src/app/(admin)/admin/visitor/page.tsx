@@ -1,27 +1,12 @@
 import React from 'react';
 import Link from 'next/link';
-import { query } from '../../../../infra/neon';
 import VisitorManager from '@/components/VisitorManager';
+import { getVisitorDashboardData } from '@/components/visitorActions';
 
 export const dynamic = 'force-dynamic';
 
 export default async function VisitorManagementPage() {
-  let visitors: any[] = [];
-  try {
-    const result = await query(`
-      SELECT 
-        visitor_id, 
-        ip_address, 
-        session_id, 
-        visited_date::text as visited_date
-      FROM site_visitors
-      ORDER BY visitor_id DESC
-      LIMIT 100
-    `);
-    visitors = result.rows;
-  } catch (error) {
-    console.error('Failed to fetch site visitors from DB:', error);
-  }
+  const { visitors, totalVisitors, todayVisitors, activeVisitors, blockRules } = await getVisitorDashboardData();
 
   return (
     <div className="mx-auto w-full max-w-[1000px] p-4 sm:p-8 font-sans">
@@ -38,7 +23,13 @@ export default async function VisitorManagementPage() {
         </Link>
       </header>
 
-      <VisitorManager initialVisitors={visitors} />
+      <VisitorManager 
+        initialVisitors={visitors} 
+        totalVisitors={totalVisitors} 
+        todayVisitors={todayVisitors} 
+        activeVisitors={activeVisitors} 
+        initialBlockRules={blockRules}
+      />
     </div>
   );
 }
