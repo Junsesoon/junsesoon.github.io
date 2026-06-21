@@ -1,7 +1,6 @@
 import React from 'react';
 import GNB from '@/components/GNB';
 import '@/styles/globals.css';
-import '@/styles/atom-one-dark.css';
 import Footer from '@/components/footer';
 import { cookies } from 'next/headers';
 import { verifyAdminToken } from '@/utils/auth';

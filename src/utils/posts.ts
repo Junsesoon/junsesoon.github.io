@@ -1,9 +1,4 @@
-import { unified } from 'unified';
-import remarkParse from 'remark-parse';
-import remarkGfm from 'remark-gfm';
-import remarkRehype from 'remark-rehype';
-import rehypeHighlight from 'rehype-highlight';
-import rehypeStringify from 'rehype-stringify';
+import { getParsedMarkdown } from './markdownCache';
 import { query } from '../infra/neon';
 import { Post, PostFilterOptions, FrontMatter, DbPost, DbPostRow } from '../types/blog';
 import { titleFromSlug } from './parser';
@@ -102,7 +97,7 @@ export const getAllPosts = async (
   filters: PostFilterOptions = {},
 ): Promise<Post[]> => {
   const result = await query<any>(`
-    SELECT post_id, likes_count, views_count, slug, title, content, properties, created_at, updated_at, post_status, draft_content
+    SELECT post_id, likes_count, views_count, slug, title, properties, created_at, updated_at, post_status
     FROM posts
   `);
 
@@ -141,7 +136,7 @@ export const getAllPosts = async (
 
 export const getCategoryPosts = async (category: string, mode: string = 'blog'): Promise<Post[]> => {
   const result = await query<any>(`
-    SELECT post_id, likes_count, views_count, slug, title, content, properties, created_at, updated_at, post_status, draft_content
+    SELECT post_id, likes_count, views_count, slug, title, properties, created_at, updated_at, post_status
     FROM posts
   `);
 
@@ -263,17 +258,15 @@ export const getPostData = async (id: string, mode: string = 'blog') => {
     throw new Error(`Post is not published: ${id}`);
   }
 
-  const processedContent = await unified()
-    .use(remarkParse)
-    .use(remarkGfm)
-    .use(remarkRehype)
-    .use(rehypeHighlight)
-    .use(rehypeStringify)
-    .process(post.content);
+  const { html: htmlContent } = await getParsedMarkdown(
+    id,
+    post.content,
+    post.metadata.enddate || post.metadata.startdate
+  );
 
   return {
     id,
-    htmlContent: String(processedContent),
+    htmlContent,
     metadata: post.metadata,
   };
 };

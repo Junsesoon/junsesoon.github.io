@@ -24,9 +24,9 @@
 npm run dev:poll
 
 # Post DB(neon) server connection test code
-npx tsx src/infra/db-test.ts
+npx tsx src/infra/neon-test.ts
 # Post DB(neon) migration code
-npx tsx src/infra/init-db.ts
+npx tsx src/infra/neon-db.ts
 
 # Image DB(r2) server connection test code
 npx tsx --env-file=.env src/infra/r2-test.ts

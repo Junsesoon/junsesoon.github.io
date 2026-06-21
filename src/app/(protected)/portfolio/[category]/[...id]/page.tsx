@@ -1,15 +1,10 @@
-import { unified } from 'unified';
-import remarkParse from 'remark-parse';
-import remarkGfm from 'remark-gfm';
-import remarkSlug from 'remark-slug';
-import remarkRehype from 'remark-rehype';
-import rehypeHighlight from 'rehype-highlight';
-import rehypeStringify from 'rehype-stringify';
 import TOC from '../../../../../components/TOC';
 import LikeButton from '../../../../../components/LikeButton';
 import ViewTracker from '../../../../../components/ViewTracker';
-import { collectTocHeadings, type TocHeading } from '../../../../../utils/parser';
+import { type TocHeading } from '../../../../../utils/parser';
 import { getDbPostBySlug, getAllPosts } from '../../../../../utils/posts';
+import { getParsedMarkdown } from '../../../../../utils/markdownCache';
+import '@/styles/atom-one-dark.css';
 
 export async function generateStaticParams() {
   const posts = await getAllPosts('portfolio');
@@ -53,19 +48,11 @@ export default async function PortfolioDetailPage({
     );
   }
 
-  const headings: TocHeading[] = [];
-
-  // Markdown to HTML with syntax highlighting
-  const processedContent = await unified()
-    .use(remarkParse)
-    .use(remarkGfm)
-    .use(remarkSlug as any)
-    .use(collectTocHeadings(headings))
-    .use(remarkRehype)
-    .use(rehypeHighlight)
-    .use(rehypeStringify)
-    .process(post.content);
-  const contentHtml = String(processedContent);
+  const { html: contentHtml, headings } = await getParsedMarkdown(
+    slug,
+    post.content,
+    post.metadata.enddate || post.metadata.startdate
+  );
 
   const postData = post.metadata;
 

@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { PORTFOLIO_MENU, BLOG_MENU, ENABLE_MODE_TOGGLE } from '@/constants';
 
@@ -9,10 +9,32 @@ interface GNBProps {
   isAdmin?: boolean;
 }
 
-const GNBContent: React.FC<GNBProps> = ({ isAdmin }) => {
+const GNBContent: React.FC<GNBProps> = ({ isAdmin: initialIsAdmin }) => {
   const router = useRouter();
   const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(initialIsAdmin ?? false);
+
+  useEffect(() => {
+    if (initialIsAdmin !== undefined) {
+      setIsAdmin(initialIsAdmin);
+      return;
+    }
+
+    const checkAdminStatus = async () => {
+      try {
+        const res = await fetch('/api/auth');
+        if (res.ok) {
+          const data = await res.json();
+          setIsAdmin(data.isAdmin);
+        }
+      } catch (error) {
+        console.error('Failed to fetch admin status in GNB:', error);
+      }
+    };
+
+    checkAdminStatus();
+  }, [initialIsAdmin]);
 
   const getMode = () => {
     return pathname.startsWith('/portfolio') ? 'portfolio' : 'blog';
