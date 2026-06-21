@@ -185,7 +185,7 @@ export default function TemplateManager({ initialTemplates }: { initialTemplates
   };
 
   return (
-    <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
+    <div className="rounded-2xl border border-gray-200/60 bg-white/80 p-6 shadow-sm backdrop-blur-md transition-all hover:shadow-md hover:border-gray-300/80">
       
       {/* Template Selector (Tabs) */}
       <div className="flex space-x-2 mb-1 overflow-x-auto pb-2 scrollbar-hide items-center">
@@ -193,10 +193,10 @@ export default function TemplateManager({ initialTemplates }: { initialTemplates
           <button
             key={templateName}
             onClick={() => setSelectedTemplate(templateName)}
-            className={`px-4 py-1.5 text-sm rounded-lg font-medium transition-all duration-200 whitespace-nowrap outline-none ${
+            className={`px-4 py-1.5 text-xs rounded-lg font-medium transition-all duration-200 whitespace-nowrap outline-none ${
               selectedTemplate === templateName
-                ? 'bg-blue-600 text-white shadow-sm'
-                : 'bg-white text-gray-600 hover:bg-gray-50 hover:text-gray-900 border border-gray-200'
+                ? 'bg-[#0071e3] text-white shadow-sm'
+                : 'bg-white text-gray-600 hover:bg-gray-50 hover:text-gray-900 border border-gray-200/60'
             }`}
           >
             {templateName.charAt(0).toUpperCase() + templateName.slice(1)}
@@ -301,14 +301,14 @@ export default function TemplateManager({ initialTemplates }: { initialTemplates
               </div>
 
               <div className={`flex items-center mb-2 sm:mb-0 sm:pb-3 group ${isSaving ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`} onClick={() => !isSaving && setIsNewRequired(!isNewRequired)}>
-                <div className={`w-5 h-5 flex items-center justify-center border rounded mr-2 transition-colors ${isNewRequired ? 'bg-blue-600 border-blue-600' : 'border-gray-300 bg-white group-hover:border-gray-400'}`}>
+                <div className={`w-4 h-4 flex items-center justify-center border rounded-[3px] mr-2 transition-colors ${isNewRequired ? 'bg-[#0071e3] border-[#0071e3]' : 'border-gray-300/85 bg-white group-hover:border-gray-400'}`}>
                   {isNewRequired && <svg className="w-3.5 h-3.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>}
                 </div>
-                <span className="text-sm font-medium text-gray-700 group-hover:text-gray-900 transition-colors select-none">Required</span>
+                <span className="text-xs font-medium text-gray-700 group-hover:text-gray-900 transition-colors select-none">Required</span>
               </div>
 
-              <button type="submit" disabled={isSaving} className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-md font-semibold shadow-sm transition-colors active:scale-95 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd" /></svg>
+              <button type="submit" disabled={isSaving} className="w-full sm:w-auto bg-[#0071e3] hover:bg-[#0077ed] text-white px-5 py-1.5 rounded-lg text-xs font-medium shadow-[0_1px_2px_rgba(0,113,227,0.15)] transition-all active:scale-95 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd" /></svg>
                 Add Property
               </button>
             </form>
@@ -322,7 +322,7 @@ export default function TemplateManager({ initialTemplates }: { initialTemplates
               </h2>
               <button
                 onClick={() => handleDeleteTemplate(selectedTemplate)}
-            className="text-red-500 hover:text-red-700 hover:bg-red-50 px-3 py-1.5 rounded-md transition-colors text-sm font-medium flex items-center gap-1.5 focus:outline-none"
+                className="text-red-600 hover:text-red-700 hover:bg-red-50 px-3.5 py-1.5 rounded-lg transition-all text-xs font-medium flex items-center gap-1.5 focus:outline-none"
                 title="Delete Template"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -337,7 +337,7 @@ export default function TemplateManager({ initialTemplates }: { initialTemplates
                 <p className="text-gray-500 text-sm">No properties defined for this template.</p>
               </div>
             ) : (
-              <ul className="border border-gray-200 rounded-xl overflow-hidden bg-white divide-y divide-gray-200">
+              <ul className="border border-gray-200/60 rounded-2xl overflow-hidden bg-white/80 shadow-sm backdrop-blur-md divide-y divide-gray-150">
                 {currentProperties.map((prop) => {
                   const isSystemProp = SYSTEM_PROPS.includes(prop.propertyName);
                   return (
@@ -393,18 +393,18 @@ export default function TemplateManager({ initialTemplates }: { initialTemplates
           </div>
 
           {/* Template Content Box */}
-            <div className="rounded-xl border border-gray-200 overflow-hidden shadow-sm focus-within:border-blue-500 focus-within:ring-1 focus-within:ring-blue-500 transition-all bg-white">
+            <div className="rounded-2xl border border-gray-200/60 overflow-hidden shadow-sm focus-within:border-[#0071e3] focus-within:ring-1 focus-within:ring-[#0071e3] transition-all bg-white/80 backdrop-blur-md">
               <textarea
                 value={templateContents[selectedTemplate] || ''}
                 onChange={(e) => setTemplateContents(prev => ({ ...prev, [selectedTemplate]: e.target.value }))}
                 placeholder="Write the default markdown content for this template here..."
                 className="w-full h-64 p-4 text-sm text-gray-800 font-mono focus:outline-none resize-y bg-transparent"
               />
-              <div className="bg-gray-50 px-4 py-3 border-t border-gray-200 flex justify-end">
+              <div className="bg-gray-50/50 px-4 py-3 border-t border-gray-200 flex justify-end">
                 <button
                   onClick={() => alert('Content save functionality requires backend implementation.')}
                   disabled={isSaving}
-                  className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-md text-sm font-semibold transition-colors shadow-sm active:scale-95 disabled:opacity-50"
+                  className="bg-[#0071e3] hover:bg-[#0077ed] text-white px-5 py-1.5 rounded-lg text-xs font-medium shadow-[0_1px_2px_rgba(0,113,227,0.15)] transition-all active:scale-95 disabled:opacity-50"
                 >
                   Save Content
                 </button>

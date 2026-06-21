@@ -4,6 +4,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { addSkillTreeDomainAction, getSkillTreeDomainsAction, deleteSkillTreeDomainAction, updateSkillTreeDomainAction, updateSkillTreeDomainOrdersAction, getSkillTreeCardsAction } from './skillTreeActions';
 import { createPostAction, updatePostAction, deletePostAction } from './postActions';
+import AdminClock from './AdminClock';
+import { logoutAction } from './actions';
 
 export default function SkillTreeManager() {
   const [title, setTitle] = useState('');
@@ -284,7 +286,7 @@ export default function SkillTreeManager() {
   const renderCardSortIcon = (key: string) => {
     const isActive = cardSortConfig.key === key;
     return (
-      <span className={`text-[10px] shrink-0 ml-1 ${isActive ? 'text-blue-600' : 'text-gray-300 group-hover:text-blue-400 transition-colors'}`}>
+      <span className={`text-[10px] shrink-0 ml-1 ${isActive ? 'text-gray-600' : 'text-gray-300 group-hover:text-gray-500'}`}>
         {isActive ? (cardSortConfig.order === 'asc' ? '▲' : '▼') : '↕'}
       </span>
     );
@@ -307,28 +309,126 @@ export default function SkillTreeManager() {
   });
 
   return (
-    <div className="mx-auto w-full max-w-[1000px] p-4 sm:p-8 font-sans">
-      <header className="mb-8 flex items-center justify-between border-b border-gray-200 pb-4">
+    <div className="flex min-h-screen w-full bg-gray-50/50 font-sans">
+      {/* Apple-style Sidebar */}
+      <aside className="w-64 border-r border-gray-200 bg-white/80 p-6 backdrop-blur-md flex flex-col justify-between shrink-0">
         <div>
-          <h1 className="text-3xl font-bold text-gray-800">Manage SkillTree</h1>
-          <p className="mt-2 text-sm text-gray-500">
-            스킬 트리 페이지에 노출될 카테고리(그리드) 목록과 설명을 관리합니다
-          </p>
+          {/* Logo / Title */}
+          <div className="mb-8 flex items-center gap-3 px-2">
+            <div className="h-8 w-8 rounded-lg bg-blue-600 flex items-center justify-center text-white font-bold text-lg shadow-sm">
+              J
+            </div>
+            <div>
+              <h2 className="text-sm font-semibold text-gray-900 leading-none">Junseo Admin</h2>
+              <span className="text-xs text-gray-400">System Dashboard</span>
+            </div>
+          </div>
+
+          {/* Navigation Links */}
+          <nav className="space-y-1">
+            <p className="px-2 text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-2">Workspace</p>
+            <Link
+              href="/admin"
+              className="flex items-center gap-3 px-3 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-100/70 rounded-lg transition-colors"
+            >
+              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2H6a2 2 0 01-2-2v-4zM14 16a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2h-2a2 2 0 01-2-2v-4z" />
+              </svg>
+              Overview
+            </Link>
+            <Link
+              href="/admin/skilltree"
+              className="flex items-center gap-3 px-3 py-2 text-sm font-medium text-blue-600 bg-blue-50/50 rounded-lg transition-colors"
+            >
+              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+              Skill Tree
+            </Link>
+            <Link
+              href="/admin/property"
+              className="flex items-center gap-3 px-3 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-100/70 rounded-lg transition-colors"
+            >
+              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+              </svg>
+              Properties
+            </Link>
+            <Link
+              href="/admin/template"
+              className="flex items-center gap-3 px-3 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-100/70 rounded-lg transition-colors"
+            >
+              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z" />
+              </svg>
+              Templates
+            </Link>
+            <Link
+              href="/admin/visitor"
+              className="flex items-center gap-3 px-3 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-100/70 rounded-lg transition-colors"
+            >
+              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+              </svg>
+              Visitor Logs
+            </Link>
+            
+            <p className="px-2 text-[10px] font-bold uppercase tracking-wider text-gray-400 pt-6 mb-2">Metrics (To be added)</p>
+            <div className="flex items-center gap-3 px-3 py-2 text-sm font-medium text-gray-400 cursor-not-allowed rounded-lg">
+              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+              </svg>
+              Analytics
+            </div>
+            <div className="flex items-center gap-3 px-3 py-2 text-sm font-medium text-gray-400 cursor-not-allowed rounded-lg">
+              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+              </svg>
+              Settings
+            </div>
+          </nav>
         </div>
-        <Link
-          href="/admin"
-          className="inline-flex items-center justify-center rounded-md bg-gray-100 px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-200"
-        >
-          ← Back to Dashboard
-        </Link>
-      </header>
+
+        {/* User profile */}
+        <div className="border-t border-gray-200 pt-4 flex flex-col gap-3">
+          <div className="flex items-center gap-3 px-2">
+            <div className="h-9 w-9 rounded-full bg-gray-200 flex items-center justify-center text-sm font-semibold text-gray-600">
+              JS
+            </div>
+            <div>
+              <p className="text-xs font-semibold text-gray-800 leading-none">Admin Junseo</p>
+              <span className="text-[10px] text-gray-400">admin@incheon-people</span>
+            </div>
+          </div>
+        </div>
+      </aside>
+
+      {/* Main Content Area */}
+      <main className="flex-1 p-4 sm:p-8 max-w-none w-full overflow-y-auto">
+        <header className="mb-8 flex flex-col sm:flex-row sm:items-end justify-between border-b border-gray-200 pb-4 gap-4">
+          <AdminClock title="Skill Tree" />
+          <div className="flex items-center gap-3">
+            <Link
+              href="/"
+              className="inline-flex items-center justify-center rounded-lg bg-gray-100 px-3.5 py-1.5 text-xs font-medium text-gray-800 transition-all hover:bg-gray-200/80"
+            >
+              ← Back to Home
+            </Link>
+            <form action={logoutAction}>
+              <button type="submit" className="inline-flex items-center justify-center rounded-lg bg-red-50 px-3.5 py-1.5 text-xs font-medium text-red-600 transition-all hover:bg-red-100/80">
+                Logout
+              </button>
+            </form>
+          </div>
+        </header>
 
       <div className="flex flex-col gap-8">
         {/* --- 도메인 관리 영역 (1단) --- */}
         <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
           {/* 왼쪽: 새 스킬 트리 도메인 추가 폼 */}
           <div className="md:col-span-1">
-          <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
+          <div className="rounded-2xl border border-gray-200/60 bg-white/80 p-6 shadow-sm backdrop-blur-md transition-all hover:shadow-md hover:border-gray-300/80">
             <h2 className="mb-4 text-lg font-semibold text-gray-800">{editingId ? 'Edit Domain' : 'Add New Domain'}</h2>
             <form className="space-y-4" onSubmit={handleSubmit}>
               <div>
@@ -345,11 +445,11 @@ export default function SkillTreeManager() {
                 <p className="mt-1 text-xs text-gray-500">게시물의 <span className="font-semibold text-gray-700">category2</span> 속성과 일치해야 해당 그리드에 카드가 표시됩니다</p>
               </div>
               <div className="mt-4 flex gap-3">
-                <button type="submit" disabled={isSubmitting} className={`flex-1 rounded-md px-4 py-2 text-sm font-semibold text-white shadow-sm transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${isSubmitting ? 'bg-blue-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'}`}>
+                <button type="submit" disabled={isSubmitting} className={`flex-1 rounded-lg px-3.5 py-1.5 text-xs font-medium text-white shadow-[0_1px_2px_rgba(0,113,227,0.15)] transition-all focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${isSubmitting ? 'bg-[#0071e3]/50 cursor-not-allowed' : 'bg-[#0071e3] hover:bg-[#0077ed]'}`}>
                   {isSubmitting ? (editingId ? 'Updating...' : 'Adding...') : (editingId ? 'Update' : 'Add Domain')}
                 </button>
                 {editingId && (
-                  <button type="button" onClick={cancelEdit} disabled={isSubmitting} className="flex-1 rounded-md bg-white px-4 py-2 text-sm font-semibold text-gray-700 shadow-sm transition-colors hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-200 focus:ring-offset-2">
+                  <button type="button" onClick={cancelEdit} disabled={isSubmitting} className="flex-1 rounded-lg bg-gray-100 px-3.5 py-1.5 text-xs font-medium text-gray-800 transition-all hover:bg-gray-200/80 focus:outline-none focus:ring-2 focus:ring-gray-200 focus:ring-offset-2">
                     Cancel
                   </button>
                 )}
@@ -360,26 +460,26 @@ export default function SkillTreeManager() {
 
         {/* 오른쪽: 기존 도메인 관리 목록 */}
         <div className="md:col-span-2">
-          <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
+          <div className="overflow-hidden rounded-2xl border border-gray-200/60 bg-white/80 shadow-sm backdrop-blur-md transition-all hover:shadow-md hover:border-gray-300/80">
             <div className="overflow-x-auto w-full">
-              <table className="w-full divide-y divide-gray-200 text-left text-sm table-fixed">
-                <thead className="bg-gray-50">
+              <table className="w-full table-fixed divide-y divide-gray-200 text-left text-sm">
+                <thead className="bg-transparent border-b border-gray-100">
                   <tr>
-                    <th scope="col" className="w-16 px-2 py-3 text-center font-semibold text-gray-400 align-middle">No</th>
-                    <th scope="col" className="px-2 py-3 font-semibold text-gray-900 align-middle truncate">Name</th>
-                    <th scope="col" className="w-48 px-2 py-3 font-semibold text-gray-900 align-middle truncate hidden md:table-cell">Description</th>
-                    <th scope="col" className="w-32 px-2 py-3 font-semibold text-gray-900 align-middle truncate hidden sm:table-cell">Match Cat2</th>
-                    <th scope="col" className="w-24 px-2 py-3 text-center font-semibold text-gray-900 align-middle">Actions</th>
+                    <th scope="col" className="w-16 py-3 px-4 text-center text-[10px] font-bold text-gray-400 uppercase tracking-wider align-middle truncate">No</th>
+                    <th scope="col" className="w-40 py-3 px-4 text-[10px] font-bold text-gray-400 uppercase tracking-wider align-middle truncate">Name</th>
+                    <th scope="col" className="py-3 px-4 text-[10px] font-bold text-gray-400 uppercase tracking-wider align-middle truncate hidden md:table-cell">Description</th>
+                    <th scope="col" className="w-32 py-3 px-4 text-[10px] font-bold text-gray-400 uppercase tracking-wider align-middle truncate hidden sm:table-cell">Match Cat2</th>
+                    <th scope="col" className="w-24 py-3 px-4 text-center text-[10px] font-bold text-gray-400 uppercase tracking-wider align-middle truncate">Actions</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-200 bg-white">
+                <tbody className="divide-y divide-gray-100 bg-white">
                 {isDomainsLoading ? (
                   <tr>
-                    <td colSpan={5} className="px-4 py-8 text-center text-sm text-gray-500">Loading domains...</td>
+                    <td colSpan={5} className="h-[48px] text-center text-gray-500 align-middle">Loading domains...</td>
                   </tr>
                 ) : domains.length === 0 ? (
                   <tr>
-                    <td colSpan={5} className="px-4 py-8 text-center text-sm text-gray-500">No domains found.</td>
+                    <td colSpan={5} className="h-[48px] text-center text-gray-500 align-middle">No domains found.</td>
                   </tr>
                 ) : (
                   domains.map((domain, index) => (
@@ -395,40 +495,40 @@ export default function SkillTreeManager() {
                       onTouchMove={handleTouchMove}
                       onTouchEnd={handleTouchEnd}
                       // 터치 드래그 중에 브라우저의 기본 스크롤 동작이 간섭하지 않도록 touch-none 적용
-                      className="transition-colors hover:bg-gray-50 cursor-move touch-none"
+                      className="transition-colors hover:bg-gray-50/50 cursor-move touch-none"
                     >
-                      <td className="px-2 py-3 text-center truncate">
-                        <div className="flex items-center justify-center gap-1.5" title="Drag to reorder">
-                          <svg className="h-4 w-4 text-gray-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <td className="h-[48px] text-center overflow-hidden">
+                        <div className="flex items-center justify-center h-full gap-1.5" title="Drag to reorder">
+                          <svg className="h-3.5 w-3.5 text-gray-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" />
                           </svg>
                           <span className="text-xs font-semibold text-gray-400">{domain.displayOrder || index + 1}</span>
                         </div>
                       </td>
-                      <td className="px-2 py-3 font-medium text-gray-900 truncate" title={domain.title}>{domain.title}</td>
-                      <td className="px-2 py-3 text-gray-500 truncate hidden md:table-cell" title={domain.description}>{domain.description}</td>
-                      <td className="px-2 py-3 truncate hidden sm:table-cell" title={domain.matchCategory2}>
-                        <span className="inline-block px-2 py-1 text-xs font-semibold text-blue-700 truncate max-w-full">
+                      <td className="h-[48px] px-4 font-semibold text-gray-900 whitespace-nowrap truncate" title={domain.title}>{domain.title}</td>
+                      <td className="h-[48px] px-4 text-gray-500 text-xs whitespace-nowrap truncate hidden md:table-cell" title={domain.description}>{domain.description || '-'}</td>
+                      <td className="h-[48px] px-4 whitespace-nowrap truncate hidden sm:table-cell" title={domain.matchCategory2}>
+                        <span className="inline-flex items-center rounded-full border border-blue-100 bg-blue-50 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-blue-600">
                           {domain.matchCategory2}
                         </span>
                       </td>
-                      <td className="px-2 py-3 text-center whitespace-nowrap">
-                        <div className="flex items-center justify-center">
+                      <td className="h-[48px] text-center whitespace-nowrap">
+                        <div className="flex items-center justify-center gap-1">
                           <button 
                             onClick={() => handleEdit(domain)}
-                            className="text-gray-400 hover:text-blue-600 hover:bg-blue-50 p-2 rounded-md transition-colors focus:outline-none"
+                            className="text-gray-400 hover:text-blue-600 hover:bg-blue-50/50 p-1.5 rounded-lg transition-colors focus:outline-none"
                             title={`Edit ${domain.title}`}
                           >
-                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
                               <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
                             </svg>
                           </button>
                           <button 
                             onClick={() => handleDelete(domain.id, domain.title)}
-                            className="text-gray-400 hover:text-red-600 hover:bg-red-50 p-2 rounded-md transition-colors focus:outline-none"
+                            className="text-gray-400 hover:text-red-600 hover:bg-red-50/50 p-1.5 rounded-lg transition-colors focus:outline-none"
                             title={`Delete ${domain.title}`}
                           >
-                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
                               <path fillRule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd" />
                             </svg>
                           </button>
@@ -440,7 +540,7 @@ export default function SkillTreeManager() {
                 </tbody>
               </table>
             </div>
-            <div className="flex items-center justify-between border-t border-gray-200 bg-gray-50 px-6 py-4 text-sm text-gray-500">
+            <div className="flex items-center justify-between border-t border-gray-100 bg-white px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider">
               <span>Total {domains.length} domains</span>
               {isSavingOrder && <span className="font-semibold text-blue-600 animate-pulse">Saving order...</span>}
             </div>
@@ -452,7 +552,7 @@ export default function SkillTreeManager() {
       <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
         {/* 왼쪽: 새 스킬 트리 카드 추가 폼 */}
         <div className="md:col-span-1">
-          <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
+          <div className="rounded-2xl border border-gray-200/60 bg-white/80 p-6 shadow-sm backdrop-blur-md transition-all hover:shadow-md hover:border-gray-300/80">
             <h2 className="mb-4 text-lg font-semibold text-gray-800">{editingCardSlug ? 'Edit Skill Card' : 'Add New Skill Card'}</h2>
             <form className="space-y-4" onSubmit={handleCardSubmit}>
               <div>
@@ -500,11 +600,11 @@ export default function SkillTreeManager() {
                 </div>
               </div>
               <div className="mt-4 flex gap-3">
-                <button type="submit" disabled={isCardSubmitting} className={`flex-1 rounded-md px-4 py-2 text-sm font-semibold text-white shadow-sm transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${isCardSubmitting ? 'bg-blue-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'}`}>
+                <button type="submit" disabled={isCardSubmitting} className={`flex-1 rounded-lg px-3.5 py-1.5 text-xs font-medium text-white shadow-[0_1px_2px_rgba(0,113,227,0.15)] transition-all focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${isCardSubmitting ? 'bg-[#0071e3]/50 cursor-not-allowed' : 'bg-[#0071e3] hover:bg-[#0077ed]'}`}>
                   {isCardSubmitting ? (editingCardSlug ? 'Updating...' : 'Adding...') : (editingCardSlug ? 'Update' : 'Add Skill Card')}
                 </button>
                 {editingCardSlug && (
-                  <button type="button" onClick={cancelCardEdit} disabled={isCardSubmitting} className="flex-1 rounded-md bg-white px-4 py-2 text-sm font-semibold text-gray-700 shadow-sm transition-colors hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-200 focus:ring-offset-2">
+                  <button type="button" onClick={cancelCardEdit} disabled={isCardSubmitting} className="flex-1 rounded-lg bg-gray-100 px-3.5 py-1.5 text-xs font-medium text-gray-800 transition-all hover:bg-gray-200/80 focus:outline-none focus:ring-2 focus:ring-gray-200 focus:ring-offset-2">
                     Cancel
                   </button>
                 )}
@@ -515,62 +615,82 @@ export default function SkillTreeManager() {
 
         {/* 오른쪽: 스킬 카드 목록 테이블 */}
         <div className="md:col-span-2">
-          <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
+          <div className="overflow-hidden rounded-2xl border border-gray-200/60 bg-white/80 shadow-sm backdrop-blur-md transition-all hover:shadow-md hover:border-gray-300/80">
             <div className="overflow-x-auto w-full">
-              <table className="w-full divide-y divide-gray-200 text-left text-sm table-fixed">
-              <thead className="bg-gray-50">
+              <table className="w-full table-fixed divide-y divide-gray-200 text-left text-sm">
+              <thead className="bg-transparent border-b border-gray-100">
                 <tr>
-                  <th scope="col" className="w-12 px-2 py-3 text-center font-semibold text-gray-400 align-middle">No</th>
-                  <th scope="col" className="px-2 py-3 font-semibold text-gray-900 align-middle truncate cursor-pointer select-none group hover:bg-gray-200 transition-colors" onClick={() => handleCardSort('title')}>
-                    <div className="flex items-center">Name {renderCardSortIcon('title')}</div>
+                  <th scope="col" className="w-12 py-3 px-4 text-center text-[10px] font-bold text-gray-400 uppercase tracking-wider align-middle truncate">No</th>
+                  <th scope="col" className="w-40 py-3 px-4 text-[10px] font-bold text-gray-400 uppercase tracking-wider align-middle truncate cursor-pointer select-none group hover:text-gray-700 transition-colors" onClick={() => handleCardSort('title')}>
+                    <div className="flex items-center gap-1">Name {renderCardSortIcon('title')}</div>
                   </th>
-                  <th scope="col" className="w-24 px-2 py-3 font-semibold text-gray-900 align-middle truncate hidden sm:table-cell cursor-pointer select-none group hover:bg-gray-200 transition-colors" onClick={() => handleCardSort('category2')}>
-                    <div className="flex items-center">Domain {renderCardSortIcon('category2')}</div>
+                  <th scope="col" className="w-32 py-3 px-4 text-[10px] font-bold text-gray-400 uppercase tracking-wider align-middle truncate hidden sm:table-cell cursor-pointer select-none group hover:text-gray-700 transition-colors" onClick={() => handleCardSort('category2')}>
+                    <div className="flex items-center gap-1">Domain {renderCardSortIcon('category2')}</div>
                   </th>
-                  <th scope="col" className="w-28 px-2 py-3 font-semibold text-gray-900 align-middle truncate hidden md:table-cell cursor-pointer select-none group hover:bg-gray-200 transition-colors" onClick={() => handleCardSort('category3')}>
-                    <div className="flex items-center">Sub Domain {renderCardSortIcon('category3')}</div>
+                  <th scope="col" className="w-36 py-3 px-4 text-[10px] font-bold text-gray-400 uppercase tracking-wider align-middle truncate hidden md:table-cell cursor-pointer select-none group hover:text-gray-700 transition-colors" onClick={() => handleCardSort('category3')}>
+                    <div className="flex items-center gap-1">Sub Domain {renderCardSortIcon('category3')}</div>
                   </th>
-                  <th scope="col" className="w-32 px-2 py-3 font-semibold text-gray-900 align-middle truncate hidden lg:table-cell cursor-pointer select-none group hover:bg-gray-200 transition-colors" onClick={() => handleCardSort('parentSkill')}>
-                    <div className="flex items-center">Parent Skill {renderCardSortIcon('parentSkill')}</div>
+                  <th scope="col" className="py-3 px-4 text-[10px] font-bold text-gray-400 uppercase tracking-wider align-middle truncate hidden lg:table-cell cursor-pointer select-none group hover:text-gray-700 transition-colors" onClick={() => handleCardSort('parentSkill')}>
+                    <div className="flex items-center gap-1">Parent Skill {renderCardSortIcon('parentSkill')}</div>
                   </th>
-                  <th scope="col" className="w-24 px-2 py-3 text-center font-semibold text-gray-900 align-middle">Actions</th>
+                  <th scope="col" className="w-24 py-3 px-4 text-center text-[10px] font-bold text-gray-400 uppercase tracking-wider align-middle truncate">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-200 bg-white">
+              <tbody className="divide-y divide-gray-100 bg-white">
                 {isCardsLoading ? (
                   <tr>
-                    <td colSpan={6} className="px-4 py-8 text-center text-sm text-gray-500">Loading cards...</td>
+                    <td colSpan={6} className="h-[48px] text-center text-gray-500 align-middle">Loading cards...</td>
                   </tr>
                 ) : skillCards.length === 0 ? (
                   <tr>
-                    <td colSpan={6} className="px-4 py-8 text-center text-sm text-gray-500">No skill cards found.</td>
+                    <td colSpan={6} className="h-[48px] text-center text-gray-500 align-middle">No skill cards found.</td>
                   </tr>
                 ) : (
                   sortedSkillCards.map((card, index) => (
-                    <tr key={index} className={`transition-colors hover:bg-gray-50 cursor-pointer ${editingCardSlug === card.slug ? 'bg-blue-50' : ''}`} onClick={() => handleCardClick(card)}>
-                      <td className="px-2 py-3 text-center text-gray-500 truncate">{index + 1}</td>
-                      <td className="px-2 py-3 font-medium text-gray-900 truncate" title={card.title}>{card.title}</td>
-                      <td className="px-2 py-3 text-gray-500 truncate hidden sm:table-cell" title={card.category2 || ''}>{card.category2 || '-'}</td>
-                      <td className="px-2 py-3 text-gray-500 truncate hidden md:table-cell" title={card.category3 || ''}>{card.category3 || '-'}</td>
-                      <td className="px-2 py-3 text-gray-500 truncate hidden lg:table-cell" title={card.parentSkill}>{card.parentSkill || '-'}</td>
-                      <td className="px-2 py-3 text-center whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
-                        <div className="flex items-center justify-center">
+                    <tr key={index} className={`transition-colors hover:bg-gray-50/50 cursor-pointer ${editingCardSlug === card.slug ? 'bg-blue-50/30' : ''}`} onClick={() => handleCardClick(card)}>
+                      <td className="h-[48px] text-center overflow-hidden">
+                        <div className="flex items-center justify-center h-full">
+                          <span className="text-xs font-semibold text-gray-400">{index + 1}</span>
+                        </div>
+                      </td>
+                      <td className="h-[48px] px-4 font-semibold text-gray-900 whitespace-nowrap truncate" title={card.title}>{card.title}</td>
+                      <td className="h-[48px] px-4 whitespace-nowrap truncate hidden sm:table-cell" title={card.category2 || ''}>
+                        {card.category2 ? (
+                          <span className="inline-flex items-center rounded-full border border-purple-100 bg-purple-50 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-purple-600">
+                            {card.category2}
+                          </span>
+                        ) : (
+                          <span className="text-gray-300">-</span>
+                        )}
+                      </td>
+                      <td className="h-[48px] px-4 whitespace-nowrap truncate hidden md:table-cell" title={card.category3 || ''}>
+                        {card.category3 ? (
+                          <span className="inline-flex items-center rounded-full border border-cyan-100 bg-cyan-50 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-cyan-600">
+                            {card.category3}
+                          </span>
+                        ) : (
+                          <span className="text-gray-300">-</span>
+                        )}
+                      </td>
+                      <td className="h-[48px] px-4 text-gray-500 text-xs whitespace-nowrap truncate hidden lg:table-cell" title={card.parentSkill}>{card.parentSkill || '-'}</td>
+                      <td className="h-[48px] text-center whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
+                        <div className="flex items-center justify-center gap-1">
                           <Link 
                             href={`/admin/edit/${card.slug.split('/').map(encodeURIComponent).join('/')}?redirect=/admin/skilltree`}
-                            className="text-gray-400 hover:text-blue-600 hover:bg-blue-50 p-2 rounded-md transition-colors focus:outline-none block"
+                            className="text-gray-400 hover:text-blue-600 hover:bg-blue-50/50 p-1.5 rounded-lg transition-colors focus:outline-none block"
                             title={`Edit ${card.title}`}
                           >
-                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
                               <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
                             </svg>
                           </Link>
                           <button 
                             type="button" 
                             onClick={() => handleDeleteCard(card.slug, card.title)}
-                            className="text-gray-400 hover:text-red-600 hover:bg-red-50 p-2 rounded-md transition-colors focus:outline-none"
+                            className="text-gray-400 hover:text-red-600 hover:bg-red-50/50 p-1.5 rounded-lg transition-colors focus:outline-none"
                             title={`Delete ${card.title}`}
                           >
-                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
                               <path fillRule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd" />
                             </svg>
                           </button>
@@ -582,13 +702,14 @@ export default function SkillTreeManager() {
               </tbody>
             </table>
             </div>
-            <div className="flex items-center justify-between border-t border-gray-200 bg-gray-50 px-6 py-4 text-sm text-gray-500">
+            <div className="flex items-center justify-between border-t border-gray-100 bg-white px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider">
               <span>Total {skillCards.length} cards</span>
             </div>
           </div>
         </div>
       </div>
-    </div>
+      </div>
+    </main>
   </div>
-  );
+);
 }

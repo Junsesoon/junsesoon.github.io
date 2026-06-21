@@ -308,7 +308,7 @@ export default function VisitorManager({ initialVisitors, totalVisitors, todayVi
       {/* 요약 메트릭 그리드 */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-4">
         {/* 전체 방문객 */}
-        <div className="relative overflow-hidden rounded-xl border border-violet-100 bg-white p-5 shadow-sm transition-all duration-300 hover:shadow-md">
+        <div className="relative overflow-hidden rounded-2xl border border-violet-100 bg-white/80 p-5 shadow-sm backdrop-blur-md transition-all hover:shadow-md hover:border-violet-200">
           <div className="absolute top-0 right-0 h-16 w-16 bg-violet-50/50 rounded-bl-full" />
           <p className="text-sm font-semibold text-gray-500">Total Visitors</p>
           <div className="mt-2 flex items-baseline gap-2">
@@ -321,7 +321,7 @@ export default function VisitorManager({ initialVisitors, totalVisitors, todayVi
         </div>
 
         {/* 실시간 세션 */}
-        <div className="relative overflow-hidden rounded-xl border border-emerald-100 bg-white p-5 shadow-sm transition-all duration-300 hover:shadow-md">
+        <div className="relative overflow-hidden rounded-2xl border border-emerald-100 bg-white/80 p-5 shadow-sm backdrop-blur-md transition-all hover:shadow-md hover:border-emerald-200">
           <div className="absolute top-2 right-4 flex h-3 w-3">
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
             <span className="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
@@ -335,7 +335,7 @@ export default function VisitorManager({ initialVisitors, totalVisitors, todayVi
         </div>
 
         {/* 전체 로그 목록 */}
-        <div className="relative overflow-hidden rounded-xl border border-indigo-100 bg-white p-5 shadow-sm transition-all duration-300 hover:shadow-md">
+        <div className="relative overflow-hidden rounded-2xl border border-indigo-100 bg-white/80 p-5 shadow-sm backdrop-blur-md transition-all hover:shadow-md hover:border-indigo-200">
           <p className="text-sm font-semibold text-gray-500">Today's Visitors</p>
           <div className="mt-2 flex items-baseline gap-2">
             <span className="text-3xl font-bold tracking-tight text-gray-800">
@@ -347,7 +347,7 @@ export default function VisitorManager({ initialVisitors, totalVisitors, todayVi
         </div>
 
         {/* 차단된 IP 수 */}
-        <div className="relative overflow-hidden rounded-xl border border-rose-100 bg-white p-5 shadow-sm transition-all duration-300 hover:shadow-md">
+        <div className="relative overflow-hidden rounded-2xl border border-rose-100 bg-white/80 p-5 shadow-sm backdrop-blur-md transition-all hover:shadow-md hover:border-rose-200">
           <p className="text-sm font-semibold text-gray-500">Security Rules</p>
           <div className="mt-2 flex items-baseline gap-2">
             <span className="text-3xl font-bold tracking-tight text-gray-800">{blockRules.length}</span>
@@ -360,7 +360,7 @@ export default function VisitorManager({ initialVisitors, totalVisitors, todayVi
       {/* SVG 그래프 & 통계 정보 레이아웃 */}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         {/* 그래프 카드 */}
-        <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm lg:col-span-2">
+        <div className="rounded-2xl border border-gray-200/60 bg-white/80 p-5 shadow-sm backdrop-blur-md transition-all hover:shadow-md hover:border-gray-300/80 lg:col-span-2">
           <div className="flex items-center justify-between mb-4">
             <div>
               <h3 className="text-base font-bold text-gray-800">Visitor Traffic Trend</h3>
@@ -474,7 +474,7 @@ export default function VisitorManager({ initialVisitors, totalVisitors, todayVi
         </div>
 
         {/* 오른쪽 패널: 브라우저/디바이스 통계 */}
-        <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+        <div className="rounded-2xl border border-gray-200/60 bg-white/80 p-5 shadow-sm backdrop-blur-md transition-all hover:shadow-md hover:border-gray-300/80">
           <h3 className="text-base font-bold text-gray-800">Browser Distribution</h3>
           <p className="text-xs text-gray-400 mb-6">Device client types mapping</p>
 
@@ -608,7 +608,7 @@ export default function VisitorManager({ initialVisitors, totalVisitors, todayVi
       {activeTab === 'logs' && (
         <div className="space-y-4">
           {/* 테이블 컨테이너 */}
-          <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white shadow-sm">
+          <div className="overflow-x-auto rounded-2xl border border-gray-200/60 bg-white/80 shadow-sm backdrop-blur-md transition-all hover:shadow-md hover:border-gray-300/80">
             {filteredVisitors.length === 0 ? (
               <div className="p-8 text-center text-gray-500">
                 <p className="text-base font-medium">No visitor logs match your filters.</p>
@@ -618,7 +618,7 @@ export default function VisitorManager({ initialVisitors, totalVisitors, todayVi
               </div>
             ) : (
               <table className="w-full border-collapse text-left text-sm text-gray-500">
-                <thead className="bg-white text-xs font-bold text-gray-700 uppercase">
+                <thead className="bg-transparent border-b border-gray-100 text-xs font-bold text-gray-400 uppercase">
                   <tr>
                     <th scope="col" className="px-3 py-2 text-center">ID</th>
                     <th scope="col" className="px-3 py-2 text-center">IP Address</th>
@@ -716,7 +716,7 @@ export default function VisitorManager({ initialVisitors, totalVisitors, todayVi
 
           {/* 페이징 */}
           {totalPages > 1 && (
-            <div className="flex items-center justify-between px-4 py-3 bg-white border border-gray-200 rounded-xl">
+            <div className="flex items-center justify-between px-4 py-3 bg-white/80 border border-gray-200/60 rounded-2xl shadow-sm backdrop-blur-md">
               <div className="flex-1 flex justify-between sm:hidden">
                 <button
                   disabled={currentPage === 1}
@@ -771,7 +771,7 @@ export default function VisitorManager({ initialVisitors, totalVisitors, todayVi
       {activeTab === 'rules' && (
         <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
           {/* 수동 IP 등록 폼 */}
-          <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm h-fit">
+          <div className="rounded-2xl border border-gray-200/60 bg-white/80 p-5 shadow-sm backdrop-blur-md transition-all hover:shadow-md hover:border-gray-300/80 h-fit">
             <h3 className="text-base font-bold text-gray-800 mb-4">Register Block Rule</h3>
             <form onSubmit={handleAddRule} className="space-y-4">
               <div>
@@ -809,7 +809,7 @@ export default function VisitorManager({ initialVisitors, totalVisitors, todayVi
 
               <button
                 type="submit"
-                className="w-full inline-flex items-center justify-center rounded-md bg-rose-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition-all hover:bg-rose-700 focus:outline-none"
+                className="w-full inline-flex items-center justify-center rounded-lg bg-rose-600 px-3.5 py-1.5 text-xs font-medium text-white shadow-[0_1px_2px_rgba(225,29,72,0.15)] transition-all hover:bg-rose-700 focus:outline-none"
               >
                 Register Exclusion Rule
               </button>
@@ -817,7 +817,7 @@ export default function VisitorManager({ initialVisitors, totalVisitors, todayVi
           </div>
 
           {/* 등록된 규칙 목록 */}
-          <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm md:col-span-2">
+          <div className="rounded-2xl border border-gray-200/60 bg-white/80 p-5 shadow-sm backdrop-blur-md transition-all hover:shadow-md hover:border-gray-300/80 md:col-span-2">
             <h3 className="text-base font-bold text-gray-800 mb-4">Active Blocklist Rules</h3>
             {blockRules.length === 0 ? (
               <div className="py-10 text-center text-gray-400">

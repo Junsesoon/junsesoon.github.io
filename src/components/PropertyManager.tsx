@@ -346,7 +346,7 @@ export default function PropertyManager({ properties }: PropertyManagerProps) {
     <div className="flex flex-col gap-8 min-h-[400px]">
       <div className="flex flex-col md:flex-row gap-4">
         {/* Add Property Form (65%) */}
-        <div className="w-full md:w-[65%] rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
+        <div className="w-full md:w-[65%] rounded-2xl border border-gray-200/60 bg-white/80 p-6 shadow-sm backdrop-blur-md transition-all hover:shadow-md hover:border-gray-300/80">
           <h3 className="text-lg font-semibold text-gray-800 mb-4">Add New Property</h3>
           <form onSubmit={handleAddProperty} className="flex flex-col sm:flex-row gap-4">
             <input
@@ -369,7 +369,7 @@ export default function PropertyManager({ properties }: PropertyManagerProps) {
             </select>
             <button
               type="submit"
-              className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-md font-semibold shadow-sm transition-colors active:scale-95 whitespace-nowrap flex items-center justify-center"
+              className="bg-[#0071e3] hover:bg-[#0077ed] text-white px-5 py-1.5 rounded-lg text-xs font-medium shadow-[0_1px_2px_rgba(0,113,227,0.15)] transition-all active:scale-95 whitespace-nowrap flex items-center justify-center"
             >
               Add
             </button> 
@@ -378,22 +378,22 @@ export default function PropertyManager({ properties }: PropertyManagerProps) {
 
         {/* Action Boxes (35%) */}
         <div className="w-full md:w-[35%] flex flex-row gap-4">
-          <div className="flex-1 rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+          <div className="flex-1 rounded-2xl border border-gray-200/60 bg-white/80 p-5 shadow-sm backdrop-blur-md transition-all hover:shadow-md hover:border-gray-300/80">
             <h3 className="text-lg font-semibold text-gray-800 mb-4 truncate">Prop Check</h3>
             <button
               onClick={handlePropCheck}
               disabled={isCheckingProps}
-              className={`w-full flex items-center justify-center h-[42px] rounded-md border border-dashed transition-colors text-sm font-medium focus:outline-none ${isCheckingProps ? 'bg-gray-100 border-gray-300 text-gray-400 cursor-not-allowed' : 'border-blue-300 bg-blue-50 text-blue-600 hover:bg-blue-100 hover:border-blue-400'}`}
+              className={`w-full flex items-center justify-center h-[38px] rounded-lg border border-dashed transition-all text-xs font-medium focus:outline-none ${isCheckingProps ? 'bg-gray-100/50 border-gray-200 text-gray-400 cursor-not-allowed' : 'border-blue-300/80 bg-blue-50/50 text-blue-600 hover:bg-blue-100/80 hover:border-blue-400/80'}`}
             >
               {isCheckingProps ? 'Checking...' : 'Start!'}
             </button>
           </div>
-          <div className="flex-1 rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+          <div className="flex-1 rounded-2xl border border-gray-200/60 bg-white/80 p-5 shadow-sm backdrop-blur-md transition-all hover:shadow-md hover:border-gray-300/80">
             <h3 className="text-lg font-semibold text-gray-800 mb-4 truncate">Prop Refresh</h3>
             <button
               onClick={handlePropRefresh}
               disabled={isRefreshingProps}
-              className={`w-full flex items-center justify-center h-[42px] rounded-md border border-dashed transition-colors text-sm font-medium focus:outline-none ${isRefreshingProps ? 'bg-gray-100 border-gray-300 text-gray-400 cursor-not-allowed' : 'border-emerald-300 bg-emerald-50 text-emerald-600 hover:bg-emerald-100 hover:border-emerald-400'}`}
+              className={`w-full flex items-center justify-center h-[38px] rounded-lg border border-dashed transition-all text-xs font-medium focus:outline-none ${isRefreshingProps ? 'bg-gray-100/50 border-gray-200 text-gray-400 cursor-not-allowed' : 'border-emerald-300/80 bg-emerald-50/50 text-emerald-600 hover:bg-emerald-100/80 hover:border-emerald-400/80'}`}
             >
               {isRefreshingProps ? 'Refreshing...' : 'Refresh!'}
             </button>
@@ -402,128 +402,133 @@ export default function PropertyManager({ properties }: PropertyManagerProps) {
       </div>
 
       <div>
-        <h2 className="text-xl font-semibold text-gray-800 mb-4 px-1">Property List</h2>
         {localProperties.length > 0 ? (
-          <ul className="rounded-xl overflow-hidden bg-white shadow-sm divide-y divide-gray-200">
-            <li className="flex items-center justify-between bg-white px-4 py-3 text-xs font-bold text-gray-500 tracking-wider select-none">
-              <div className="flex items-center gap-3">
-                <div 
-                  className="w-[68px] flex items-center justify-center gap-1 cursor-pointer hover:text-gray-800 transition-colors group"
-                  onClick={() => handleSort('type')}
-                >
-                  Type {renderSortIcon('type')}
-                </div>
-                <div 
-                  className="pl-1 flex items-center gap-1 cursor-pointer hover:text-gray-800 transition-colors group"
-                  onClick={() => handleSort('name')}
-                >
-                  Name {renderSortIcon('name')}
-                </div>
-              </div>
-              <div className="flex items-center gap-4">
-                <div 
-                  className="w-[80px] flex items-center justify-center gap-1 cursor-pointer hover:text-gray-800 transition-colors group" 
-                  onClick={() => handleSort('count')}
-                  title="Post Count"
-                >
-                  Usage {renderSortIcon('count')}
-                </div>
-                <div 
-                  className="w-[80px] pr-4 flex items-center justify-center gap-1 cursor-pointer hover:text-gray-800 transition-colors group"
-                  onClick={() => handleSort('is_essential')}
-                >
-                  Essential {renderSortIcon('is_essential')}
-                </div>
-                <div className="w-[80px] text-center">Action</div>
-              </div>
-            </li>
-            {sortedProperties.map((prop) => {
-              const currentType = prop.type || getPredefinedType(prop.name);
-              const isSystemProp = SYSTEM_PROPS.includes(prop.name);
-              return (
-            <li key={prop.name} className="flex items-center justify-between p-4 hover:bg-gray-50 transition-colors">
-              <div className="flex items-center gap-3">
-                <select
-                  value={currentType}
-                  onChange={(e) => handleUpdateType(prop.name, e.target.value)}
-                  className={`${getTypeColor(currentType)} font-semibold text-xs bg-gray-100 px-1 py-0.5 rounded border border-gray-200 capitalize w-[68px] text-center shrink-0 appearance-none focus:outline-none focus:ring-1 focus:ring-blue-500 focus:bg-white ${isSystemProp ? 'cursor-not-allowed opacity-70' : 'cursor-pointer hover:bg-gray-200 transition-colors'}`}
-                  title={isSystemProp ? "System property type cannot be changed" : "Click to edit type"}
-                  disabled={isSystemProp}
-                  style={{ textAlignLast: 'center' }}
-                >
-                  <option value="string" className="text-gray-900 font-medium">String</option>
-                  <option value="number" className="text-gray-900 font-medium">Number</option>
-                  <option value="boolean" className="text-gray-900 font-medium">Boolean</option>
-                  <option value="date" className="text-gray-900 font-medium">Date</option>
-                  <option value="array" className="text-gray-900 font-medium">Array</option>
-                </select>
-                {editingProp === prop.name ? (
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="text"
-                      value={editPropName}
-                      onChange={(e) => setEditPropName(e.target.value)}
-                      className="block w-32 rounded-md border border-gray-300 px-2 py-1 text-sm text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 bg-white"
-                      autoFocus
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter') handleRenameProperty(prop.name);
-                        if (e.key === 'Escape') setEditingProp(null);
-                      }}
-                    />
-                    <button onClick={() => handleRenameProperty(prop.name)} className="text-blue-600 hover:text-blue-800 text-sm font-medium transition-colors">Save</button>
-                    <button onClick={() => setEditingProp(null)} className="text-gray-500 hover:text-gray-700 text-sm transition-colors">Cancel</button>
+          <div className="overflow-hidden rounded-2xl border border-gray-200/60 bg-white/80 shadow-sm backdrop-blur-md transition-all hover:shadow-md hover:border-gray-300/80">
+            {/* Card Header */}
+            <div className="flex items-center justify-between p-4 sm:p-5 pb-2">
+              <h2 className="text-lg font-bold text-gray-900">Property List</h2>
+            </div>
+            <ul className="divide-y divide-gray-100">
+              <li className="flex items-center justify-between bg-white px-4 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider select-none border-b border-gray-100">
+                <div className="flex items-center gap-3">
+                  <div 
+                    className="w-[68px] flex items-center justify-center gap-1 cursor-pointer hover:text-gray-800 transition-colors group"
+                    onClick={() => handleSort('type')}
+                  >
+                    Type {renderSortIcon('type')}
                   </div>
-                ) : (
-                  <span className="font-mono text-gray-900 font-medium text-base">{prop.name}</span>
-                )}
-              </div>
-              <div className="flex items-center gap-4">
-                <div className="w-[80px] flex justify-center">
-                  <span className="text-gray-600 text-xs font-medium bg-gray-100 px-2.5 py-1 rounded-full border border-gray-200 whitespace-nowrap">
-                    {prop.count} {prop.count === 1 ? 'post' : 'posts'}
-                  </span>
-                </div>
-                {/* Essential Toggle Switch */}
-                <div className="flex items-center justify-center gap-1.5 border-r border-gray-200 pr-4 w-[80px]">
-                  <button
-                    onClick={() => handleToggleEssential(prop.name, !!prop.is_essential)}
-                    className={`relative shrink-0 inline-flex h-4 w-7 items-center rounded-full transition-colors focus:outline-none ${prop.is_essential ? 'bg-blue-600' : 'bg-gray-300'}`}
-                    title="Toggle Essential Status"
+                  <div 
+                    className="pl-1 flex items-center gap-1 cursor-pointer hover:text-gray-800 transition-colors group"
+                    onClick={() => handleSort('name')}
                   >
-                    <span className={`inline-block h-3 w-3 transform rounded-full bg-white transition-transform ${prop.is_essential ? 'translate-x-3.5' : 'translate-x-0.5'}`} />
-                  </button>
+                    Name {renderSortIcon('name')}
+                  </div>
                 </div>
-                <div className="flex items-center justify-center w-[80px]">
-                  {isSystemProp ? (
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400 bg-gray-100/50 border border-gray-200 px-2 py-1 rounded select-none cursor-not-allowed" title="System Property">Locked</span>
+                <div className="flex items-center gap-4">
+                  <div 
+                    className="w-[80px] flex items-center justify-center gap-1 cursor-pointer hover:text-gray-800 transition-colors group" 
+                    onClick={() => handleSort('count')}
+                    title="Post Count"
+                  >
+                    Usage {renderSortIcon('count')}
+                  </div>
+                  <div 
+                    className="w-[80px] pr-4 flex items-center justify-center gap-1 cursor-pointer hover:text-gray-800 transition-colors group"
+                    onClick={() => handleSort('is_essential')}
+                  >
+                    Essential {renderSortIcon('is_essential')}
+                  </div>
+                  <div className="w-[80px] text-center">Action</div>
+                </div>
+              </li>
+              {sortedProperties.map((prop) => {
+                const currentType = prop.type || getPredefinedType(prop.name);
+                const isSystemProp = SYSTEM_PROPS.includes(prop.name);
+                return (
+              <li key={prop.name} className="flex items-center justify-between h-[48px] px-4 hover:bg-gray-50/50 transition-colors bg-white">
+                <div className="flex items-center gap-3">
+                  <select
+                    value={currentType}
+                    onChange={(e) => handleUpdateType(prop.name, e.target.value)}
+                    className={`${getTypeColor(currentType)} font-semibold text-xs bg-gray-100 px-1 py-0.5 rounded border border-gray-200 capitalize w-[68px] text-center shrink-0 appearance-none focus:outline-none focus:ring-1 focus:ring-blue-500 focus:bg-white ${isSystemProp ? 'cursor-not-allowed opacity-70' : 'cursor-pointer hover:bg-gray-200 transition-colors'}`}
+                    title={isSystemProp ? "System property type cannot be changed" : "Click to edit type"}
+                    disabled={isSystemProp}
+                    style={{ textAlignLast: 'center' }}
+                  >
+                    <option value="string" className="text-gray-900 font-medium">String</option>
+                    <option value="number" className="text-gray-900 font-medium">Number</option>
+                    <option value="boolean" className="text-gray-900 font-medium">Boolean</option>
+                    <option value="date" className="text-gray-900 font-medium">Date</option>
+                    <option value="array" className="text-gray-900 font-medium">Array</option>
+                  </select>
+                  {editingProp === prop.name ? (
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="text"
+                        value={editPropName}
+                        onChange={(e) => setEditPropName(e.target.value)}
+                        className="block w-32 rounded-md border border-gray-300 px-2 py-1 text-sm text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 bg-white"
+                        autoFocus
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') handleRenameProperty(prop.name);
+                          if (e.key === 'Escape') setEditingProp(null);
+                        }}
+                      />
+                      <button onClick={() => handleRenameProperty(prop.name)} className="text-blue-600 hover:text-blue-800 text-sm font-medium transition-colors">Save</button>
+                      <button onClick={() => setEditingProp(null)} className="text-gray-500 hover:text-gray-700 text-sm transition-colors">Cancel</button>
+                    </div>
                   ) : (
-                    <>
-                  <button
-                    onClick={() => { setEditingProp(prop.name); setEditPropName(prop.name); }}
-                    className="text-gray-400 hover:text-blue-600 hover:bg-blue-50 p-2 rounded-md transition-colors focus:outline-none"
-                    title={`Rename ${prop.name}`}
-                  >
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                      <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
-                    </svg>
-                  </button>
-                  <button
-                    onClick={() => handleDeleteProperty(prop.name)}
-                    className="text-gray-400 hover:text-red-600 hover:bg-red-50 p-2 rounded-md transition-colors focus:outline-none"
-                    title={`Delete ${prop.name}`}
-                  >
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                      <path fillRule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd" />
-                    </svg>
-                  </button>
-                    </>
+                    <span className="font-mono text-gray-900 font-semibold text-sm">{prop.name}</span>
                   )}
                 </div>
-              </div>
-            </li>
-            );
-            })}
-          </ul>
+                <div className="flex items-center gap-4">
+                  <div className="w-[80px] flex justify-center">
+                    <span className="text-gray-600 text-[10px] font-bold uppercase tracking-wider bg-gray-100 px-2 py-0.5 rounded-full border border-gray-200 whitespace-nowrap">
+                      {prop.count} {prop.count === 1 ? 'post' : 'posts'}
+                    </span>
+                  </div>
+                  {/* Essential Toggle Switch */}
+                  <div className="flex items-center justify-center gap-1.5 border-r border-gray-200 pr-4 w-[80px]">
+                    <button
+                      onClick={() => handleToggleEssential(prop.name, !!prop.is_essential)}
+                      className={`relative shrink-0 inline-flex h-4 w-7 items-center rounded-full transition-colors focus:outline-none ${prop.is_essential ? 'bg-blue-600' : 'bg-gray-300'}`}
+                      title="Toggle Essential Status"
+                    >
+                      <span className={`inline-block h-3 w-3 transform rounded-full bg-white transition-transform ${prop.is_essential ? 'translate-x-3.5' : 'translate-x-0.5'}`} />
+                    </button>
+                  </div>
+                  <div className="flex items-center justify-center w-[80px] gap-1">
+                    {isSystemProp ? (
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400 bg-gray-100/50 border border-gray-200 px-2 py-0.5 rounded select-none cursor-not-allowed" title="System Property">Locked</span>
+                    ) : (
+                      <>
+                    <button
+                      onClick={() => { setEditingProp(prop.name); setEditPropName(prop.name); }}
+                      className="text-gray-400 hover:text-blue-600 hover:bg-blue-50/50 p-1.5 rounded-lg transition-colors focus:outline-none"
+                      title={`Rename ${prop.name}`}
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                        <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
+                      </svg>
+                    </button>
+                    <button
+                      onClick={() => handleDeleteProperty(prop.name)}
+                      className="text-gray-400 hover:text-red-600 hover:bg-red-50/50 p-1.5 rounded-lg transition-colors focus:outline-none"
+                      title={`Delete ${prop.name}`}
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                        <path fillRule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd" />
+                      </svg>
+                    </button>
+                      </>
+                    )}
+                  </div>
+                </div>
+              </li>
+              );
+              })}
+            </ul>
+          </div>
         ) : (
           <div className="py-10 text-center rounded-xl bg-white shadow-sm">
             <p className="text-gray-500 text-sm">No properties found.</p>

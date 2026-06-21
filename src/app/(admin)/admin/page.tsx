@@ -258,8 +258,8 @@ export default async function AdminDashboardPage({ searchParams }: { searchParam
 
       {/* Main Content Area */}
       <main className="flex-1 p-4 sm:p-8 max-w-none w-full overflow-y-auto">
-        <header className="mb-8 flex flex-col sm:flex-row sm:items-start justify-between border-b border-gray-200 pb-4 gap-4">
-          <AdminClock />
+        <header className="mb-8 flex flex-col sm:flex-row sm:items-end justify-between border-b border-gray-200 pb-4 gap-4">
+          <AdminClock title="Overview" />
           <div className="flex items-center gap-3">
             <Link
               href="/"
