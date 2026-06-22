@@ -5,7 +5,7 @@ import PropertyManager, { PropertyWithCount } from '@/components/PropertyManager
 import AdminClock from '../../../../components/AdminClock';
 import { logoutAction } from '../../../../components/actions';
 
-const BASE_PROPS = ['title', 'category1', 'summary', 'content', 'category2', 'category3', 'category4', 'tags', 'parentskill', 'childskill', 'techstart', 'projectname'];
+const BASE_PROPS = ['category1', 'summary', 'category2', 'category3', 'category4', 'tags', 'parentskill', 'childskill', 'techstart', 'projectname'];
 const INTERNAL_PROPS = [
   'post_status',
   'has_draft',
@@ -20,11 +20,11 @@ const INTERNAL_PROPS = [
 ];
 
 export default async function PropertyManagementPage() {
-  const propertiesMap = new Map<string, { count: number; is_essential: boolean; type?: string }>();
+  const propertiesMap = new Map<string, { count: number; is_essential: boolean; is_required: boolean; type?: string }>();
 
   // 1. 기본 속성 및 시스템 속성 초기화
-  BASE_PROPS.forEach(prop => propertiesMap.set(prop, { count: 0, is_essential: false }));
-  INTERNAL_PROPS.forEach(prop => propertiesMap.set(prop, { count: 0, is_essential: false }));
+  BASE_PROPS.forEach(prop => propertiesMap.set(prop, { count: 0, is_essential: false, is_required: false }));
+  INTERNAL_PROPS.forEach(prop => propertiesMap.set(prop, { count: 0, is_essential: false, is_required: false }));
 
   // 대소문자 구분을 무시하고 기존 속성명(표준 케이스)을 찾아 반환하는 헬퍼 함수
   const getOriginalKey = (key: string) => {
@@ -34,15 +34,16 @@ export default async function PropertyManagementPage() {
 
   try {
     // 2. 템플릿에 등록된 속성 가져오기
-    const result = await query('SELECT property_name, is_essential, property_type FROM property_list');
+    const result = await query('SELECT property_name, is_essential, is_required, property_type FROM property_list');
     result.rows.forEach((row) => {
       const targetKey = getOriginalKey(row.property_name);
       if (!propertiesMap.has(targetKey)) {
-        propertiesMap.set(targetKey, { count: 0, is_essential: row.is_essential, type: row.property_type });
+        propertiesMap.set(targetKey, { count: 0, is_essential: row.is_essential, is_required: row.is_required, type: row.property_type });
       } else {
         const existing = propertiesMap.get(targetKey);
         if (existing) {
           existing.is_essential = row.is_essential;
+          existing.is_required = row.is_required;
           existing.type = row.property_type;
         }
       }
@@ -61,7 +62,7 @@ export default async function PropertyManagementPage() {
     jsonbResult.rows.forEach((row) => {
       const count = parseInt(row.count, 10);
       const targetKey = getOriginalKey(row.property_name);
-      const existing = propertiesMap.get(targetKey) || { count: 0, is_essential: false };
+      const existing = propertiesMap.get(targetKey) || { count: 0, is_essential: false, is_required: false };
       propertiesMap.set(targetKey, { ...existing, count: existing.count + count });
     });
   } catch (error) {
@@ -90,7 +91,7 @@ export default async function PropertyManagementPage() {
       Object.entries(row).forEach(([key, val]) => {
         const count = parseInt(val as string, 10) || 0;
         const targetKey = getOriginalKey(key);
-        const existing = propertiesMap.get(targetKey) || { count: 0, is_essential: false };
+        const existing = propertiesMap.get(targetKey) || { count: 0, is_essential: false, is_required: false };
         propertiesMap.set(targetKey, { ...existing, count: existing.count + count });
       });
     }
@@ -100,7 +101,7 @@ export default async function PropertyManagementPage() {
 
   // 맵을 배열로 변환 후 알파벳 순 정렬
   const allProperties: PropertyWithCount[] = Array.from(propertiesMap.entries())
-    .map(([name, data]) => ({ name, count: data.count, is_essential: data.is_essential, type: data.type }))
+    .map(([name, data]) => ({ name, count: data.count, is_essential: data.is_essential, is_required: data.is_required, type: data.type }))
     .sort((a, b) => a.name.localeCompare(b.name));
 
   return (

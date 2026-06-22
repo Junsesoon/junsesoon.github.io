@@ -443,6 +443,26 @@ export async function togglePropertyEssentialAction(propertyName: string, isEsse
   }
 }
 
+export async function togglePropertyRequiredAction(propertyName: string, isRequired: boolean) {
+  if (!propertyName) {
+    return { success: false, message: 'Property name is required.' };
+  }
+
+  try {
+    await query(
+      `INSERT INTO property_list (property_name, is_required)
+       VALUES ($1, $2)
+       ON CONFLICT (property_name) DO UPDATE SET is_required = EXCLUDED.is_required`,
+      [propertyName, isRequired]
+    );
+    revalidatePath('/admin/property');
+    return { success: true };
+  } catch (error: any) {
+    console.error('togglePropertyRequiredAction error:', error);
+    return { success: false, message: 'Internal Server Error' };
+  }
+}
+
 export async function getEssentialPropertiesAction() {
   try {
     const result = await query('SELECT property_name FROM property_list WHERE is_essential = true');
@@ -450,6 +470,16 @@ export async function getEssentialPropertiesAction() {
     return result.rows.map((row) => row.property_name);
   } catch (error) {
     console.error('getEssentialPropertiesAction error:', error);
+    return [];
+  }
+}
+
+export async function getRequiredPropertiesAction() {
+  try {
+    const result = await query('SELECT property_name FROM property_list WHERE is_required = true');
+    return result.rows.map((row) => row.property_name);
+  } catch (error) {
+    console.error('getRequiredPropertiesAction error:', error);
     return [];
   }
 }

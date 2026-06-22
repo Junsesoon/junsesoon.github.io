@@ -6,16 +6,18 @@ import Link from 'next/link';
 import PostEditor, { PostFormData } from '@/components/PostEditor';
 import { getTemplatesAction } from '../../../../components/actions';
 import { createPostAction } from '../../../../components/postActions';
-import { getEssentialPropertiesAction } from '../../../../components/propertyActions';
+import { getEssentialPropertiesAction, getRequiredPropertiesAction } from '../../../../components/propertyActions';
 
 export default function WritePostPage() {
   const router = useRouter();
   const [templates, setTemplates] = useState<Record<string, { propertyName: string; isRequired: boolean }[]>>({});
   const [essentialProps, setEssentialProps] = useState<string[]>([]);
+  const [requiredProps, setRequiredProps] = useState<string[]>([]);
 
   useEffect(() => {
     getTemplatesAction().then((data) => setTemplates(data));
     getEssentialPropertiesAction().then((data) => setEssentialProps(data));
+    getRequiredPropertiesAction().then((data) => setRequiredProps(data));
   }, []);
 
   const handleSave = async (formData: PostFormData) => {
@@ -59,6 +61,7 @@ export default function WritePostPage() {
         onCancel={handleCancel}
         templates={templates}
         essentialProps={essentialProps}
+        requiredProps={requiredProps}
       />
     </div>
   );

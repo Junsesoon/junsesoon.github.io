@@ -1,15 +1,24 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import PostEditor, { PostFormData } from '@/components/PostEditor';
 import { updatePostAction } from './postActions';
+import { getEssentialPropertiesAction, getRequiredPropertiesAction } from './propertyActions';
 
 export default function EditClient({ post, originalSlug }: { post: any; originalSlug: string }) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const redirectPath = searchParams.get('redirect') || '/admin';
+
+  const [essentialProps, setEssentialProps] = useState<string[]>([]);
+  const [requiredProps, setRequiredProps] = useState<string[]>([]);
+
+  useEffect(() => {
+    getEssentialPropertiesAction().then((data) => setEssentialProps(data));
+    getRequiredPropertiesAction().then((data) => setRequiredProps(data));
+  }, []);
 
   // DB 고유 컬럼(id, slug, 생성/수정일 등)을 분리하고, 
   // 최상위 속성(title, category 등)과 metadata를 병합하여 에디터에 전달합니다.
@@ -81,7 +90,13 @@ export default function EditClient({ post, originalSlug }: { post: any; original
         </Link>
       </header>
 
-      <PostEditor initialData={initialData} onSave={handleSave} onCancel={handleCancel} />
+      <PostEditor
+        initialData={initialData}
+        onSave={handleSave}
+        onCancel={handleCancel}
+        essentialProps={essentialProps}
+        requiredProps={requiredProps}
+      />
     </div>
   );
 }
