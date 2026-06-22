@@ -6,12 +6,25 @@ import AdminClock from '../../../../components/AdminClock';
 import { logoutAction } from '../../../../components/actions';
 
 const BASE_PROPS = ['title', 'category1', 'summary', 'content', 'category2', 'category3', 'category4', 'tags', 'parentskill', 'childskill', 'techstart', 'projectname'];
+const INTERNAL_PROPS = [
+  'post_status',
+  'has_draft',
+  'draft_title',
+  'draft_content',
+  'draft_properties',
+  'views_count',
+  'likes_count',
+  'created_at',
+  'updated_at',
+  'posted_at'
+];
 
 export default async function PropertyManagementPage() {
   const propertiesMap = new Map<string, { count: number; is_essential: boolean; type?: string }>();
 
-  // 1. 기본 속성 초기화
+  // 1. 기본 속성 및 시스템 속성 초기화
   BASE_PROPS.forEach(prop => propertiesMap.set(prop, { count: 0, is_essential: false }));
+  INTERNAL_PROPS.forEach(prop => propertiesMap.set(prop, { count: 0, is_essential: false }));
 
   // 대소문자 구분을 무시하고 기존 속성명(표준 케이스)을 찾아 반환하는 헬퍼 함수
   const getOriginalKey = (key: string) => {
@@ -53,6 +66,36 @@ export default async function PropertyManagementPage() {
     });
   } catch (error) {
     console.warn('Failed to fetch JSONB properties counts:', error);
+  }
+
+  try {
+    // 4. posts 테이블의 컬럼 형태인 시스템 속성들의 사용 횟수 집계
+    const systemCounts = await query(`
+      SELECT 
+        COUNT(post_status) as post_status,
+        COUNT(CASE WHEN draft_content IS NOT NULL THEN 1 END) as has_draft,
+        COUNT(draft_title) as draft_title,
+        COUNT(draft_content) as draft_content,
+        COUNT(draft_properties) as draft_properties,
+        COUNT(views_count) as views_count,
+        COUNT(likes_count) as likes_count,
+        COUNT(created_at) as created_at,
+        COUNT(updated_at) as updated_at,
+        COUNT(posted_at) as posted_at
+      FROM posts
+    `);
+    
+    if (systemCounts.rows.length > 0) {
+      const row = systemCounts.rows[0];
+      Object.entries(row).forEach(([key, val]) => {
+        const count = parseInt(val as string, 10) || 0;
+        const targetKey = getOriginalKey(key);
+        const existing = propertiesMap.get(targetKey) || { count: 0, is_essential: false };
+        propertiesMap.set(targetKey, { ...existing, count: existing.count + count });
+      });
+    }
+  } catch (error) {
+    console.warn('Failed to fetch system properties counts:', error);
   }
 
   // 맵을 배열로 변환 후 알파벳 순 정렬
@@ -157,7 +200,7 @@ export default async function PropertyManagementPage() {
       </aside>
 
       {/* Main Content Area */}
-      <main className="flex-1 p-4 sm:p-8 max-w-none w-full overflow-y-auto">
+      <main className="flex-1 p-4 sm:p-8 max-w-none w-full overflow-auto">
         <header className="mb-8 flex flex-col sm:flex-row sm:items-end justify-between border-b border-gray-200 pb-4 gap-4">
           <AdminClock title="Properties" />
           <div className="flex items-center gap-3">
@@ -175,7 +218,9 @@ export default async function PropertyManagementPage() {
           </div>
         </header>
 
-        <PropertyManager properties={allProperties} />
+        <div className="w-full md:w-11/12 lg:w-3/5" style={{ minWidth: '600px' }}>
+          <PropertyManager properties={allProperties} />
+        </div>
       </main>
     </div>
   );

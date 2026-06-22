@@ -20,8 +20,28 @@ const cleanSlug = (str: string) => {
   return cleaned || 'untitled';
 };
 
+const INTERNAL_PROPS = [
+  'post_status',
+  'has_draft',
+  'draft_title',
+  'draft_content',
+  'draft_properties',
+  'views_count',
+  'likes_count',
+  'created_at',
+  'updated_at',
+  'posted_at'
+];
+
 export async function createPostAction(formData: PostFormData & { _isDraft?: boolean }) {
-  const { _isDraft, title, content, ...properties } = formData;
+  const { _isDraft, title, content, ...rawProperties } = formData;
+
+  const properties: Record<string, any> = {};
+  Object.keys(rawProperties).forEach((key) => {
+    if (!INTERNAL_PROPS.includes(key)) {
+      properties[key] = rawProperties[key];
+    }
+  });
 
   const safeTitle = title?.trim() || 'Untitled';
   const safeContent = content || '';
@@ -138,7 +158,14 @@ export async function createPostAction(formData: PostFormData & { _isDraft?: boo
 }
 
 export async function updatePostAction(originalSlug: string, formData: PostFormData & { _isDraft?: boolean }) {
-  const { _isDraft, title, content, ...properties } = formData;
+  const { _isDraft, title, content, ...rawProperties } = formData;
+
+  const properties: Record<string, any> = {};
+  Object.keys(rawProperties).forEach((key) => {
+    if (!INTERNAL_PROPS.includes(key)) {
+      properties[key] = rawProperties[key];
+    }
+  });
 
   const safeTitle = title?.trim() || 'Untitled';
   const safeContent = content || '';

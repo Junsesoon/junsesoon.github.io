@@ -18,6 +18,18 @@ export interface PostEditorProps {
 
 const FIXED_PROPS = ['title', 'content'];
 const PREDEFINED_PROPS = ['category1', 'summary', 'category2', 'category3', 'category4', 'tags', 'parentskill', 'childskill', 'techstart', 'projectname', 'location'];
+const INTERNAL_PROPS = [
+  'post_status',
+  'has_draft',
+  'draft_title',
+  'draft_content',
+  'draft_properties',
+  'views_count',
+  'likes_count',
+  'created_at',
+  'updated_at',
+  'posted_at'
+];
 
 const getTypeColor = (type: string) => {
   switch (type) {
@@ -78,7 +90,7 @@ export default function PostEditor({ initialData, onSave, onCancel, templates, e
     const initial: Record<string, any> = {};
     if (initialData) {
       Object.entries(initialData).forEach(([key, val]) => {
-        if (FIXED_PROPS.includes(key)) return;
+        if (FIXED_PROPS.includes(key) || INTERNAL_PROPS.includes(key)) return;
         
         // 미보유 prop 표기 제외
         if (val === null || val === undefined || val === '') return;
@@ -100,7 +112,7 @@ export default function PostEditor({ initialData, onSave, onCancel, templates, e
     const initial: string[] = [];
     if (initialData) {
       Object.keys(initialData).forEach((key) => {
-        if (FIXED_PROPS.includes(key)) return;
+        if (FIXED_PROPS.includes(key) || INTERNAL_PROPS.includes(key)) return;
         const val = initialData[key];
         if (val === null || val === undefined || val === '') return;
         if (Array.isArray(val) && val.length === 0) return;

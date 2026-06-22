@@ -43,6 +43,18 @@ const getTypeColor = (type: string) => {
 };
 
 const SYSTEM_PROPS = ['title', 'category1', 'summary', 'content', 'category2', 'category3', 'category4', 'tags', 'parentskill', 'childskill', 'techstart', 'projectname', 'location'];
+const INTERNAL_PROPS = [
+  'post_status',
+  'has_draft',
+  'draft_title',
+  'draft_content',
+  'draft_properties',
+  'views_count',
+  'likes_count',
+  'created_at',
+  'updated_at',
+  'posted_at'
+];
 
 export default function PropertyManager({ properties }: PropertyManagerProps) {
   const [localProperties, setLocalProperties] = useState<PropertyWithCount[]>(properties);
@@ -344,22 +356,22 @@ export default function PropertyManager({ properties }: PropertyManagerProps) {
 
   return (
     <div className="flex flex-col gap-8 min-h-[400px]">
-      <div className="flex flex-col md:flex-row gap-4">
-        {/* Add Property Form (65%) */}
-        <div className="w-full md:w-[65%] rounded-2xl border border-gray-200/60 bg-white/80 p-6 shadow-sm backdrop-blur-md transition-all hover:shadow-md hover:border-gray-300/80">
+      <div className="grid grid-cols-1 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+        {/* Add Property Form (2/3 on lg, 2/4 on xl) */}
+        <div className="w-full lg:col-span-2 xl:col-span-2 rounded-2xl border border-gray-200/60 bg-white/80 p-6 shadow-sm backdrop-blur-md transition-all hover:shadow-md hover:border-gray-300/80">
           <h3 className="text-lg font-semibold text-gray-800 mb-4">Add New Property</h3>
-          <form onSubmit={handleAddProperty} className="flex flex-col sm:flex-row gap-4">
+          <form onSubmit={handleAddProperty} className="flex flex-col xl:flex-row gap-4">
             <input
               type="text"
               value={newPropName}
               onChange={(e) => setNewPropName(e.target.value)}
               placeholder="e.g., customProp"
-              className="block flex-1 rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 bg-white"
+              className="block w-full xl:flex-1 rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 bg-white"
             />
             <select
               value={newPropType}
               onChange={(e) => setNewPropType(e.target.value)}
-              className={`block w-full sm:w-32 rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 bg-white appearance-none cursor-pointer font-semibold ${getTypeColor(newPropType)}`}
+              className={`block w-full xl:w-24 rounded-md border border-gray-300 pl-2.5 pr-6 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 bg-white appearance-none cursor-pointer font-semibold ${getTypeColor(newPropType)}`}
             >
               <option value="string" className="text-gray-900 font-medium">String</option>
               <option value="number" className="text-gray-900 font-medium">Number</option>
@@ -369,15 +381,15 @@ export default function PropertyManager({ properties }: PropertyManagerProps) {
             </select>
             <button
               type="submit"
-              className="bg-[#0071e3] hover:bg-[#0077ed] text-white px-5 py-1.5 rounded-lg text-xs font-medium shadow-[0_1px_2px_rgba(0,113,227,0.15)] transition-all active:scale-95 whitespace-nowrap flex items-center justify-center"
+              className="bg-[#0071e3] hover:bg-[#0077ed] text-white px-5 py-1.5 rounded-lg text-xs font-medium shadow-[0_1px_2px_rgba(0,113,227,0.15)] transition-all active:scale-95 whitespace-nowrap flex items-center justify-center w-full xl:w-auto"
             >
               Add
             </button> 
           </form>
         </div>
 
-        {/* Action Boxes (35%) */}
-        <div className="w-full md:w-[35%] flex flex-row gap-4">
+        {/* Action Boxes (1/3 on lg, 2/4 on xl) */}
+        <div className="w-full lg:col-span-1 xl:col-span-2 flex flex-col sm:flex-row lg:flex-col xl:flex-row gap-4">
           <div className="flex-1 rounded-2xl border border-gray-200/60 bg-white/80 p-5 shadow-sm backdrop-blur-md transition-all hover:shadow-md hover:border-gray-300/80">
             <h3 className="text-lg font-semibold text-gray-800 mb-4 truncate">Prop Check</h3>
             <button
@@ -444,15 +456,16 @@ export default function PropertyManager({ properties }: PropertyManagerProps) {
               {sortedProperties.map((prop) => {
                 const currentType = prop.type || getPredefinedType(prop.name);
                 const isSystemProp = SYSTEM_PROPS.includes(prop.name);
+                const isInternalProp = INTERNAL_PROPS.includes(prop.name);
                 return (
               <li key={prop.name} className="flex items-center justify-between h-[48px] px-4 hover:bg-gray-50/50 transition-colors bg-white">
                 <div className="flex items-center gap-3">
                   <select
                     value={currentType}
                     onChange={(e) => handleUpdateType(prop.name, e.target.value)}
-                    className={`${getTypeColor(currentType)} font-semibold text-xs bg-gray-100 px-1 py-0.5 rounded border border-gray-200 capitalize w-[68px] text-center shrink-0 appearance-none focus:outline-none focus:ring-1 focus:ring-blue-500 focus:bg-white ${isSystemProp ? 'cursor-not-allowed opacity-70' : 'cursor-pointer hover:bg-gray-200 transition-colors'}`}
-                    title={isSystemProp ? "System property type cannot be changed" : "Click to edit type"}
-                    disabled={isSystemProp}
+                    className={`${getTypeColor(currentType)} font-semibold text-xs bg-gray-100 px-1 py-0.5 rounded border border-gray-200 capitalize w-[68px] text-center shrink-0 appearance-none focus:outline-none focus:ring-1 focus:ring-blue-500 focus:bg-white ${(isSystemProp || isInternalProp) ? 'cursor-not-allowed opacity-70' : 'cursor-pointer hover:bg-gray-200 transition-colors'}`}
+                    title={(isSystemProp || isInternalProp) ? "System property type cannot be changed" : "Click to edit type"}
+                    disabled={isSystemProp || isInternalProp}
                     style={{ textAlignLast: 'center' }}
                   >
                     <option value="string" className="text-gray-900 font-medium">String</option>
@@ -491,14 +504,17 @@ export default function PropertyManager({ properties }: PropertyManagerProps) {
                   <div className="flex items-center justify-center gap-1.5 border-r border-gray-200 pr-4 w-[80px]">
                     <button
                       onClick={() => handleToggleEssential(prop.name, !!prop.is_essential)}
-                      className={`relative shrink-0 inline-flex h-4 w-7 items-center rounded-full transition-colors focus:outline-none ${prop.is_essential ? 'bg-blue-600' : 'bg-gray-300'}`}
-                      title="Toggle Essential Status"
+                      disabled={isInternalProp}
+                      className={`relative shrink-0 inline-flex h-4 w-7 items-center rounded-full transition-colors focus:outline-none ${prop.is_essential ? 'bg-blue-600' : 'bg-gray-300'} ${isInternalProp ? 'opacity-50 cursor-not-allowed' : ''}`}
+                      title={isInternalProp ? "Internal properties cannot be essential" : "Toggle Essential Status"}
                     >
                       <span className={`inline-block h-3 w-3 transform rounded-full bg-white transition-transform ${prop.is_essential ? 'translate-x-3.5' : 'translate-x-0.5'}`} />
                     </button>
                   </div>
                   <div className="flex items-center justify-center w-[80px] gap-1">
-                    {isSystemProp ? (
+                    {isInternalProp ? (
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 bg-slate-100 border border-slate-200 px-2 py-0.5 rounded select-none cursor-not-allowed" title="Internal Property">Internal</span>
+                    ) : isSystemProp ? (
                       <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400 bg-gray-100/50 border border-gray-200 px-2 py-0.5 rounded select-none cursor-not-allowed" title="System Property">Locked</span>
                     ) : (
                       <>

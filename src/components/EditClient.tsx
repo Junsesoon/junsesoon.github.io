@@ -13,14 +13,34 @@ export default function EditClient({ post, originalSlug }: { post: any; original
 
   // DB 고유 컬럼(id, slug, 생성/수정일 등)을 분리하고, 
   // 최상위 속성(title, category 등)과 metadata를 병합하여 에디터에 전달합니다.
-  const { id, slug, created_at, updated_at, posted_at, metadata, content, ...rest } = post;
+  const { id, slug, created_at, updated_at, posted_at, likes_count, views_count, metadata, content, ...rest } = post;
 
   // 임시저장된 데이터가 존재할 경우 우선적으로 불러옵니다.
   const hasDraft = !!metadata?.draft_content;
 
+  const INTERNAL_PROPS = [
+    'post_status',
+    'has_draft',
+    'draft_title',
+    'draft_content',
+    'draft_properties',
+    'views_count',
+    'likes_count',
+    'created_at',
+    'updated_at',
+    'posted_at'
+  ];
+
+  // Clean metadata and draft properties from system/internal keys
+  const cleanMetadata = { ...(metadata || {}) };
+  INTERNAL_PROPS.forEach(key => delete cleanMetadata[key]);
+
+  const cleanDraftProps = hasDraft ? { ...(metadata?.draft_properties || {}) } : {};
+  INTERNAL_PROPS.forEach(key => delete cleanDraftProps[key]);
+
   const initialData: PostFormData = {
-    ...(metadata || {}),
-    ...(hasDraft ? metadata.draft_properties : {}),
+    ...cleanMetadata,
+    ...cleanDraftProps,
     ...rest,
     title: hasDraft ? metadata.draft_title : (metadata?.title || ''),
     content: hasDraft ? metadata.draft_content : (content || ''),
