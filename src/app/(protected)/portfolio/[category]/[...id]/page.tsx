@@ -34,7 +34,7 @@ export default async function PortfolioDetailPage({
 }) {
   const { category, id } = await params;
   const idString = Array.isArray(id) ? id.join('/') : id;
-  const slug = `${category}/${idString}`;
+  const slug = decodeURIComponent(`${category}/${idString}`);
   const post = await getDbPostBySlug(slug);
 
   if (!post) {

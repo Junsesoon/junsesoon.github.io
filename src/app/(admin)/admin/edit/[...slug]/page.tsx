@@ -7,7 +7,8 @@ export default async function EditPostPage({ params }: { params: Promise<{ slug:
   
   // 폴더명이 [slug]일 때(단일 문자열)와 [...slug]일 때(배열)를 모두 대응하여 안전하게 슬러그 복원
   const slugParam = resolvedParams.slug;
-  const originalSlug = Array.isArray(slugParam) ? slugParam.join('/') : slugParam;
+  const rawSlug = Array.isArray(slugParam) ? slugParam.join('/') : slugParam;
+  const originalSlug = decodeURIComponent(rawSlug);
   
   const post = await getDbPostBySlug(originalSlug);
   
