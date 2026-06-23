@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 
 interface AdminClockProps {
   title?: string;
@@ -10,16 +10,8 @@ export default function AdminClock({ title = 'Overview' }: AdminClockProps) {
   const [time, setTime] = useState<Date | null>(null);
   const [exp, setExp] = useState<number | null>(null);
 
-  useEffect(() => {
-    setTime(new Date());
-    const timer = setInterval(() => {
-      setTime(new Date());
-    }, 1000);
-    return () => clearInterval(timer);
-  }, []);
-
-  useEffect(() => {
-    fetch('/api/auth')
+  const fetchAuthExp = useCallback(() => {
+    fetch(`/api/auth?t=${Date.now()}`, { cache: 'no-store' })
       .then((res) => res.json())
       .then((data) => {
         if (data.exp) {
@@ -28,6 +20,41 @@ export default function AdminClock({ title = 'Overview' }: AdminClockProps) {
       })
       .catch((err) => console.error('Failed to fetch auth exp:', err));
   }, []);
+
+  useEffect(() => {
+    setTime(new Date());
+    
+    let timer = setInterval(() => {
+      setTime(new Date());
+    }, 1000);
+
+    const handleRefresh = () => {
+      setTime(new Date());
+      
+      // BFcache 복원 등으로 타이머가 멈춘 경우 기존 타이머 해제 후 다시 생성하여 소생
+      clearInterval(timer);
+      timer = setInterval(() => {
+        setTime(new Date());
+      }, 1000);
+
+      fetchAuthExp();
+    };
+
+    window.addEventListener('focus', handleRefresh);
+    document.addEventListener('visibilitychange', handleRefresh);
+    window.addEventListener('pageshow', handleRefresh);
+
+    return () => {
+      clearInterval(timer);
+      window.removeEventListener('focus', handleRefresh);
+      document.removeEventListener('visibilitychange', handleRefresh);
+      window.removeEventListener('pageshow', handleRefresh);
+    };
+  }, [fetchAuthExp]);
+
+  useEffect(() => {
+    fetchAuthExp();
+  }, [fetchAuthExp]);
 
   useEffect(() => {
     if (exp) {

@@ -1,108 +1,14 @@
 import React from 'react';
 import Link from 'next/link';
-import { query } from '../../../../infra/neon';
-import PropertyManager, { PropertyWithCount } from '@/components/PropertyManager';
+import ViewLogsManager from '@/components/ViewLogsManager';
+import { getViewLogsDashboardData } from '@/components/viewLogsActions';
 import AdminClock from '../../../../components/AdminClock';
 import { logoutAction } from '../../../../components/actions';
 
-const BASE_PROPS = ['category1', 'summary', 'category2', 'category3', 'category4', 'tags', 'parentskill', 'childskill', 'techstart', 'projectname'];
-const INTERNAL_PROPS = [
-  'post_status',
-  'has_draft',
-  'draft_title',
-  'draft_content',
-  'draft_properties',
-  'views_count',
-  'likes_count',
-  'created_at',
-  'updated_at',
-  'posted_at'
-];
+export const dynamic = 'force-dynamic';
 
-export default async function PropertyManagementPage() {
-  const propertiesMap = new Map<string, { count: number; is_essential: boolean; is_required: boolean; type?: string }>();
-
-  // 1. 기본 속성 및 시스템 속성 초기화
-  BASE_PROPS.forEach(prop => propertiesMap.set(prop, { count: 0, is_essential: false, is_required: false }));
-  INTERNAL_PROPS.forEach(prop => propertiesMap.set(prop, { count: 0, is_essential: false, is_required: false }));
-
-  // 대소문자 구분을 무시하고 기존 속성명(표준 케이스)을 찾아 반환하는 헬퍼 함수
-  const getOriginalKey = (key: string) => {
-    const lowerKey = key.toLowerCase();
-    return Array.from(propertiesMap.keys()).find(k => k.toLowerCase() === lowerKey) || key;
-  };
-
-  try {
-    // 2. 템플릿에 등록된 속성 가져오기
-    const result = await query('SELECT property_name, is_essential, is_required, property_type FROM property_list');
-    result.rows.forEach((row) => {
-      const targetKey = getOriginalKey(row.property_name);
-      if (!propertiesMap.has(targetKey)) {
-        propertiesMap.set(targetKey, { count: 0, is_essential: row.is_essential, is_required: row.is_required, type: row.property_type });
-      } else {
-        const existing = propertiesMap.get(targetKey);
-        if (existing) {
-          existing.is_essential = row.is_essential;
-          existing.is_required = row.is_required;
-          existing.type = row.property_type;
-        }
-      }
-    });
-  } catch (error) {
-    console.error('Failed to fetch template properties:', error);
-  }
-
-  try {
-    // 3. posts 테이블의 properties(JSONB)에서 집계
-    const jsonbResult = await query(`
-      SELECT key AS property_name, COUNT(*) as count
-      FROM posts, jsonb_object_keys(COALESCE(properties, '{}'::jsonb)) AS key
-      GROUP BY key
-    `);
-    jsonbResult.rows.forEach((row) => {
-      const count = parseInt(row.count, 10);
-      const targetKey = getOriginalKey(row.property_name);
-      const existing = propertiesMap.get(targetKey) || { count: 0, is_essential: false, is_required: false };
-      propertiesMap.set(targetKey, { ...existing, count: existing.count + count });
-    });
-  } catch (error) {
-    console.warn('Failed to fetch JSONB properties counts:', error);
-  }
-
-  try {
-    // 4. posts 테이블의 컬럼 형태인 시스템 속성들의 사용 횟수 집계
-    const systemCounts = await query(`
-      SELECT 
-        COUNT(post_status) as post_status,
-        COUNT(CASE WHEN draft_content IS NOT NULL THEN 1 END) as has_draft,
-        COUNT(draft_title) as draft_title,
-        COUNT(draft_content) as draft_content,
-        COUNT(draft_properties) as draft_properties,
-        COUNT(views_count) as views_count,
-        COUNT(likes_count) as likes_count,
-        COUNT(created_at) as created_at,
-        COUNT(updated_at) as updated_at,
-        COUNT(posted_at) as posted_at
-      FROM posts
-    `);
-    
-    if (systemCounts.rows.length > 0) {
-      const row = systemCounts.rows[0];
-      Object.entries(row).forEach(([key, val]) => {
-        const count = parseInt(val as string, 10) || 0;
-        const targetKey = getOriginalKey(key);
-        const existing = propertiesMap.get(targetKey) || { count: 0, is_essential: false, is_required: false };
-        propertiesMap.set(targetKey, { ...existing, count: existing.count + count });
-      });
-    }
-  } catch (error) {
-    console.warn('Failed to fetch system properties counts:', error);
-  }
-
-  // 맵을 배열로 변환 후 알파벳 순 정렬
-  const allProperties: PropertyWithCount[] = Array.from(propertiesMap.entries())
-    .map(([name, data]) => ({ name, count: data.count, is_essential: data.is_essential, is_required: data.is_required, type: data.type }))
-    .sort((a, b) => a.name.localeCompare(b.name));
+export default async function ViewLogsPage() {
+  const { logs, totalViews, todayViews, activeViews30m } = await getViewLogsDashboardData();
 
   return (
     <div className="flex min-h-screen w-full bg-gray-50/50 font-sans">
@@ -143,7 +49,7 @@ export default async function PropertyManagementPage() {
             </Link>
             <Link
               href="/admin/property"
-              className="flex items-center gap-3 px-3 py-2 text-sm font-medium text-blue-600 bg-blue-50/50 rounded-lg transition-colors"
+              className="flex items-center gap-3 px-3 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-100/70 rounded-lg transition-colors"
             >
               <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
@@ -170,7 +76,7 @@ export default async function PropertyManagementPage() {
             </Link>
             <Link
               href="/admin/view-logs"
-              className="flex items-center gap-3 px-3 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-100/70 rounded-lg transition-colors"
+              className="flex items-center gap-3 px-3 py-2 text-sm font-medium text-blue-600 bg-blue-50/50 rounded-lg transition-colors"
             >
               <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
@@ -212,7 +118,7 @@ export default async function PropertyManagementPage() {
       {/* Main Content Area */}
       <main className="flex-1 p-4 sm:p-8 max-w-none w-full overflow-auto">
         <header className="mb-8 flex flex-col sm:flex-row sm:items-end justify-between border-b border-gray-200 pb-4 gap-4">
-          <AdminClock title="Properties" />
+          <AdminClock title="View Logs" />
           <div className="flex items-center gap-3">
             <Link
               href="/"
@@ -228,8 +134,13 @@ export default async function PropertyManagementPage() {
           </div>
         </header>
 
-        <div className="w-full md:w-11/12 lg:w-3/5" style={{ minWidth: '600px' }}>
-          <PropertyManager properties={allProperties} />
+        <div className="w-full md:w-11/12 lg:w-3/5" style={{ minWidth: '900px' }}>
+          <ViewLogsManager
+            initialLogs={logs}
+            totalViews={totalViews}
+            todayViews={todayViews}
+            activeViews30m={activeViews30m}
+          />
         </div>
       </main>
     </div>

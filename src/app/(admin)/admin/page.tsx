@@ -224,6 +224,15 @@ export default async function AdminDashboardPage({ searchParams }: { searchParam
               </svg>
               Visitor Logs
             </Link>
+            <Link
+              href="/admin/view-logs"
+              className="flex items-center gap-3 px-3 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-100/70 rounded-lg transition-colors"
+            >
+              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+              </svg>
+              View Logs
+            </Link>
             
             <p className="px-2 text-[10px] font-bold uppercase tracking-wider text-gray-400 pt-6 mb-2">Metrics (To be added)</p>
             <div className="flex items-center gap-3 px-3 py-2 text-sm font-medium text-gray-400 cursor-not-allowed rounded-lg">

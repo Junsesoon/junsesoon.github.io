@@ -413,7 +413,7 @@ export default function PropertyManager({ properties }: PropertyManagerProps) {
             <button
               onClick={handlePropCheck}
               disabled={isCheckingProps}
-              className={`w-full flex items-center justify-center h-[38px] rounded-lg border border-dashed transition-all text-xs font-medium focus:outline-none ${isCheckingProps ? 'bg-gray-100/50 border-gray-200 text-gray-400 cursor-not-allowed' : 'border-blue-300/80 bg-blue-50/50 text-blue-600 hover:bg-blue-100/80 hover:border-blue-400/80'}`}
+              className={`w-full flex items-center justify-center h-[38px] rounded-lg border transition-all text-xs font-semibold shadow-sm focus:outline-none ${isCheckingProps ? 'bg-gray-100/50 border-gray-200 text-gray-400 cursor-not-allowed' : 'border-blue-200 bg-blue-50/50 text-blue-600 hover:bg-blue-600 hover:text-white hover:border-blue-600 active:scale-95'}`}
             >
               {isCheckingProps ? 'Checking...' : 'Start!'}
             </button>
@@ -423,7 +423,7 @@ export default function PropertyManager({ properties }: PropertyManagerProps) {
             <button
               onClick={handlePropRefresh}
               disabled={isRefreshingProps}
-              className={`w-full flex items-center justify-center h-[38px] rounded-lg border border-dashed transition-all text-xs font-medium focus:outline-none ${isRefreshingProps ? 'bg-gray-100/50 border-gray-200 text-gray-400 cursor-not-allowed' : 'border-emerald-300/80 bg-emerald-50/50 text-emerald-600 hover:bg-emerald-100/80 hover:border-emerald-400/80'}`}
+              className={`w-full flex items-center justify-center h-[38px] rounded-lg border transition-all text-xs font-semibold shadow-sm focus:outline-none ${isRefreshingProps ? 'bg-gray-100/50 border-gray-200 text-gray-400 cursor-not-allowed' : 'border-emerald-200 bg-emerald-50/50 text-emerald-600 hover:bg-emerald-600 hover:text-white hover:border-emerald-600 active:scale-95'}`}
             >
               {isRefreshingProps ? 'Refreshing...' : 'Refresh!'}
             </button>

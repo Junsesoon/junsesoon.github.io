@@ -4,7 +4,22 @@ import ViewTracker from '../../../../../components/ViewTracker';
 import { type TocHeading } from '../../../../../utils/parser';
 import { getDbPostBySlug, getAllPosts } from '../../../../../utils/posts';
 import { getParsedMarkdown } from '../../../../../utils/markdownCache';
+import { cookies } from 'next/headers';
+import { verifyAdminToken } from '@/utils/auth';
 import '@/styles/atom-one-dark.css';
+
+export const dynamic = 'force-dynamic';
+
+async function checkIsAdmin(): Promise<boolean> {
+  try {
+    const cookieStore = await cookies();
+    const authCookie = cookieStore.get('admin_auth');
+    if (!authCookie?.value) return false;
+    return await verifyAdminToken(authCookie.value);
+  } catch {
+    return false;
+  }
+}
 
 export async function generateStaticParams() {
   const posts = await getAllPosts('portfolio');
@@ -36,8 +51,12 @@ export default async function PortfolioDetailPage({
   const idString = Array.isArray(id) ? id.join('/') : id;
   const slug = decodeURIComponent(`${category}/${idString}`);
   const post = await getDbPostBySlug(slug);
+  const isAdmin = await checkIsAdmin();
 
-  if (!post) {
+  // 일반 사용자는 'draft' 상태 포스트를 볼 수 없도록 차단 (published 또는 editing이거나, 관리자여야 함)
+  const isPostVisible = post && (post.metadata.post_status === 'published' || post.metadata.post_status === 'editing' || isAdmin);
+
+  if (!post || !isPostVisible) {
     return (
       <main className="mx-auto max-w-3xl p-8 font-sans">
         <h1 className="text-4xl font-bold text-gray-800 mb-6">Portfolio not found</h1>
@@ -48,13 +67,23 @@ export default async function PortfolioDetailPage({
     );
   }
 
+  // 관리자이거나 draft 상태면 최신 임시저장 내용(draft_content)을 보여줌
+  const showDraft = isAdmin && (post.metadata.post_status === 'draft' || !!post.metadata.draft_content);
+  const displayContent = (showDraft ? (post.metadata.draft_content || post.content) : post.content) as string;
+  const displayTitle = (showDraft ? (post.metadata.draft_title || post.metadata.title) : post.metadata.title) as string;
+  
+  // draft_properties가 있는 경우 병합 처리
+  const displayProps = showDraft && post.metadata.draft_properties
+    ? { ...post.metadata, ...(post.metadata.draft_properties as any) }
+    : post.metadata;
+
   const { html: contentHtml, headings } = await getParsedMarkdown(
     slug,
-    post.content,
-    post.metadata.enddate || post.metadata.startdate
+    displayContent,
+    displayProps.enddate || displayProps.startdate
   );
 
-  const postData = post.metadata;
+  const postData = displayProps;
 
   return (
     <div className="mx-auto flex flex-col lg:flex-row max-w-6xl gap-8 p-8 font-sans">
@@ -62,7 +91,12 @@ export default async function PortfolioDetailPage({
         <article>
           <header className="mb-6 flex min-h-40 flex-col justify-center gap-4 border-b border-gray-200 py-10">
             <h1 className="text-4xl">
-              {postData.title || idString.split(/[-/]+/).map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}
+              {showDraft && (
+                <span className="mr-2 inline-block rounded bg-amber-100 text-amber-800 text-sm px-2.5 py-0.5 font-medium align-middle">
+                  임시저장 보기
+                </span>
+              )}
+              {displayTitle || idString.split(/[-/]+/).map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}
             </h1>
             
             <div className="flex items-start justify-between gap-4">

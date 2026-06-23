@@ -153,6 +153,7 @@ export async function createPostAction(formData: PostFormData & { _isDraft?: boo
 
   revalidatePath('/');
   revalidatePath('/admin');
+  revalidatePath(`/${slug}`);
   
   return { success: true, slug };
 }
