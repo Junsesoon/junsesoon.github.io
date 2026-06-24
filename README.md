@@ -24,9 +24,9 @@
 npm run dev:poll
 
 # Post DB(neon) server connection test code
-npx tsx src/infra/db-test.ts
+npx tsx src/infra/neon-test.ts
 # Post DB(neon) migration code
-npx tsx src/infra/init-db.ts
+npx tsx src/infra/neon-init.ts
 
 # Image DB(r2) server connection test code
 npx tsx --env-file=.env src/infra/r2-test.ts
@@ -41,4 +41,8 @@ npx tsx --env-file=.env src/scripts/upload-posts.ts --write
 
 # DB의 게시물 데이터를 로컬 마크다운 파일(public/download-posts)로 다운로드하기
 npx tsx --env-file=.env src/scripts/download-posts.ts
+
+# 기타
+## 2.9.0ver > 3.0.0ver(Neon > Turso migrate script)
+npx tsx src/scripts/migrate-logs.ts
 ```

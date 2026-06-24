@@ -26,7 +26,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const categoryRoutes = uniqueCategories.map((category) => {
     const categorySlug = category.toLowerCase().trim().replace(/\s+/g, '-');
     return {
-      url: `${baseUrl}/${categorySlug}`,
+      url: `${baseUrl}/${encodeURIComponent(categorySlug)}`,
       lastModified: new Date(),
       changeFrequency: 'weekly' as const,
       priority: 0.8, // 목록 페이지(GNB 메뉴)는 개별 글보다 우선순위가 높습니다.
@@ -37,8 +37,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const dynamicRoutes = posts.map((post: any) => {
     // app/(public)/[category]/[...id]/page.tsx 라우팅 구조에 맞게 URL을 매핑합니다.
     const categorySlug = post.category1 ? post.category1.toLowerCase().trim().replace(/\s+/g, '-') : 'blog';
+    const encodedCategory = encodeURIComponent(categorySlug);
+    const encodedSlug = post.slug.split('/').map(encodeURIComponent).join('/');
     return {
-      url: `${baseUrl}/${categorySlug}/${post.slug}`, 
+      url: `${baseUrl}/${encodedCategory}/${encodedSlug}`, 
       lastModified: post.updatedAt ? new Date(post.updatedAt) : new Date(),
       changeFrequency: 'weekly' as const,
       priority: 0.6,

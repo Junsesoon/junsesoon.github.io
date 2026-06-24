@@ -14,10 +14,23 @@ export interface PostEditorProps {
   onCancel?: () => void;
   templates?: Record<string, { propertyName: string; isRequired: boolean }[]>;
   essentialProps?: string[];
+  requiredProps?: string[];
 }
 
 const FIXED_PROPS = ['title', 'content'];
 const PREDEFINED_PROPS = ['category1', 'summary', 'category2', 'category3', 'category4', 'tags', 'parentskill', 'childskill', 'techstart', 'projectname', 'location'];
+const INTERNAL_PROPS = [
+  'post_status',
+  'has_draft',
+  'draft_title',
+  'draft_content',
+  'draft_properties',
+  'views_count',
+  'likes_count',
+  'created_at',
+  'updated_at',
+  'posted_at'
+];
 
 const getTypeColor = (type: string) => {
   switch (type) {
@@ -73,12 +86,12 @@ const ArrayTagInput = ({ id, tags, onChange }: { id?: string; tags: string[]; on
   );
 };
 
-export default function PostEditor({ initialData, onSave, onCancel, templates, essentialProps }: PostEditorProps) {
+export default function PostEditor({ initialData, onSave, onCancel, templates, essentialProps, requiredProps }: PostEditorProps) {
   const [formData, setFormData] = useState<Record<string, any>>(() => {
     const initial: Record<string, any> = {};
     if (initialData) {
       Object.entries(initialData).forEach(([key, val]) => {
-        if (FIXED_PROPS.includes(key)) return;
+        if (FIXED_PROPS.includes(key) || INTERNAL_PROPS.includes(key)) return;
         
         // 미보유 prop 표기 제외
         if (val === null || val === undefined || val === '') return;
@@ -100,7 +113,7 @@ export default function PostEditor({ initialData, onSave, onCancel, templates, e
     const initial: string[] = [];
     if (initialData) {
       Object.keys(initialData).forEach((key) => {
-        if (FIXED_PROPS.includes(key)) return;
+        if (FIXED_PROPS.includes(key) || INTERNAL_PROPS.includes(key)) return;
         const val = initialData[key];
         if (val === null || val === undefined || val === '') return;
         if (Array.isArray(val) && val.length === 0) return;
@@ -227,17 +240,20 @@ export default function PostEditor({ initialData, onSave, onCancel, templates, e
         return;
       }
 
-      // 2. 필수 속성(essential) 미입력 시 저장 차단 (프론트엔드 검증 방어선)
-      if (!isDraft && essentialProps) {
-        for (const ep of essentialProps) {
-          if (FIXED_PROPS.includes(ep)) continue;
-          const val = finalData[ep];
-          
-          // Boolean은 false 값이 허용되어야 하므로 빈 문자열이나 null일 때만 차단, Array는 빈 배열이면 차단
-          if (val === undefined || val === null || val === '' || (Array.isArray(val) && val.length === 0)) {
-            alert(`전역 필수 속성인 '${ep}' 항목을 반드시 입력해 주세요.`);
-            setIsSubmitting(false);
-            return;
+      // 2. 필수 입력 속성(mandatory) 미입력 시 저장 차단 (프론트엔드 검증 방어선)
+      if (!isDraft && requiredProps) {
+        for (const rp of requiredProps) {
+          if (FIXED_PROPS.includes(rp)) continue;
+          // 에디터에 올라온 활성화된 속성 중 필수 입력(Mandatory) 필드인 경우에만 입력을 강제합니다.
+          if (activeProps.includes(rp)) {
+            const val = finalData[rp];
+            
+            // Boolean은 false 값이 허용되어야 하므로 빈 문자열이나 null일 때만 차단, Array는 빈 배열이면 차단
+            if (val === undefined || val === null || val === '' || (Array.isArray(val) && val.length === 0)) {
+              alert(`필수 입력 속성인 '${rp}' 항목의 값을 채워 주세요.`);
+              setIsSubmitting(false);
+              return;
+            }
           }
         }
       }
@@ -480,12 +496,13 @@ export default function PostEditor({ initialData, onSave, onCancel, templates, e
             const propInfo = globalProps.find((p) => p.name === key);
             const propType = propInfo?.type || 'string';
             const isEssential = essentialProps?.includes(key);
+            const isRequired = requiredProps?.includes(key);
 
             return (
               <div key={key} className="group relative flex flex-col sm:flex-row sm:items-start gap-1 sm:gap-4 py-1 border-b border-transparent">
-                <label htmlFor={key} className="flex items-center gap-1 text-sm font-medium text-gray-400 capitalize sm:w-36 shrink-0 sm:pt-1.5 select-none pl-1">
-                  {propType === 'array' ? `${key}` : key}
-                  {isEssential && <span className="text-red-400" title="Essential Property">*</span>}
+                <label htmlFor={key} className="flex items-center gap-1 text-sm font-medium text-gray-400 capitalize sm:w-36 shrink-0 sm:pt-1.5 select-none pl-1 min-w-0" title={key}>
+                  <span className="truncate min-w-0 flex-1">{key}</span>
+                  {isRequired && <span className="text-red-400 shrink-0" title="Mandatory Property">*</span>}
                 </label>
                 <div className="flex-1 flex flex-col min-w-0">
                   <div className="flex items-start gap-2">
@@ -495,7 +512,7 @@ export default function PostEditor({ initialData, onSave, onCancel, templates, e
                         name={key}
                         value={formData[key] || ''}
                         onChange={handleChange}
-                        required={isEssential}
+                        required={isRequired}
                         rows={2}
                         className="block w-full resize-none rounded-md border-0 bg-transparent px-2 py-1.5 text-sm text-gray-900 hover:bg-gray-50 focus:bg-gray-50 focus:ring-0 focus:outline-none transition-colors"
                         placeholder="Empty"
@@ -506,7 +523,7 @@ export default function PostEditor({ initialData, onSave, onCancel, templates, e
                         name={key}
                         value={formData[key] || ''}
                         onChange={handleChange}
-                        required={isEssential}
+                        required={isRequired}
                         className="block w-full max-w-[200px] rounded-md border-0 bg-transparent px-2 py-1.5 text-sm text-gray-900 hover:bg-gray-50 focus:bg-gray-50 focus:ring-0 focus:outline-none transition-colors cursor-pointer"
                       >
                         <option value="" disabled>Select Location</option>
@@ -532,7 +549,7 @@ export default function PostEditor({ initialData, onSave, onCancel, templates, e
                         name={key}
                         value={formData[key] ?? ''}
                         onChange={handleChange}
-                        required={isEssential}
+                        required={isRequired}
                         className="block w-full rounded-md border-0 bg-transparent px-2 py-1.5 text-sm text-gray-900 hover:bg-gray-50 focus:bg-gray-50 focus:ring-0 focus:outline-none transition-colors"
                         placeholder="Empty"
                       />
@@ -543,7 +560,7 @@ export default function PostEditor({ initialData, onSave, onCancel, templates, e
                         name={key}
                         value={formData[key] ? String(formData[key]).split('T')[0] : ''}
                         onChange={handleChange}
-                        required={isEssential}
+                        required={isRequired}
                         className="block w-full max-w-[200px] rounded-md border-0 bg-transparent px-2 py-1.5 text-sm text-gray-900 hover:bg-gray-50 focus:bg-gray-50 focus:ring-0 focus:outline-none transition-colors"
                       />
                     ) : propType === 'array' ? (
@@ -568,7 +585,7 @@ export default function PostEditor({ initialData, onSave, onCancel, templates, e
                         name={key}
                         value={formData[key] || ''}
                         onChange={handleChange}
-                        required={isEssential}
+                        required={isRequired}
                         className="block w-full rounded-md border-0 bg-transparent px-2 py-1.5 text-sm text-gray-900 hover:bg-gray-50 focus:bg-gray-50 focus:ring-0 focus:outline-none transition-colors"
                         placeholder="Empty"
                       />

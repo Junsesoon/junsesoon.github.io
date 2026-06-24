@@ -28,3 +28,15 @@ export async function verifyAdminToken(token: string) {
     return false; // 서명이 유효하지 않거나 만료된 토큰
   }
 }
+
+export async function getAdminTokenExp(token: string) {
+  try {
+    const { payload } = await jwtVerify(token, getJwtSecretKey());
+    if (payload?.role === 'admin' && payload?.exp) {
+      return payload.exp * 1000; // Convert to milliseconds
+    }
+    return null;
+  } catch (error) {
+    return null;
+  }
+}
