@@ -4,6 +4,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { SkillNode } from './SkillTreeGrid';
 import { incrementViewCountAction } from './publicActions';
+import SkillTreeLikeButton from './SkillTreeLikeButton';
 
 // crypto.randomUUID 미지원 브라우저 환경을 위한 Fallback (LikeButton/ViewTracker와 동일)
 const generateUUID = () => {
@@ -333,46 +334,36 @@ export default function SkillTreeInteractive({ nodes, COLUMNS, isAdmin, colorInd
               
               {selectedNode && (
                 <div className="mt-2 text-[#c9d1d9] flex-1">
-                  <div className="flex items-center justify-between mb-6 border-b border-[#30363d] pb-3 pr-6">
-                    <h2 className="text-2xl font-bold text-[#f0f6fc]">
-                      {selectedNode.title}
-                    </h2>
-                    {isAdmin && (
-                    <Link 
-                      href={`/admin/edit/${selectedNode.slug.split('/').map(encodeURIComponent).join('/')}?redirect=/skilltree`}
-                      onClick={closeModal}
-                      className="shrink-0 ml-4 px-3 py-1.5 text-sm font-semibold text-[#c9d1d9] bg-[#21262d] hover:bg-[#30363d] border border-[#30363d] rounded-md transition-colors focus:outline-none"
-                    >
-                        수정
-                    </Link>
-                    )}
+                  <div className="flex items-center justify-between mb-4 border-b border-[#30363d] pb-3 pr-6">
+                    <div className="flex items-center gap-3">
+                      <h2 className="text-2xl font-bold text-[#f0f6fc]">
+                        {selectedNode.title}
+                      </h2>
+                      <SkillTreeLikeButton 
+                        postId={selectedNode.postId} 
+                        initialLikesCount={selectedNode.likesCount || 0}
+                      />
+                    </div>
+                    <div className="flex items-center gap-4 shrink-0">
+                      {selectedNode.frontmatter?.modified_at && (
+                        <span className="text-xs text-[#8b949e] font-normal">
+                          최종 수정일: {selectedNode.frontmatter.modified_at.match(/^\d{4}-\d{2}-\d{2}/)?.[0] || selectedNode.frontmatter.modified_at}
+                        </span>
+                      )}
+                      {isAdmin && (
+                        <Link 
+                          href={`/admin/edit/${selectedNode.slug.split('/').map(encodeURIComponent).join('/')}?redirect=/skilltree`}
+                          onClick={closeModal}
+                          className="px-3 py-1.5 text-sm font-semibold text-[#c9d1d9] bg-[#21262d] hover:bg-[#30363d] border border-[#30363d] rounded-md transition-colors focus:outline-none"
+                        >
+                            수정
+                        </Link>
+                      )}
+                    </div>
                   </div>
                   
-                  {Object.keys(selectedNode.frontmatter).some(key => ['startdate', 'enddate', 'summary'].includes(key)) && (
-                    <div className="mb-6 bg-[#161b22] p-4 rounded-lg border border-[#30363d] shadow-inner">
-                      <h3 className="text-xs font-bold text-[#8b949e] mb-3 uppercase tracking-wider">INFO</h3>
-                      <div className="space-y-2">
-                        {Object.entries(selectedNode.frontmatter)
-                          .filter(([key]) => ['startdate', 'enddate', 'summary'].includes(key))
-                          .map(([key, value]) => (
-                            <div key={key} className="text-sm flex flex-col sm:flex-row sm:gap-2">
-                              <span className="font-semibold text-[#8b949e] min-w-[120px] shrink-0">{key}:</span>
-                              <span className="text-[#c9d1d9] break-words">
-                                {Array.isArray(value) ? value.join(', ') : String(value)}
-                              </span>
-                            </div>
-                          ))}
-                      </div>
-                    </div>
-                  )}
-
                   <div>
-                    <h3 className="text-xs font-bold text-[#8b949e] mb-3 uppercase tracking-wider">Content</h3>
-                    <div className="bg-[#0d1117] border border-[#30363d] rounded-lg p-4 shadow-inner">
-                      <pre className="whitespace-pre-wrap font-sans text-sm text-[#c9d1d9] leading-relaxed break-words">
-                        {selectedNode.content || <span className="text-gray-400 italic">No content</span>}
-                      </pre>
-                    </div>
+                    <pre className="whitespace-pre-wrap font-sans text-sm text-[#c9d1d9] leading-relaxed break-words m-0">{selectedNode.content || <span className="text-gray-400 italic">No content</span>}</pre>
                   </div>
 
                   <div className="mt-8 flex justify-end">
@@ -380,7 +371,7 @@ export default function SkillTreeInteractive({ nodes, COLUMNS, isAdmin, colorInd
                       href={`/${selectedNode.slug.split('/').map(encodeURIComponent).join('/')}`}
                       className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 hover:shadow-[0_0_15px_rgba(99,102,241,0.4)] text-white px-5 py-2.5 rounded-lg shadow-md transition-all duration-300 text-sm font-semibold border border-indigo-500/30"
                     >
-                      게시물 자세히 보기 &rarr;
+                      자세히 보기 &rarr;
                     </Link>
                   </div>
                 </div>

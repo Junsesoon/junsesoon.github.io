@@ -1,4 +1,5 @@
 import SkillTreeGrid from '@/components/SkillTreeGrid';
+import SkillTreeTOC from '@/components/SkillTreeTOC';
 import { query } from '../../../infra/neon';
 
 export const revalidate = 3600;
@@ -13,8 +14,8 @@ export default async function SkillTreePage() {
         backgroundImage: 'radial-gradient(circle at 50% 30%, rgba(99, 102, 241, 0.12), rgba(168, 85, 247, 0.08), transparent 60%), radial-gradient(circle at 10% 80%, rgba(56, 189, 248, 0.06), transparent 40%)',
       }}
     >
-      <div className="mx-auto max-w-5xl px-4 sm:px-8">
-        <header className="relative mb-0 flex min-h-80 flex-col items-center justify-center gap-6 py-10 text-center select-none">
+      <div className="mx-auto max-w-6xl px-4 sm:px-8">
+        <header className="relative mb-8 flex min-h-[300px] flex-col items-center justify-center gap-6 py-10 text-center select-none">
           {/* Sparkle Star 1: Sky Blue */}
           <div className="absolute top-12 right-[12%] md:right-[20%] animate-pulse text-sky-400/60 drop-shadow-[0_0_8px_rgba(56,189,248,0.6)]" style={{ animationDuration: '3s' }}>
             <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
@@ -51,20 +52,33 @@ export default async function SkillTreePage() {
 
           <h1 className="text-5xl font-extrabold tracking-wider bg-clip-text text-transparent bg-gradient-to-r from-white via-slate-200 to-slate-400 drop-shadow-[0_0_15px_rgba(56,189,248,0.35)] uppercase">Skill Tree</h1>
           <p className="text-xl text-slate-400">From the Roots of Paradigms to Modern Engineering</p>
-          <hr className="mt-16 w-80 border-[#30363d]/60" />
         </header>
         
-        <div className="flex flex-col gap-8">
-          {domains.map((domain, index) => (
-            <section key={domain.match_category2}>
-              <SkillTreeGrid 
-                title={domain.title} 
-                description={domain.description} 
-                matchCategory2={domain.match_category2} 
-                colorIndex={index}
-              />
-            </section>
-          ))}
+        <div className="flex flex-col lg:flex-row gap-8 items-start relative">
+          <div className="flex-1 w-full flex flex-col gap-12">
+            {domains.map((domain, index) => (
+              <section 
+                key={domain.match_category2}
+                id={`domain-${domain.match_category2.replace(/\s+/g, '-').toLowerCase()}`}
+                className="scroll-mt-24"
+              >
+                <SkillTreeGrid 
+                  title={domain.title} 
+                  description={domain.description} 
+                  matchCategory2={domain.match_category2} 
+                  colorIndex={index}
+                />
+              </section>
+            ))}
+          </div>
+
+          <SkillTreeTOC 
+            domains={domains.map((d, index) => ({
+              id: `domain-${d.match_category2.replace(/\s+/g, '-').toLowerCase()}`,
+              title: d.title,
+              colorIndex: index,
+            }))}
+          />
         </div>
       </div>
     </main>
