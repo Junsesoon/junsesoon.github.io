@@ -55,3 +55,7 @@ Thumbs.db
 /visitLog.db-journal
 /visitLog.db-shm
 /visitLog.db-wal
+/Logs.db
+/Logs.db-journal
+/Logs.db-shm
+/Logs.db-wal

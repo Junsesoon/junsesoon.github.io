@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "db:init": "tsx src/infra/neon-db.ts",
+    "db:init": "tsx src/infra/neon-init.ts",
     "db:import-posts": "tsx src/scripts/import-posts.ts",
     "db:import-posts:write": "tsx src/scripts/import-posts.ts --write"
   },

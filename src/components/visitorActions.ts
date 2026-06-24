@@ -1,6 +1,5 @@
 'use server';
 
-import { query as neonQuery } from '../infra/neon';
 import { query as tursoQuery } from '../infra/turso';
 
 export interface VisitorDashboardData {
@@ -25,47 +24,54 @@ export async function getVisitorDashboardData(): Promise<VisitorDashboardData> {
     const sevenDaysAgo = new Date(kstNow.getTime() - 7 * 24 * 60 * 60 * 1000);
     const sevenDaysAgoString = sevenDaysAgo.toISOString().split('T')[0];
 
-    // 1. 최근 고유 방문 이력 100건 조회
-    const result = await neonQuery(`
+    // 1. 최근 고유 방문 이력 100건 조회 (Turso DB의 visitors_manage 테이블 사용)
+    const result = await tursoQuery(`
       SELECT 
         visitor_id, 
         ip_address, 
         session_id, 
-        visited_date::text as visited_date
-      FROM site_visitors
+        visited_date
+      FROM visitors_manage
       ORDER BY visitor_id DESC
       LIMIT 100
     `);
-    const visitors = result.rows;
+    
+    // SQLite query helper가 반환하는 객체 형식을 UI 구조에 맞춰 매핑
+    const visitors = result.rows.map((row: any) => ({
+      visitor_id: Number(row.visitor_id),
+      ip_address: String(row.ip_address),
+      session_id: String(row.session_id),
+      visited_date: String(row.visited_date),
+    }));
 
-    // 2. 전체 누적 방문객 수 조회
+    // 2. 전체 누적 방문객 수 조회 (Turso DB의 site_stats 테이블 사용)
     let totalVisitors = 0;
-    const statsResult = await neonQuery(`
+    const statsResult = await tursoQuery(`
       SELECT stat_value FROM site_stats WHERE stat_key = 'total_visitors'
     `);
-    if (statsResult.rows.length > 0) {
+    if (statsResult.rows && statsResult.rows.length > 0) {
       totalVisitors = Number(statsResult.rows[0].stat_value);
     }
 
-    // 3. 오늘 방문객 수 조회
+    // 3. 오늘 방문객 수 조회 (Turso DB의 visitors_manage 테이블 사용)
     let todayVisitors = 0;
-    const todayResult = await neonQuery(`
+    const todayResult = await tursoQuery(`
       SELECT COUNT(DISTINCT session_id) as today_count 
-      FROM site_visitors 
-      WHERE visited_date = $1
+      FROM visitors_manage 
+      WHERE visited_date = ?
     `, [todayString]);
-    if (todayResult.rows.length > 0) {
+    if (todayResult.rows && todayResult.rows.length > 0) {
       todayVisitors = Number(todayResult.rows[0].today_count);
     }
 
-    // 4. 실시간 접속자 수 조회 (최근 30분 이내에 활동이 있는 고유 세션 수)
+    // 4. 실시간 접속자 수 조회 (최근 30분 이내에 활동이 있는 고유 세션 수, SQLite 문법)
     let activeVisitors = 0;
-    const activeResult = await neonQuery(`
+    const activeResult = await tursoQuery(`
       SELECT COUNT(DISTINCT session_id) as active_count 
       FROM views_manage 
-      WHERE viewed_at > NOW() - INTERVAL '30 minutes'
+      WHERE viewed_at > datetime('now', '-30 minutes')
     `);
-    if (activeResult.rows.length > 0) {
+    if (activeResult.rows && activeResult.rows.length > 0) {
       activeVisitors = Number(activeResult.rows[0].active_count);
     }
 
@@ -90,12 +96,12 @@ export async function getVisitorDashboardData(): Promise<VisitorDashboardData> {
     // 6. 지난 7일간 방문자 수 계산 및 주간 증가율 계산 (7일전 누적 vs 현재 누적 비교)
     let weeklyIncreaseRate = 0;
     try {
-      const last7DaysResult = await neonQuery(`
+      const last7DaysResult = await tursoQuery(`
         SELECT COUNT(*) as count 
-        FROM site_visitors 
-        WHERE visited_date > $1
+        FROM visitors_manage 
+        WHERE visited_date > ?
       `, [sevenDaysAgoString]);
-      const last7DaysCount = last7DaysResult.rows.length > 0 ? Number(last7DaysResult.rows[0].count) : 0;
+      const last7DaysCount = last7DaysResult.rows && last7DaysResult.rows.length > 0 ? Number(last7DaysResult.rows[0].count) : 0;
       const total7DaysAgo = totalVisitors - last7DaysCount;
 
       if (total7DaysAgo > 0) {

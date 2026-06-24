@@ -1,6 +1,7 @@
 import React from 'react';
 import Link from 'next/link';
-import { query } from '../../../infra/neon';
+import { query as neonQuery } from '../../../infra/neon';
+import { query as tursoQuery } from '../../../infra/turso';
 import { logoutAction } from '../../../components/actions';
 import PostListClient from '../../../components/PostListClient';
 import AdminClock from '../../../components/AdminClock';
@@ -92,7 +93,7 @@ export default async function AdminDashboardPage({ searchParams }: { searchParam
       break;
   }
 
-  const { rows: fetchedPosts } = await query(`SELECT slug, title, properties, created_at, likes_count, views_count, post_status, draft_content FROM posts ${orderByClause}`);
+  const { rows: fetchedPosts } = await neonQuery(`SELECT slug, title, properties, created_at, likes_count, views_count, post_status, draft_content FROM posts ${orderByClause}`);
 
   const mappedPosts = fetchedPosts.map((row) => {
     const props = row.properties || {};
@@ -127,26 +128,39 @@ export default async function AdminDashboardPage({ searchParams }: { searchParam
   let todayVisitors = 0, todayViews = 0, todayLikes = 0;
 
   try {
-    const { rows: statsRows } = await query(`
+    // 1. Neon DB(게시물 관련 통계) 조회
+    const neonStats = await neonQuery(`
       SELECT
-        (SELECT stat_value FROM site_stats WHERE stat_key = 'total_visitors') as total_visitors,
-        (SELECT SUM(views_count) FROM posts) as total_views,
-        (SELECT SUM(likes_count) FROM posts) as total_likes,
-        (SELECT COUNT(*) FROM site_visitors WHERE visited_date = $1) as today_visitors,
-        (SELECT COUNT(*) FROM views_manage WHERE DATE(viewed_at + INTERVAL '9 hours') = $1) as today_views,
-        (SELECT COUNT(*) FROM likes_manage WHERE DATE(created_at + INTERVAL '9 hours') = $1) as today_likes
-    `, [todayString]);
-    
-    if (statsRows.length > 0) {
-      totalVisitors = Number(statsRows[0].total_visitors) || 0;
-      totalViews = Number(statsRows[0].total_views) || 0;
-      totalLikes = Number(statsRows[0].total_likes) || 0;
-      todayVisitors = Number(statsRows[0].today_visitors) || 0;
-      todayViews = Number(statsRows[0].today_views) || 0;
-      todayLikes = Number(statsRows[0].today_likes) || 0;
+        (SELECT COALESCE(SUM(views_count), 0) FROM posts) as total_views,
+        (SELECT COALESCE(SUM(likes_count), 0) FROM posts) as total_likes
+    `);
+    if (neonStats.rows.length > 0) {
+      totalViews = Number(neonStats.rows[0].total_views) || 0;
+      totalLikes = Number(neonStats.rows[0].total_likes) || 0;
+    }
+
+    // 2. Turso DB(접속/로그 관련 통계) 조회
+    const totalVisitorsRes = await tursoQuery(`SELECT stat_value FROM site_stats WHERE stat_key = 'total_visitors'`);
+    if (totalVisitorsRes.rows && totalVisitorsRes.rows.length > 0) {
+      totalVisitors = Number(totalVisitorsRes.rows[0].stat_value) || 0;
+    }
+
+    const todayVisitorsRes = await tursoQuery(`SELECT COUNT(*) as count FROM visitors_manage WHERE visited_date = ?`, [todayString]);
+    if (todayVisitorsRes.rows && todayVisitorsRes.rows.length > 0) {
+      todayVisitors = Number(todayVisitorsRes.rows[0].count) || 0;
+    }
+
+    const todayViewsRes = await tursoQuery(`SELECT COUNT(*) as count FROM views_manage WHERE date(viewed_at, '+9 hours') = ?`, [todayString]);
+    if (todayViewsRes.rows && todayViewsRes.rows.length > 0) {
+      todayViews = Number(todayViewsRes.rows[0].count) || 0;
+    }
+
+    const todayLikesRes = await tursoQuery(`SELECT COUNT(*) as count FROM likes_manage WHERE date(created_at, '+9 hours') = ?`, [todayString]);
+    if (todayLikesRes.rows && todayLikesRes.rows.length > 0) {
+      todayLikes = Number(todayLikesRes.rows[0].count) || 0;
     }
   } catch (err) {
-    console.error('Failed to fetch detailed stats:', err);
+    console.error('Failed to fetch detailed stats from Neon/Turso:', err);
   }
 
   const statCards = [

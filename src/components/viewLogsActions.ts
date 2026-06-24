@@ -46,64 +46,85 @@ export async function getViewLogsDashboardData(): Promise<ViewLogsDashboardData>
       console.error('Failed to fetch blocked IPs from Turso:', e);
     }
 
-    // 2. 최근 뷰 로그 100건 조회 (posts 테이블과 조인하여 제목과 슬러그 가져옴)
-    const result = await neonQuery(`
+    // 2. 최근 뷰 로그 100건 조회 (Turso DB의 views_manage 조회)
+    const result = await tursoQuery(`
       SELECT 
-        v.view_id, 
-        v.post_id, 
-        COALESCE(p.title, 'Deleted Post') as post_title,
-        COALESCE(p.slug, '') as post_slug,
-        CASE WHEN p.post_id IS NULL THEN 'deleted' ELSE COALESCE(p.post_status, 'published') END as post_status,
-        v.ip_address, 
-        v.session_id, 
-        v.viewed_at::text as viewed_at
-      FROM views_manage v
-      LEFT JOIN posts p ON v.post_id = p.post_id
-      ORDER BY v.view_id DESC
+        view_id, 
+        post_id, 
+        post_title,
+        post_slug,
+        ip_address, 
+        session_id, 
+        datetime(viewed_at, 'localtime') as viewed_at
+      FROM views_manage
+      ORDER BY view_id DESC
       LIMIT 100
     `);
+
+    // Neon DB에서 실시간 글 상태(post_status)를 조회해서 매핑
+    const postIds = [...new Set(result.rows.map((row: any) => String(row.post_id)))];
+    const statusMap = new Map<string, string>();
     
-    const logs: DBViewLog[] = result.rows.map((row: any) => ({
-      view_id: Number(row.view_id),
-      post_id: String(row.post_id),
-      post_title: String(row.post_title),
-      post_slug: String(row.post_slug),
-      post_status: String(row.post_status),
-      ip_address: String(row.ip_address),
-      session_id: String(row.session_id),
-      viewed_at: String(row.viewed_at),
-      is_blocked: blockedIps.has(String(row.ip_address)),
-    }));
+    if (postIds.length > 0) {
+      try {
+        const placeholders = postIds.map((_, i) => `$${i + 1}`).join(', ');
+        const statusResult = await neonQuery(`
+          SELECT post_id, post_status FROM posts WHERE post_id IN (${placeholders})
+        `, postIds);
+        statusResult.rows.forEach((r: any) => {
+          statusMap.set(String(r.post_id), String(r.post_status || 'published'));
+        });
+      } catch (e) {
+        console.error('Failed to fetch post status from Neon for logs:', e);
+      }
+    }
 
+    const logs: DBViewLog[] = result.rows.map((row: any) => {
+      const pId = String(row.post_id);
+      const isStatusExist = statusMap.has(pId);
+      const postStatus = isStatusExist ? statusMap.get(pId)! : 'deleted'; // 상태 맵에 없으면 삭제된 글
+      
+      return {
+        view_id: Number(row.view_id),
+        post_id: pId,
+        post_title: String(row.post_title),
+        post_slug: String(row.post_slug),
+        post_status: postStatus,
+        ip_address: String(row.ip_address),
+        session_id: String(row.session_id),
+        viewed_at: String(row.viewed_at),
+        is_blocked: blockedIps.has(String(row.ip_address)),
+      };
+    });
 
-    // 3. 전체 누적 뷰 수
+    // 3. 전체 누적 뷰 수 (Turso DB의 views_manage 사용)
     let totalViews = 0;
-    const totalResult = await neonQuery(`
+    const totalResult = await tursoQuery(`
       SELECT COUNT(*) as count FROM views_manage
     `);
-    if (totalResult.rows.length > 0) {
+    if (totalResult.rows && totalResult.rows.length > 0) {
       totalViews = Number(totalResult.rows[0].count);
     }
 
-    // 4. 오늘 뷰 수
+    // 4. 오늘 뷰 수 (Turso DB의 views_manage 사용, KST 기준 오늘 날짜)
     let todayViews = 0;
-    const todayResult = await neonQuery(`
+    const todayResult = await tursoQuery(`
       SELECT COUNT(*) as count 
       FROM views_manage 
-      WHERE DATE(viewed_at + INTERVAL '9 hours') = $1
+      WHERE date(viewed_at, '+9 hours') = ?
     `, [todayString]);
-    if (todayResult.rows.length > 0) {
+    if (todayResult.rows && todayResult.rows.length > 0) {
       todayViews = Number(todayResult.rows[0].count);
     }
 
-    // 5. 최근 30분 동안의 뷰 수
+    // 5. 최근 30분 동안의 뷰 수 (Turso DB의 views_manage 사용, SQLite 문법)
     let activeViews30m = 0;
-    const activeResult = await neonQuery(`
+    const activeResult = await tursoQuery(`
       SELECT COUNT(*) as count 
       FROM views_manage 
-      WHERE viewed_at > NOW() - INTERVAL '30 minutes'
+      WHERE viewed_at > datetime('now', '-30 minutes')
     `);
-    if (activeResult.rows.length > 0) {
+    if (activeResult.rows && activeResult.rows.length > 0) {
       activeViews30m = Number(activeResult.rows[0].count);
     }
 
@@ -129,7 +150,7 @@ export async function getViewLogsDashboardData(): Promise<ViewLogsDashboardData>
  */
 export async function deleteViewLogAction(viewId: number) {
   try {
-    await neonQuery('DELETE FROM views_manage WHERE view_id = $1', [viewId]);
+    await tursoQuery('DELETE FROM views_manage WHERE view_id = ?', [viewId]);
     return { success: true };
   } catch (error) {
     console.error(`Failed to delete view log #${viewId}:`, error);
