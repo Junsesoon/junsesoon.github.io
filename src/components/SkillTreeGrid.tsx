@@ -6,6 +6,7 @@ import { verifyAdminToken } from '@/utils/auth';
 
 
 export interface SkillNode {
+  postId: string;
   file: string;
   title: string;
   hasCat3: boolean;
@@ -58,6 +59,7 @@ export default async function SkillTreeGrid({ title, description, matchCategory2
       const fileName = `${path.basename(post.slug)}.md`;
 
       nodes.set(nodeKey, {
+        postId: post.post_id || '',
         file: fileName,
         title: rawTitle, // 화면에 표시될 원본 대소문자 유지
         hasCat3: !!post.metadata.category3,

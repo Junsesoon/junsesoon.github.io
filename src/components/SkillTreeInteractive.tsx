@@ -3,6 +3,18 @@
 import React, { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { SkillNode } from './SkillTreeGrid';
+import { incrementViewCountAction } from './publicActions';
+
+// crypto.randomUUID 미지원 브라우저 환경을 위한 Fallback (LikeButton/ViewTracker와 동일)
+const generateUUID = () => {
+  if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+    return crypto.randomUUID();
+  }
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+    const r = Math.random() * 16 | 0, v = c === 'x' ? r : (r & 0x3 | 0x8);
+    return v.toString(16);
+  });
+};
 
 interface Props {
   nodes: Record<string, SkillNode>;
@@ -82,6 +94,16 @@ export default function SkillTreeInteractive({ nodes, COLUMNS, isAdmin }: Props)
     if (node) {
       setSelectedNode(node);
       setIsModalOpen(true);
+
+      // 오버레이 오픈 시 조회수 증가 (백그라운드 호출)
+      if (node.postId) {
+        let sid = localStorage.getItem('blog_session_id');
+        if (!sid) {
+          sid = generateUUID();
+          localStorage.setItem('blog_session_id', sid);
+        }
+        incrementViewCountAction(node.postId, sid, 'overlay').catch(console.error);
+      }
     }
   };
 
