@@ -138,7 +138,7 @@ export default function SkillTreeManager() {
     const rawTechStart = card.properties?.techstart || card.properties?.techStart || '';
     setCardTechStart(rawTechStart ? String(rawTechStart).split('T')[0] : '');
     setCardParentSkill(card.parentSkill || '');
-    setCardCreatedAt(card.properties?.date ? String(card.properties.date).split('T')[0] : '');
+    setCardCreatedAt(card.properties?.posted_at ? String(card.properties.posted_at).split('T')[0] : card.properties?.date ? String(card.properties.date).split('T')[0] : '');
     setCardModifiedAt(card.properties?.modified_at ? String(card.properties.modified_at).split('T')[0] : '');
   };
 
@@ -178,6 +178,7 @@ export default function SkillTreeManager() {
         category4: cardCat4,
         techstart: cardTechStart,
         parentskill: cardParentSkill,
+        posted_at: cardCreatedAt,
         date: cardCreatedAt,
         modified_at: cardModifiedAt,
       };

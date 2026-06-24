@@ -29,8 +29,7 @@ const INTERNAL_PROPS = [
   'views_count',
   'likes_count',
   'created_at',
-  'updated_at',
-  'posted_at'
+  'updated_at'
 ];
 
 export async function createPostAction(formData: PostFormData & { _isDraft?: boolean }) {

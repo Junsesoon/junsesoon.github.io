@@ -18,7 +18,7 @@ export interface PostEditorProps {
 }
 
 const FIXED_PROPS = ['title', 'content'];
-const PREDEFINED_PROPS = ['category1', 'summary', 'category2', 'category3', 'category4', 'tags', 'parentskill', 'childskill', 'techstart', 'projectname', 'location'];
+const PREDEFINED_PROPS = ['category1', 'summary', 'category2', 'category3', 'category4', 'tags', 'parentskill', 'childskill', 'techstart', 'projectname', 'location', 'posted_at', 'modified_at'];
 const INTERNAL_PROPS = [
   'post_status',
   'has_draft',
@@ -28,8 +28,7 @@ const INTERNAL_PROPS = [
   'views_count',
   'likes_count',
   'created_at',
-  'updated_at',
-  'posted_at'
+  'updated_at'
 ];
 
 const getTypeColor = (type: string) => {
@@ -135,7 +134,7 @@ export default function PostEditor({ initialData, onSave, onCancel, templates, e
     return PREDEFINED_PROPS.map(name => {
       let type = 'string';
       if (['tags', 'parentskill', 'childskill'].includes(name)) type = 'array';
-      else if (['techstart', 'startdate', 'enddate', 'date', 'created_at', 'updated_at'].includes(name)) type = 'date';
+      else if (['techstart', 'startdate', 'enddate', 'date', 'created_at', 'updated_at', 'posted_at', 'modified_at'].includes(name)) type = 'date';
       return { name, type };
     });
   });

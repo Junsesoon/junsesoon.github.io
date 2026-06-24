@@ -28,7 +28,7 @@ interface ModalState {
 
 const getPredefinedType = (name: string) => {
   if (['tags', 'parentskill', 'childskill'].includes(name)) return 'array';
-  if (['techstart', 'startdate', 'enddate', 'date', 'created_at', 'updated_at'].includes(name)) return 'date';
+  if (['techstart', 'startdate', 'enddate', 'date', 'created_at', 'updated_at', 'posted_at', 'modified_at'].includes(name)) return 'date';
   return 'string';
 };
 
@@ -43,7 +43,7 @@ const getTypeColor = (type: string) => {
   }
 };
 
-const SYSTEM_PROPS = ['category1', 'summary', 'category2', 'category3', 'category4', 'tags', 'parentskill', 'childskill', 'techstart', 'projectname', 'location'];
+const SYSTEM_PROPS = ['category1', 'summary', 'category2', 'category3', 'category4', 'tags', 'parentskill', 'childskill', 'techstart', 'projectname', 'location', 'posted_at', 'modified_at'];
 const INTERNAL_PROPS = [
   'post_status',
   'has_draft',
@@ -53,8 +53,7 @@ const INTERNAL_PROPS = [
   'views_count',
   'likes_count',
   'created_at',
-  'updated_at',
-  'posted_at'
+  'updated_at'
 ];
 
 export default function PropertyManager({ properties }: PropertyManagerProps) {

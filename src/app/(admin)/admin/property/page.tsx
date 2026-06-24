@@ -15,8 +15,7 @@ const INTERNAL_PROPS = [
   'views_count',
   'likes_count',
   'created_at',
-  'updated_at',
-  'posted_at'
+  'updated_at'
 ];
 
 export default async function PropertyManagementPage() {
@@ -81,8 +80,7 @@ export default async function PropertyManagementPage() {
         COUNT(views_count) as views_count,
         COUNT(likes_count) as likes_count,
         COUNT(created_at) as created_at,
-        COUNT(updated_at) as updated_at,
-        COUNT(posted_at) as posted_at
+        COUNT(updated_at) as updated_at
       FROM posts
     `);
     

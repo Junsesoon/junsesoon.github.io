@@ -27,6 +27,8 @@ export interface FrontMatter {
   parentId: string | null;
   startDate?: string | null;
   endDate?: string | null;
+  posted_at?: string | null;
+  modified_at?: string | null;
   project?: string | null;
   category1?: string | null;
   category2?: string | null;
@@ -66,8 +68,8 @@ export interface DbPostRow {
   slug: string;
   content: string;
   title: string | null;
-  posted_at: Date | string | null;
-  modified_at: Date | string | null;
+  created_at: Date | string | null;
+  updated_at: Date | string | null;
   summary: string | null;
   tags: string[] | null;
   project_name: string | null;

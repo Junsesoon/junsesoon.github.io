@@ -1,6 +1,6 @@
 import { Pool, PoolConfig, QueryResult, QueryResultRow } from 'pg';
 
-const dbEnv = process.env.DB_ENV || 'local';
+const dbEnv = (process.env.DB_ENV || 'local').replace(/['"]/g, '').trim();
 
 const getPoolConfig = (): PoolConfig => {
   if (dbEnv === 'local') {

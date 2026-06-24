@@ -83,8 +83,8 @@ export default async function AdminDashboardPage({ searchParams }: { searchParam
       orderByClause = `ORDER BY views_count ${safeOrder}`;
       break;
     case 'date':
-      // 기존 매핑 로직(props.date || props.startDate || row.created_at)과 호환
-      orderByClause = `ORDER BY COALESCE(properties->>'date', properties->>'startDate', created_at::text) ${safeOrder}`;
+      // 기존 매핑 로직(props.posted_at || props.date || props.startDate || row.created_at)과 호환
+      orderByClause = `ORDER BY COALESCE(properties->>'posted_at', properties->>'postedAt', properties->>'date', properties->>'startDate', created_at::text) ${safeOrder}`;
       break;
     case 'location':
     case 'category1':
@@ -103,7 +103,7 @@ export default async function AdminDashboardPage({ searchParams }: { searchParam
       location: props.location || '',
       category1: props.category1 || '',
       category2: props.category2 || '',
-      date: props.date || props.startDate || row.created_at,
+      date: props.posted_at || props.postedAt || props.date || props.startDate || row.created_at,
       likes_count: row.likes_count,
       views_count: row.views_count,
       post_status: row.post_status,

@@ -61,7 +61,7 @@ export default async function PortfolioCategoryPage({
     const { html: contentHtml, headings } = await getParsedMarkdown(
       slug,
       displayContent,
-      displayProps.enddate || displayProps.startdate
+      displayProps.modified_at || displayProps.posted_at
     );
 
     const postData = displayProps;
@@ -83,10 +83,10 @@ export default async function PortfolioCategoryPage({
               <div className="flex items-start justify-between gap-4">
                 <div className="my-0 text-gray-600">
                   <p>
-                    작성일: {formatKoreanDate(postData.startDate) ?? '정보 없음'}
+                    작성일: {formatKoreanDate(postData.posted_at) ?? '정보 없음'}
                   </p>
                   <p>
-                    수정일: {formatKoreanDate(postData.endDate) ?? '정보 없음'}
+                    수정일: {formatKoreanDate(postData.modified_at) ?? '정보 없음'}
                   </p>
                 </div>
                 <LikeButton postId={post.post_id || ''} initialLikesCount={post.likes_count || 0} />

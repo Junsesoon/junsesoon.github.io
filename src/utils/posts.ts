@@ -39,14 +39,24 @@ function rowToMetadata(row: any): FrontMatter {
   if (props.docVer) { props.docver = props.docVer; delete props.docVer; }
   if (props.doc_ver) { props.docver = props.doc_ver; delete props.doc_ver; }
   if (props.parentId) { props.parentid = props.parentId; delete props.parentId; }
+  if (props.postedAt) { props.posted_at = props.postedAt; delete props.postedAt; }
+  if (props.modifiedAt) { props.modified_at = props.modifiedAt; delete props.modifiedAt; }
+
+  // posted_at 및 modified_at 처리 (지정되지 않은 경우 기존 필드 및 시스템 시간 fallback)
+  const postedVal = props.posted_at || props.startdate || props.date || dateString(row.created_at) || null;
+  const modifiedVal = props.modified_at || props.enddate || dateString(row.updated_at) || null;
 
   // 기존 UI와의 호환성을 위해 properties(JSONB) 내부 데이터를 FrontMatter 포맷으로 전개
   return {
     ...props,
     title: row.title || props.title || titleFromSlug(row.slug),
     parentid: props.parentid || null,
-    startdate: props.startdate || props.date || dateString(row.created_at) || null,
-    enddate: props.enddate || props.modified_at || dateString(row.updated_at) || null,
+    posted_at: postedVal,
+    modified_at: modifiedVal,
+    startdate: postedVal,
+    enddate: modifiedVal,
+    startDate: postedVal,
+    endDate: modifiedVal,
     project: props.project || props.projectname || null,
     category1: props.category1 || null,
     category2: props.category2 || null,
@@ -105,8 +115,8 @@ export const getAllPosts = async (
 
   // JSONB의 날짜 기준으로 JS 내림차순 정렬
   rows.sort((a, b) => {
-    const dateA = a.properties?.date || a.properties?.startdate || a.properties?.startDate || dateString(a.created_at);
-    const dateB = b.properties?.date || b.properties?.startdate || b.properties?.startDate || dateString(b.created_at);
+    const dateA = a.properties?.posted_at || a.properties?.postedAt || a.properties?.date || a.properties?.startdate || a.properties?.startDate || dateString(a.created_at);
+    const dateB = b.properties?.posted_at || b.properties?.postedAt || b.properties?.date || b.properties?.startdate || b.properties?.startDate || dateString(b.created_at);
     if (dateA !== dateB) return dateB.localeCompare(dateA);
     return a.slug.localeCompare(b.slug);
   });
@@ -143,8 +153,8 @@ export const getCategoryPosts = async (category: string, mode: string = 'blog'):
   let rows = result.rows;
 
   rows.sort((a, b) => {
-    const dateA = a.properties?.date || a.properties?.startdate || a.properties?.startDate || dateString(a.created_at);
-    const dateB = b.properties?.date || b.properties?.startdate || b.properties?.startDate || dateString(b.created_at);
+    const dateA = a.properties?.posted_at || a.properties?.postedAt || a.properties?.date || a.properties?.startdate || a.properties?.startDate || dateString(a.created_at);
+    const dateB = b.properties?.posted_at || b.properties?.postedAt || b.properties?.date || b.properties?.startdate || b.properties?.startDate || dateString(b.created_at);
     if (dateA !== dateB) return dateB.localeCompare(dateA);
     return a.slug.localeCompare(b.slug);
   });
