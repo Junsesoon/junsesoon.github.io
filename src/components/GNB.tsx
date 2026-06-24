@@ -12,6 +12,7 @@ interface GNBProps {
 const GNBContent: React.FC<GNBProps> = ({ isAdmin: initialIsAdmin }) => {
   const router = useRouter();
   const pathname = usePathname();
+  const isSkilltree = pathname === '/skilltree';
   const [isOpen, setIsOpen] = useState(false);
   const [isAdmin, setIsAdmin] = useState(initialIsAdmin ?? false);
 
@@ -64,14 +65,20 @@ const GNBContent: React.FC<GNBProps> = ({ isAdmin: initialIsAdmin }) => {
 
   return (
     <nav className={`fixed top-0 left-0 right-0 z-50 border-b transition-colors duration-300 ${
-      mode === 'portfolio' ? 'bg-red-50/90 border-red-200 backdrop-blur-md' : 'bg-white/90 border-gray-200 backdrop-blur-md'
+      isSkilltree
+        ? 'bg-[#02040a]/80 border-[#30363d]/50 backdrop-blur-md'
+        : mode === 'portfolio'
+        ? 'bg-red-50/90 border-red-200 backdrop-blur-md'
+        : 'bg-white/90 border-gray-200 backdrop-blur-md'
     }`}>
       <div className="flex items-center justify-between px-6 py-4 md:grid md:grid-cols-3 md:px-8 font-sans">
         {/* Left: Logo */}
         <div className="md:justify-self-start">
           <Link
             href={mode === 'portfolio' ? '/portfolio' : '/'}
-            className="text-gray-900 text-2xl font-bold no-underline transition-opacity duration-200 hover:opacity-80"
+            className={`text-2xl font-bold no-underline transition-opacity duration-200 hover:opacity-80 ${
+              isSkilltree ? 'text-[#f0f6fc]' : 'text-gray-900'
+            }`}
             onClick={() => setIsOpen(false)}
           >
             home
@@ -80,7 +87,13 @@ const GNBContent: React.FC<GNBProps> = ({ isAdmin: initialIsAdmin }) => {
 
         {/* Hamburger Icon for Mobile */}
         <div className="flex items-center md:hidden">
-          <button onClick={() => setIsOpen(!isOpen)} className="text-gray-500 hover:text-gray-900 focus:outline-none" aria-label="Toggle menu">
+          <button 
+            onClick={() => setIsOpen(!isOpen)} 
+            className={`focus:outline-none ${
+              isSkilltree ? 'text-[#8b949e] hover:text-[#f0f6fc]' : 'text-gray-500 hover:text-gray-900'
+            }`} 
+            aria-label="Toggle menu"
+          >
             <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               {isOpen ? (
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -101,10 +114,14 @@ const GNBContent: React.FC<GNBProps> = ({ isAdmin: initialIsAdmin }) => {
                 href={item.href}
                 className={`no-underline text-base font-medium whitespace-nowrap transition-colors duration-200 ${
                   isActive
-                    ? 'text-gray-900 font-bold'
-                : mode === 'portfolio'
-                ? 'text-red-800 hover:text-red-900'
-                : 'text-gray-600 hover:text-gray-900'
+                    ? isSkilltree
+                      ? 'text-[#f0f6fc] font-bold'
+                      : 'text-gray-900 font-bold'
+                  : isSkilltree
+                  ? 'text-[#8b949e] hover:text-[#f0f6fc]'
+                  : mode === 'portfolio'
+                  ? 'text-red-800 hover:text-red-900'
+                  : 'text-gray-600 hover:text-gray-900'
                 }`}
               >
                 {item.text}
@@ -120,7 +137,10 @@ const GNBContent: React.FC<GNBProps> = ({ isAdmin: initialIsAdmin }) => {
               {mode !== 'blog' && (
                 <button
                   onClick={() => handleModeSwitch('blog')}
-                  className="bg-red-100 text-red-800 px-4 py-2 cursor-pointer font-sans text-sm rounded-md font-semibold transition-colors duration-200 hover:bg-red-200"
+                  className={isSkilltree
+                    ? "bg-[#21262d] text-[#c9d1d9] border border-[#30363d] px-4 py-2 cursor-pointer font-sans text-sm rounded-md font-semibold transition-colors duration-200 hover:bg-[#30363d]"
+                    : "bg-red-100 text-red-800 px-4 py-2 cursor-pointer font-sans text-sm rounded-md font-semibold transition-colors duration-200 hover:bg-red-200"
+                  }
                 >
                   Blog
                 </button>
@@ -128,7 +148,10 @@ const GNBContent: React.FC<GNBProps> = ({ isAdmin: initialIsAdmin }) => {
               {mode !== 'portfolio' && (
                 <button
                   onClick={() => handleModeSwitch('portfolio')}
-                  className="bg-gray-100 text-gray-800 px-4 py-2 cursor-pointer font-sans text-sm rounded-md font-semibold transition-colors duration-200 hover:bg-gray-200"
+                  className={isSkilltree
+                    ? "bg-[#21262d] text-[#c9d1d9] border border-[#30363d] px-4 py-2 cursor-pointer font-sans text-sm rounded-md font-semibold transition-colors duration-200 hover:bg-[#30363d]"
+                    : "bg-gray-100 text-gray-800 px-4 py-2 cursor-pointer font-sans text-sm rounded-md font-semibold transition-colors duration-200 hover:bg-gray-200"
+                  }
                 >
                   Portfolio
                 </button>
@@ -140,7 +163,11 @@ const GNBContent: React.FC<GNBProps> = ({ isAdmin: initialIsAdmin }) => {
 
       {/* Mobile Menu Dropdown */}
       {isOpen && (
-        <div className="flex flex-col items-center gap-4 border-t border-gray-100 bg-white pb-6 pt-4 font-sans md:hidden">
+        <div className={`flex flex-col items-center gap-4 border-t pb-6 pt-4 font-sans md:hidden ${
+          isSkilltree
+            ? 'bg-[#0d1117]/95 border-[#30363d] text-[#c9d1d9]'
+            : 'bg-white border-gray-100 text-gray-900'
+        }`}>
           {currentMenu.map((item) => {
             const isActive = isLinkActive(item.href, item.exact);
             return (
@@ -150,10 +177,14 @@ const GNBContent: React.FC<GNBProps> = ({ isAdmin: initialIsAdmin }) => {
                 onClick={() => setIsOpen(false)}
                 className={`no-underline text-base font-medium whitespace-nowrap transition-colors duration-200 ${
                   isActive
-                    ? 'text-gray-900 font-bold'
-                : mode === 'portfolio'
-                ? 'text-red-800 hover:text-red-900'
-                : 'text-gray-600 hover:text-gray-900'
+                    ? isSkilltree
+                      ? 'text-[#f0f6fc] font-bold'
+                      : 'text-gray-900 font-bold'
+                    : isSkilltree
+                    ? 'text-[#8b949e] hover:text-[#f0f6fc]'
+                    : mode === 'portfolio'
+                    ? 'text-red-800 hover:text-red-900'
+                    : 'text-gray-600 hover:text-gray-900'
                 }`}
               >
                 {item.text}
@@ -163,12 +194,24 @@ const GNBContent: React.FC<GNBProps> = ({ isAdmin: initialIsAdmin }) => {
           {(ENABLE_MODE_TOGGLE || isAdmin) && (
             <div className="mt-2 flex gap-3">
               {mode !== 'blog' && (
-                <button onClick={() => handleModeSwitch('blog')} className="bg-red-100 text-red-800 px-4 py-2 cursor-pointer font-sans text-sm rounded-md font-semibold transition-colors duration-200 hover:bg-red-200">
+                <button 
+                  onClick={() => handleModeSwitch('blog')} 
+                  className={isSkilltree
+                    ? "bg-[#21262d] text-[#c9d1d9] border border-[#30363d] px-4 py-2 cursor-pointer font-sans text-sm rounded-md font-semibold transition-colors duration-200 hover:bg-[#30363d]"
+                    : "bg-red-100 text-red-800 px-4 py-2 cursor-pointer font-sans text-sm rounded-md font-semibold transition-colors duration-200 hover:bg-red-200"
+                  }
+                >
                   Blog
                 </button>
               )}
               {mode !== 'portfolio' && (
-                <button onClick={() => handleModeSwitch('portfolio')} className="bg-gray-100 text-gray-800 px-4 py-2 cursor-pointer font-sans text-sm rounded-md font-semibold transition-colors duration-200 hover:bg-gray-200">
+                <button 
+                  onClick={() => handleModeSwitch('portfolio')} 
+                  className={isSkilltree
+                    ? "bg-[#21262d] text-[#c9d1d9] border border-[#30363d] px-4 py-2 cursor-pointer font-sans text-sm rounded-md font-semibold transition-colors duration-200 hover:bg-[#30363d]"
+                    : "bg-gray-100 text-gray-800 px-4 py-2 cursor-pointer font-sans text-sm rounded-md font-semibold transition-colors duration-200 hover:bg-gray-200"
+                  }
+                >
                   Portfolio
                 </button>
               )}
