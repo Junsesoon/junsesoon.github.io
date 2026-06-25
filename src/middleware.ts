@@ -24,9 +24,16 @@ export async function middleware(request: NextRequest) {
     }
   }
 
+  // 3. 인증되지 않은 사용자가 보호된 portfolio 또는 portfolio2 경로에 접근하려 할 때 -> 메인 홈으로 리다이렉트
+  if (pathname.startsWith('/portfolio') || pathname.startsWith('/portfolio2')) {
+    if (!isAuthenticated) {
+      return NextResponse.redirect(new URL('/', request.url));
+    }
+  }
+
   const response = NextResponse.next();
 
-  // 3. 인증된 사용자라면 활동(접근)이 있을 때마다 토큰과 쿠키를 60분으로 갱신 (Sliding Session)
+  // 4. 인증된 사용자라면 활동(접근)이 있을 때마다 토큰과 쿠키를 60분으로 갱신 (Sliding Session)
   if (isAuthenticated) {
     const newToken = await signAdminToken();
     response.cookies.set({
@@ -44,6 +51,6 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  // 미들웨어가 실행될 경로 설정 (/admin 및 그 하위 모든 경로)
-  matcher: ['/admin/:path*'],
+  // 미들웨어가 실행될 경로 설정 (/admin, /portfolio, /portfolio2 및 하위 모든 경로)
+  matcher: ['/admin/:path*', '/portfolio/:path*', '/portfolio2/:path*'],
 };

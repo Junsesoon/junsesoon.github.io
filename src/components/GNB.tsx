@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import React, { useState, useEffect } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
-import { PORTFOLIO_MENU, BLOG_MENU, ENABLE_MODE_TOGGLE } from '@/constants';
+import { PORTFOLIO_MENU, BLOG_MENU, PORTFOLIO2_MENU, ENABLE_MODE_TOGGLE } from '@/constants';
 
 interface GNBProps {
   isAdmin?: boolean;
@@ -12,7 +12,14 @@ interface GNBProps {
 const GNBContent: React.FC<GNBProps> = ({ isAdmin: initialIsAdmin }) => {
   const router = useRouter();
   const pathname = usePathname();
+
+  // Hide GNB on portfolio2 pages
+  if (pathname.startsWith('/portfolio2')) {
+    return null;
+  }
+
   const isSkilltree = pathname === '/skilltree';
+  const isDarkTheme = isSkilltree || pathname.startsWith('/portfolio2');
   const [isOpen, setIsOpen] = useState(false);
   const [isAdmin, setIsAdmin] = useState(initialIsAdmin ?? false);
 
@@ -38,18 +45,39 @@ const GNBContent: React.FC<GNBProps> = ({ isAdmin: initialIsAdmin }) => {
   }, [initialIsAdmin]);
 
   const getMode = () => {
+    if (pathname.startsWith('/portfolio2')) {
+      return 'portfolio2';
+    }
     return pathname.startsWith('/portfolio') ? 'portfolio' : 'blog';
   };
 
   const mode = getMode();
-  const currentMenu = mode === 'blog' ? BLOG_MENU : PORTFOLIO_MENU;
+  const currentMenu =
+    mode === 'portfolio2'
+      ? PORTFOLIO2_MENU
+      : mode === 'portfolio'
+      ? PORTFOLIO_MENU
+      : BLOG_MENU;
 
-  const handleModeSwitch = (newMode: 'blog' | 'portfolio') => {
+  const handleModeSwitch = (newMode: 'blog' | 'portfolio' | 'portfolio2') => {
     setIsOpen(false);
-    router.push(newMode === 'portfolio' ? '/portfolio' : '/');
+    if (newMode === 'portfolio') {
+      router.push('/portfolio');
+    } else if (newMode === 'portfolio2') {
+      router.push('/portfolio2');
+    } else {
+      router.push('/');
+    }
   };
 
+  const showBlogButton = pathname.startsWith('/portfolio');
+  const showPortfolioButton = !pathname.startsWith('/portfolio') || pathname.startsWith('/portfolio2');
+  const showPortfolio2Button = !pathname.startsWith('/portfolio2');
+
   const isLinkActive = (href: string, exact?: boolean) => {
+    if (href.includes('#')) {
+      return false;
+    }
     const linkPath = href.split('?')[0];
 
     if (exact) {
@@ -65,7 +93,9 @@ const GNBContent: React.FC<GNBProps> = ({ isAdmin: initialIsAdmin }) => {
 
   return (
     <nav className={`fixed top-0 left-0 right-0 z-50 border-b transition-colors duration-300 ${
-      isSkilltree
+      mode === 'portfolio2'
+        ? 'bg-[#030712]/80 border-white/[0.08] backdrop-blur-md'
+        : isSkilltree
         ? 'bg-[#02040a]/80 border-[#30363d]/50 backdrop-blur-md'
         : mode === 'portfolio'
         ? 'bg-red-50/90 border-red-200 backdrop-blur-md'
@@ -75,9 +105,9 @@ const GNBContent: React.FC<GNBProps> = ({ isAdmin: initialIsAdmin }) => {
         {/* Left: Logo */}
         <div className="md:justify-self-start">
           <Link
-            href={mode === 'portfolio' ? '/portfolio' : '/'}
+            href={mode === 'portfolio' ? '/portfolio' : mode === 'portfolio2' ? '/portfolio2' : '/'}
             className={`text-2xl font-bold no-underline transition-opacity duration-200 hover:opacity-80 ${
-              isSkilltree ? 'text-[#f0f6fc]' : 'text-gray-900'
+              isDarkTheme ? 'text-[#f0f6fc]' : 'text-gray-900'
             }`}
             onClick={() => setIsOpen(false)}
           >
@@ -90,7 +120,7 @@ const GNBContent: React.FC<GNBProps> = ({ isAdmin: initialIsAdmin }) => {
           <button 
             onClick={() => setIsOpen(!isOpen)} 
             className={`focus:outline-none ${
-              isSkilltree ? 'text-[#8b949e] hover:text-[#f0f6fc]' : 'text-gray-500 hover:text-gray-900'
+              isDarkTheme ? 'text-[#8b949e] hover:text-[#f0f6fc]' : 'text-gray-500 hover:text-gray-900'
             }`} 
             aria-label="Toggle menu"
           >
@@ -114,10 +144,10 @@ const GNBContent: React.FC<GNBProps> = ({ isAdmin: initialIsAdmin }) => {
                 href={item.href}
                 className={`no-underline text-base font-medium whitespace-nowrap transition-colors duration-200 ${
                   isActive
-                    ? isSkilltree
+                    ? isDarkTheme
                       ? 'text-[#f0f6fc] font-bold'
                       : 'text-gray-900 font-bold'
-                  : isSkilltree
+                  : isDarkTheme
                   ? 'text-[#8b949e] hover:text-[#f0f6fc]'
                   : mode === 'portfolio'
                   ? 'text-red-800 hover:text-red-900'
@@ -134,10 +164,10 @@ const GNBContent: React.FC<GNBProps> = ({ isAdmin: initialIsAdmin }) => {
         <div className="hidden justify-self-end md:flex md:items-center md:gap-3">
           {(ENABLE_MODE_TOGGLE || isAdmin) && (
             <>
-              {mode !== 'blog' && (
+              {showBlogButton && (
                 <button
                   onClick={() => handleModeSwitch('blog')}
-                  className={isSkilltree
+                  className={isDarkTheme
                     ? "bg-[#21262d] text-[#c9d1d9] border border-[#30363d] px-4 py-2 cursor-pointer font-sans text-sm rounded-md font-semibold transition-colors duration-200 hover:bg-[#30363d]"
                     : "bg-red-100 text-red-800 px-4 py-2 cursor-pointer font-sans text-sm rounded-md font-semibold transition-colors duration-200 hover:bg-red-200"
                   }
@@ -145,15 +175,26 @@ const GNBContent: React.FC<GNBProps> = ({ isAdmin: initialIsAdmin }) => {
                   Blog
                 </button>
               )}
-              {mode !== 'portfolio' && (
+              {showPortfolioButton && (
                 <button
                   onClick={() => handleModeSwitch('portfolio')}
-                  className={isSkilltree
+                  className={isDarkTheme
                     ? "bg-[#21262d] text-[#c9d1d9] border border-[#30363d] px-4 py-2 cursor-pointer font-sans text-sm rounded-md font-semibold transition-colors duration-200 hover:bg-[#30363d]"
                     : "bg-gray-100 text-gray-800 px-4 py-2 cursor-pointer font-sans text-sm rounded-md font-semibold transition-colors duration-200 hover:bg-gray-200"
                   }
                 >
                   Portfolio
+                </button>
+              )}
+              {showPortfolio2Button && (
+                <button
+                  onClick={() => handleModeSwitch('portfolio2')}
+                  className={isDarkTheme
+                    ? "bg-[#21262d] text-[#c9d1d9] border border-[#30363d] px-4 py-2 cursor-pointer font-sans text-sm rounded-md font-semibold transition-colors duration-200 hover:bg-[#30363d]"
+                    : "bg-indigo-100 text-indigo-800 px-4 py-2 cursor-pointer font-sans text-sm rounded-md font-semibold transition-colors duration-200 hover:bg-indigo-200"
+                  }
+                >
+                  Portfolio 2.0
                 </button>
               )}
             </>
@@ -164,7 +205,9 @@ const GNBContent: React.FC<GNBProps> = ({ isAdmin: initialIsAdmin }) => {
       {/* Mobile Menu Dropdown */}
       {isOpen && (
         <div className={`flex flex-col items-center gap-4 border-t pb-6 pt-4 font-sans md:hidden ${
-          isSkilltree
+          mode === 'portfolio2'
+            ? 'bg-[#030712]/95 border-white/[0.08] text-slate-100'
+            : isSkilltree
             ? 'bg-[#0d1117]/95 border-[#30363d] text-[#c9d1d9]'
             : 'bg-white border-gray-100 text-gray-900'
         }`}>
@@ -177,10 +220,10 @@ const GNBContent: React.FC<GNBProps> = ({ isAdmin: initialIsAdmin }) => {
                 onClick={() => setIsOpen(false)}
                 className={`no-underline text-base font-medium whitespace-nowrap transition-colors duration-200 ${
                   isActive
-                    ? isSkilltree
+                    ? isDarkTheme
                       ? 'text-[#f0f6fc] font-bold'
                       : 'text-gray-900 font-bold'
-                    : isSkilltree
+                    : isDarkTheme
                     ? 'text-[#8b949e] hover:text-[#f0f6fc]'
                     : mode === 'portfolio'
                     ? 'text-red-800 hover:text-red-900'
@@ -193,10 +236,10 @@ const GNBContent: React.FC<GNBProps> = ({ isAdmin: initialIsAdmin }) => {
           })}
           {(ENABLE_MODE_TOGGLE || isAdmin) && (
             <div className="mt-2 flex gap-3">
-              {mode !== 'blog' && (
+              {showBlogButton && (
                 <button 
                   onClick={() => handleModeSwitch('blog')} 
-                  className={isSkilltree
+                  className={isDarkTheme
                     ? "bg-[#21262d] text-[#c9d1d9] border border-[#30363d] px-4 py-2 cursor-pointer font-sans text-sm rounded-md font-semibold transition-colors duration-200 hover:bg-[#30363d]"
                     : "bg-red-100 text-red-800 px-4 py-2 cursor-pointer font-sans text-sm rounded-md font-semibold transition-colors duration-200 hover:bg-red-200"
                   }
@@ -204,15 +247,26 @@ const GNBContent: React.FC<GNBProps> = ({ isAdmin: initialIsAdmin }) => {
                   Blog
                 </button>
               )}
-              {mode !== 'portfolio' && (
+              {showPortfolioButton && (
                 <button 
                   onClick={() => handleModeSwitch('portfolio')} 
-                  className={isSkilltree
+                  className={isDarkTheme
                     ? "bg-[#21262d] text-[#c9d1d9] border border-[#30363d] px-4 py-2 cursor-pointer font-sans text-sm rounded-md font-semibold transition-colors duration-200 hover:bg-[#30363d]"
                     : "bg-gray-100 text-gray-800 px-4 py-2 cursor-pointer font-sans text-sm rounded-md font-semibold transition-colors duration-200 hover:bg-gray-200"
                   }
                 >
                   Portfolio
+                </button>
+              )}
+              {showPortfolio2Button && (
+                <button 
+                  onClick={() => handleModeSwitch('portfolio2')} 
+                  className={isDarkTheme
+                    ? "bg-[#21262d] text-[#c9d1d9] border border-[#30363d] px-4 py-2 cursor-pointer font-sans text-sm rounded-md font-semibold transition-colors duration-200 hover:bg-[#30363d]"
+                    : "bg-indigo-100 text-indigo-800 px-4 py-2 cursor-pointer font-sans text-sm rounded-md font-semibold transition-colors duration-200 hover:bg-indigo-200"
+                  }
+                >
+                  Portfolio 2.0
                 </button>
               )}
             </div>
