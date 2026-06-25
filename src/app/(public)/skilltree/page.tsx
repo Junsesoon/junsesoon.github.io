@@ -54,8 +54,8 @@ export default async function SkillTreePage() {
           <p className="text-xl text-slate-400">From the Roots of Paradigms to Modern Engineering</p>
         </header>
         
-        <div className="flex flex-col lg:flex-row gap-8 items-start relative">
-          <div className="flex-1 w-full flex flex-col gap-12">
+        <div className="flex flex-col xl:flex-row gap-8 items-start relative">
+          <div className="flex-1 min-w-0 w-full flex flex-col gap-12">
             {domains.map((domain, index) => (
               <section 
                 key={domain.match_category2}

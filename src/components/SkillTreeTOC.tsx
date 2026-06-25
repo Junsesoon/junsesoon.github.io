@@ -77,7 +77,7 @@ export default function SkillTreeTOC({ domains }: SkillTreeTOCProps) {
   return (
     <>
       {/* Desktop Sticky Side TOC */}
-      <aside className="hidden lg:block sticky top-24 lg:mt-24 h-fit w-48 xl:w-56 shrink-0 rounded-2xl border border-[#30363d]/45 bg-[#0d1117]/40 backdrop-blur-md p-5 shadow-[0_12px_32px_rgba(0,0,0,0.4)] z-20">
+      <aside className="hidden xl:block sticky top-24 xl:mt-24 h-fit w-48 xl:w-56 shrink-0 rounded-2xl border border-[#30363d]/45 bg-[#0d1117]/40 backdrop-blur-md p-5 shadow-[0_12px_32px_rgba(0,0,0,0.4)] z-20">
         <h3 className="mb-4 text-xs font-bold text-[#8b949e] uppercase tracking-widest border-b border-[#30363d]/45 pb-2">
           Domains Map
         </h3>
@@ -114,7 +114,7 @@ export default function SkillTreeTOC({ domains }: SkillTreeTOCProps) {
       {/* Mobile Floating Action Button (FAB) */}
       <button
         onClick={() => setIsOpen(true)}
-        className="fixed bottom-6 right-6 z-40 flex h-12 w-12 items-center justify-center rounded-full bg-[#0d1117]/95 text-slate-200 border border-[#30363d] shadow-[0_4px_20px_rgba(0,0,0,0.6)] backdrop-blur-md transition-transform hover:scale-105 lg:hidden"
+        className="fixed bottom-6 right-6 z-40 flex h-12 w-12 items-center justify-center rounded-full bg-[#0d1117]/95 text-slate-200 border border-[#30363d] shadow-[0_4px_20px_rgba(0,0,0,0.6)] backdrop-blur-md transition-transform hover:scale-105 xl:hidden"
         aria-label="목차 보기"
       >
         <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -127,12 +127,12 @@ export default function SkillTreeTOC({ domains }: SkillTreeTOCProps) {
         <>
           {/* Backdrop */}
           <div 
-            className="fixed inset-0 z-40 bg-black/40 backdrop-blur-xs lg:hidden" 
+            className="fixed inset-0 z-40 bg-black/40 backdrop-blur-xs xl:hidden" 
             onClick={() => setIsOpen(false)} 
           />
           
           {/* Floating Drawer Container */}
-          <div className="fixed bottom-24 right-6 z-50 flex max-h-[60vh] w-64 flex-col rounded-2xl border border-[#30363d] bg-[#0d1117]/95 backdrop-blur-md p-5 shadow-[0_24px_50px_rgba(0,0,0,0.6)] lg:hidden">
+          <div className="fixed bottom-24 right-6 z-50 flex max-h-[60vh] w-64 flex-col rounded-2xl border border-[#30363d] bg-[#0d1117]/95 backdrop-blur-md p-5 shadow-[0_24px_50px_rgba(0,0,0,0.6)] xl:hidden">
             <div className="mb-4 flex shrink-0 items-center justify-between border-b border-[#30363d]/60 pb-2">
               <h3 className="text-sm font-bold text-[#f0f6fc] uppercase tracking-wider">Domains Map</h3>
               <button 

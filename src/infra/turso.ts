@@ -1,6 +1,6 @@
 import { createClient, Client, ResultSet, InValue } from '@libsql/client';
 
-const dbEnv = (process.env.DB_ENV || 'local').replace(/['"]/g, '').trim();
+const dbEnv = (process.env.DB_ENV || 'local').trim();
 
 const getTursoConfig = () => {
   // DB_ENV가 local일 경우, 별도 변수 설정 없이 로컬 파일(Logs.db)로 자동 우회

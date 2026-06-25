@@ -155,9 +155,9 @@ export default function SkillTreeInteractive({ nodes, COLUMNS, isAdmin, colorInd
               id: `${parentName}-${childNode.file.replace(/\.[^/.]+$/, "")}`,
               parentName: parentName,
               childName: childNode.title.toLowerCase(),
-              x1: parentPos.col * 140 + 125, // Right center of parent (col * 140 + width)
+              x1: parentPos.col * 144 + 125, // Right center of parent (col * 144 + width)
               y1: parentPos.row * 70 + 27,   // Middle Y of parent (row * 70 + half_height)
-              x2: childPos.col * 140,        // Left center of child (col * 140)
+              x2: childPos.col * 144,        // Left center of child (col * 144)
               y2: childPos.row * 70 + 27,    // Middle Y of child (row * 70 + half_height)
             });
           }
@@ -265,7 +265,8 @@ export default function SkillTreeInteractive({ nodes, COLUMNS, isAdmin, colorInd
               style={{
                 gridTemplateColumns: `repeat(${maxCols}, 125px)`,
                 gridTemplateRows: `repeat(${maxRows}, 55px)`,
-                gap: '15px',
+                columnGap: '19px',
+                rowGap: '15px',
               }}
             >
               {nodesArray.map((nodeInfo) => {

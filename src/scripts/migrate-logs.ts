@@ -35,7 +35,7 @@ async function chunkedInsert(
 }
 
 async function migrate() {
-  const dbEnv = (process.env.DB_ENV || 'local').replace(/['"]/g, '').trim().toUpperCase();
+  const dbEnv = (process.env.DB_ENV || 'local').trim().toUpperCase();
   console.log(`🏁 Starting migration of logs and stats [DB_ENV: ${dbEnv}]`);
   
   if (dbEnv === 'LOCAL') {

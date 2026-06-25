@@ -25,7 +25,7 @@ export default async function PortfolioHome() {
         <BlogStats totalPosts={totalPostsCount} totalLikes={totalLikesCount} totalSkills={totalSkillsCount} totalVisitors={totalViewsCount} />
       </header>
       <section>
-        <h2 className="mb-6 border-b border-gray-200 pb-2 text-3xl">최신 포트폴리오</h2>
+        <h2 className="mb-6 border-b border-gray-200 pb-2 text-3xl">최신글</h2>
         <PostList posts={posts} theme="portfolio" />
       </section>
     </main>
