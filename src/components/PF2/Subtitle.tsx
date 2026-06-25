@@ -5,7 +5,7 @@ import React, { useState, useEffect } from 'react';
 export default function Subtitle() {
   const lines = [
     "AI 시대에 어떤 기술을 왜 선택할 것인가?",
-    "단순한 코드 작성을 넘어 문제를 정의하고 '이유 있는 아키텍처'를 설계합니다",
+    "문제를 정의하고 '이유 있는 아키텍처'를 설계합니다",
     "견고한 기술로 안정적인 가치를 만들어내는 개발자 오준서 입니다"
   ];
 

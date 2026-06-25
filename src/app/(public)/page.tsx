@@ -16,7 +16,7 @@ export default async function Home() {
   const totalSkillsCount = parseInt(rows[0].count, 10);
 
   return (
-    <main className="mx-auto max-w-3xl p-8 font-sans">
+    <main className="mx-auto max-w-3xl p-8 pb-24 font-sans">
       <header className="mb-0 flex min-h-80 flex-col items-center justify-center gap-6 py-10 text-center">
         <h1 className="text-5xl">
           Junseo's Blog 🚀

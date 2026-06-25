@@ -11,7 +11,7 @@ export const metadata = {
 export default function Portfolio2Page() {
   return (
     <main 
-      className="w-full min-h-[calc(100vh-4rem)] bg-[#030712] text-slate-100 font-sans relative overflow-hidden flex flex-col justify-center items-center py-20 px-4 -mt-16 pt-32"
+      className="w-full min-h-[calc(100vh-4rem)] relative overflow-hidden flex flex-col justify-center items-center px-4 pt-16 pb-20"
       style={{
         backgroundImage: 'radial-gradient(circle at 50% 30%, rgba(99, 102, 241, 0.15), rgba(168, 85, 247, 0.1), transparent 60%), radial-gradient(circle at 10% 80%, rgba(56, 189, 248, 0.08), transparent 45%)',
       }}

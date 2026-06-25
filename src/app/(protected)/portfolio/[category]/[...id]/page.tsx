@@ -58,7 +58,7 @@ export default async function PortfolioDetailPage({
 
   if (!post || !isPostVisible) {
     return (
-      <main className="mx-auto max-w-3xl p-8 font-sans">
+      <main className="mx-auto max-w-3xl p-8 pb-24 font-sans">
         <h1 className="text-4xl font-bold text-gray-800 mb-6">Portfolio not found</h1>
         <p className="text-gray-600 text-lg">
           해당 포트폴리오 게시물을 찾을 수 없습니다.
@@ -86,7 +86,7 @@ export default async function PortfolioDetailPage({
   const postData = displayProps;
 
   return (
-    <div className="mx-auto flex flex-col lg:flex-row max-w-6xl gap-8 p-8 font-sans">
+    <div className="mx-auto flex flex-col lg:flex-row max-w-6xl gap-8 p-8 pb-24 font-sans">
       <main className="min-w-0 flex-1 ml-0">
         <article>
           <header className="mb-6 flex min-h-40 flex-col justify-center gap-4 border-b border-gray-200 py-10">

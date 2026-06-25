@@ -60,7 +60,7 @@ export default async function PostPage({
 
   if (!post || !isPostVisible) {
     return (
-      <main className="mx-auto max-w-3xl p-8">
+      <main className="mx-auto max-w-3xl p-8 pb-24">
         <h1>Post not found</h1>
         <p>The requested post could not be found.</p>
       </main>
@@ -86,7 +86,7 @@ export default async function PostPage({
   const postData = displayProps;
 
   return (
-    <div className="mx-auto flex flex-col lg:flex-row max-w-6xl gap-8 p-8 font-sans">
+    <div className="mx-auto flex flex-col lg:flex-row max-w-6xl gap-8 p-8 pb-24 font-sans">
       <main className="min-w-0 flex-1 ml-0">
         <article>
           <header className="mb-6 flex min-h-40 flex-col justify-center gap-4 border-b border-gray-200 py-10">
