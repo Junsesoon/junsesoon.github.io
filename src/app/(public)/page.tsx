@@ -1,7 +1,7 @@
 import { getAllPosts } from '../../utils/posts';
 import { query } from '../../infra/neon';
-import BlogStats from '../../components/BlogStats';
-import PostList from '../../components/PostList';
+import BlogStats from '../../components/blog/BlogStats';
+import PostList from '../../components/admin/PostList';
 
 export const revalidate = 1200; // ISR 적용 시, 게시물 수정 후 최대 20분까지는 수정 내용이 반영되지 않을 수 있음
 

@@ -1,8 +1,8 @@
 'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
-import { addGlobalPropertyAction, getAllPropertiesWithTypesAction } from './propertyActions';
-import { getSkillTreeCardsAction } from './skillTreeActions';
+import { addGlobalPropertyAction, getAllPropertiesWithTypesAction } from '../../actions/propertyActions';
+import { getSkillTreeCardsAction } from '../../actions/skillTreeActions';
 
 export interface PostFormData {
   [key: string]: any;

@@ -2,9 +2,9 @@ import React from 'react';
 import Link from 'next/link';
 import { query as neonQuery } from '../../../infra/neon';
 import { query as tursoQuery } from '../../../infra/turso';
-import { logoutAction } from '../../../components/actions';
-import PostListClient from '../../../components/PostListClient';
-import AdminClock from '../../../components/AdminClock';
+import { logoutAction } from '../../../actions/actions';
+import PostListClient from '../../../components/admin/PostListClient';
+import AdminClock from '../../../components/admin/AdminClock';
 
 function getStatIcon(label: string) {
   const iconClass = "h-5 w-5 text-gray-400";

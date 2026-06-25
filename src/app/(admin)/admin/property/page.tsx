@@ -1,9 +1,9 @@
 import React from 'react';
 import Link from 'next/link';
 import { query } from '../../../../infra/neon';
-import PropertyManager, { PropertyWithCount } from '@/components/PropertyManager';
-import AdminClock from '../../../../components/AdminClock';
-import { logoutAction } from '../../../../components/actions';
+import PropertyManager, { PropertyWithCount } from '@/components/admin/PropertyManager';
+import AdminClock from '../../../../components/admin/AdminClock';
+import { logoutAction } from '../../../../actions/actions';
 
 const BASE_PROPS = ['category1', 'summary', 'category2', 'category3', 'category4', 'tags', 'parentskill', 'childskill', 'techstart', 'projectname'];
 const INTERNAL_PROPS = [

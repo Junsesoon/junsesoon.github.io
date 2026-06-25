@@ -1,6 +1,6 @@
 import { getAllPosts } from '../../../utils/posts';
-import BlogStats from '../../../components/BlogStats';
-import PostList from '../../../components/PostList';
+import BlogStats from '../../../components/blog/BlogStats';
+import PostList from '../../../components/admin/PostList';
 
 export const revalidate = 1200; // ISR 적용
 

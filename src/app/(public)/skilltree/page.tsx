@@ -1,5 +1,5 @@
-import SkillTreeGrid from '@/components/SkillTreeGrid';
-import SkillTreeTOC from '@/components/SkillTreeTOC';
+import SkillTreeGrid from '@/components/blog/SkillTreeGrid';
+import SkillTreeTOC from '@/components/blog/SkillTreeTOC';
 import { query } from '../../../infra/neon';
 
 export const revalidate = 3600;

@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useMemo } from 'react';
-import { addBlockRule, removeBlockRule } from './visitorActions';
+import { addBlockRule, removeBlockRule } from '../../actions/visitorActions';
 
 export interface DBVisitor {
   visitor_id: number;

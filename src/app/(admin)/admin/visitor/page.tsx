@@ -1,9 +1,9 @@
 import React from 'react';
 import Link from 'next/link';
-import VisitorManager from '@/components/VisitorManager';
-import { getVisitorDashboardData } from '@/components/visitorActions';
-import AdminClock from '../../../../components/AdminClock';
-import { logoutAction } from '../../../../components/actions';
+import VisitorManager from '@/components/admin/VisitorManager';
+import { getVisitorDashboardData } from '@/actions/visitorActions';
+import AdminClock from '../../../../components/admin/AdminClock';
+import { logoutAction } from '../../../../actions/actions';
 
 export const dynamic = 'force-dynamic';
 

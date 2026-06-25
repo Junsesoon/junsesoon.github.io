@@ -3,9 +3,9 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import PostEditor, { PostFormData } from '@/components/PostEditor';
-import { updatePostAction } from './postActions';
-import { getEssentialPropertiesAction, getRequiredPropertiesAction } from './propertyActions';
+import PostEditor, { PostFormData } from '@/components/admin/PostEditor';
+import { updatePostAction } from '../../actions/postActions';
+import { getEssentialPropertiesAction, getRequiredPropertiesAction } from '../../actions/propertyActions';
 
 export default function EditClient({ post, originalSlug }: { post: any; originalSlug: string }) {
   const router = useRouter();

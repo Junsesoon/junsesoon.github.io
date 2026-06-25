@@ -2,10 +2,10 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
-import { addSkillTreeDomainAction, getSkillTreeDomainsAction, deleteSkillTreeDomainAction, updateSkillTreeDomainAction, updateSkillTreeDomainOrdersAction, getSkillTreeCardsAction } from './skillTreeActions';
-import { createPostAction, updatePostAction, deletePostAction } from './postActions';
-import AdminClock from './AdminClock';
-import { logoutAction } from './actions';
+import { addSkillTreeDomainAction, getSkillTreeDomainsAction, deleteSkillTreeDomainAction, updateSkillTreeDomainAction, updateSkillTreeDomainOrdersAction, getSkillTreeCardsAction } from '../../actions/skillTreeActions';
+import { createPostAction, updatePostAction, deletePostAction } from '../../actions/postActions';
+import AdminClock from '../admin/AdminClock';
+import { logoutAction } from '../../actions/actions';
 
 export default function SkillTreeManager() {
   const [title, setTitle] = useState('');

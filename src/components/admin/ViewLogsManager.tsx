@@ -2,8 +2,8 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
-import { addBlockRule, removeBlockRule } from './visitorActions';
-import { DBViewLog, deleteViewLogAction } from './viewLogsActions';
+import { addBlockRule, removeBlockRule } from '../../actions/visitorActions';
+import { DBViewLog, deleteViewLogAction } from '../../actions/viewLogsActions';
 
 interface ViewLogsManagerProps {
   initialLogs: DBViewLog[];

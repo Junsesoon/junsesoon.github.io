@@ -1,6 +1,6 @@
 import path from 'path';
 import SkillTreeInteractive from './SkillTreeInteractive';
-import { getSkillTreePosts } from '../utils/posts';
+import { getSkillTreePosts } from '../../utils/posts';
 import { cookies } from 'next/headers';
 import { verifyAdminToken } from '@/utils/auth';
 

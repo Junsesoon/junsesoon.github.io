@@ -1,9 +1,9 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
-import { incrementViewCountAction } from './publicActions';
+import { trackSiteVisitorAction } from '../../actions/publicActions';
 
-// crypto.randomUUID 미지원 브라우저 환경을 위한 Fallback (LikeButton과 동일)
+// crypto.randomUUID 미지원 브라우저 환경을 위한 Fallback
 const generateUUID = () => {
   if (typeof crypto !== 'undefined' && crypto.randomUUID) {
     return crypto.randomUUID();
@@ -14,11 +14,11 @@ const generateUUID = () => {
   });
 };
 
-export default function ViewTracker({ postId }: { postId: string }) {
+export default function VisitorTracker() {
   const hasTracked = useRef(false);
 
   useEffect(() => {
-    if (!postId || hasTracked.current) return;
+    if (hasTracked.current) return;
     hasTracked.current = true;
 
     let sid = localStorage.getItem('blog_session_id');
@@ -28,8 +28,8 @@ export default function ViewTracker({ postId }: { postId: string }) {
     }
 
     // 백그라운드에서 서버 액션 호출 (UI 블로킹 없음)
-    incrementViewCountAction(postId, sid).catch(console.error);
-  }, [postId]);
+    trackSiteVisitorAction(sid).catch(console.error);
+  }, []);
 
   return null; // 시각적으로 렌더링할 요소가 없는 백그라운드 전용 컴포넌트
 }

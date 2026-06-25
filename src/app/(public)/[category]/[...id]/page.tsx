@@ -1,6 +1,6 @@
-import TOC from '../../../../components/TOC';
-import LikeButton from '../../../../components/LikeButton';
-import ViewTracker from '../../../../components/ViewTracker';
+import TOC from '../../../../components/blog/TOC';
+import LikeButton from '../../../../components/shared/LikeButton';
+import ViewTracker from '../../../../components/admin/ViewTracker';
 import { type TocHeading } from '../../../../utils/parser';
 import { getDbPostBySlug, getAllPosts } from '../../../../utils/posts';
 import { getParsedMarkdown } from '../../../../utils/markdownCache';

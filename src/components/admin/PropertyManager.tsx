@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { addGlobalPropertyAction, deleteGlobalPropertyAction, renameGlobalPropertyAction, togglePropertyEssentialAction, togglePropertyRequiredAction, updatePropertyTypeAction, checkUppercasePropertiesAction, autoNormalizeUppercasePropertiesAction, syncAndCleanPropertiesAction, previewSyncAndCleanPropertiesAction, getPostsUsingPropertyAction } from './propertyActions';
+import { addGlobalPropertyAction, deleteGlobalPropertyAction, renameGlobalPropertyAction, togglePropertyEssentialAction, togglePropertyRequiredAction, updatePropertyTypeAction, checkUppercasePropertiesAction, autoNormalizeUppercasePropertiesAction, syncAndCleanPropertiesAction, previewSyncAndCleanPropertiesAction, getPostsUsingPropertyAction } from '../../actions/propertyActions';
 
 export interface PropertyWithCount {
   name: string;

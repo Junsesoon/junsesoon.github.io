@@ -1,7 +1,7 @@
-import GNB from '@/components/GNB';
+import GNB from '@/components/shared/GNB';
 import '@/styles/globals.css';
 import Script from 'next/script';
-import Footer from '@/components/footer';
+import Footer from '@/components/shared/footer';
 
 export const metadata = {
   title: 'Junseo Blog',

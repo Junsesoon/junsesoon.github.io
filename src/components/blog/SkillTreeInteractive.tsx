@@ -3,7 +3,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { SkillNode } from './SkillTreeGrid';
-import { incrementViewCountAction } from './publicActions';
+import { incrementViewCountAction } from '../../actions/publicActions';
 import SkillTreeLikeButton from './SkillTreeLikeButton';
 
 // crypto.randomUUID 미지원 브라우저 환경을 위한 Fallback (LikeButton/ViewTracker와 동일)

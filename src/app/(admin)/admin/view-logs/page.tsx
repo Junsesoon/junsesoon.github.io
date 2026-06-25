@@ -1,9 +1,9 @@
 import React from 'react';
 import Link from 'next/link';
-import ViewLogsManager from '@/components/ViewLogsManager';
-import { getViewLogsDashboardData } from '@/components/viewLogsActions';
-import AdminClock from '../../../../components/AdminClock';
-import { logoutAction } from '../../../../components/actions';
+import ViewLogsManager from '@/components/admin/ViewLogsManager';
+import { getViewLogsDashboardData } from '@/actions/viewLogsActions';
+import AdminClock from '../../../../components/admin/AdminClock';
+import { logoutAction } from '../../../../actions/actions';
 
 export const dynamic = 'force-dynamic';
 

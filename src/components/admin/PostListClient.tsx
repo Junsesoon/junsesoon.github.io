@@ -2,8 +2,8 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { batchUpdateLocationAction } from './actions';
-import { deletePostAction } from './postActions';
+import { batchUpdateLocationAction } from '../../actions/actions';
+import { deletePostAction } from '../../actions/postActions';
 
 interface Post {
   slug: string;

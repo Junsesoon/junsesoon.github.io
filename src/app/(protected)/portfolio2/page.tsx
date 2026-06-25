@@ -1,6 +1,7 @@
 import React from 'react';
 import Link from 'next/link';
-import TypingSubtitle from '@/components/TypingSubtitle';
+import Subtitle from '@/components/PF2/Subtitle';
+
 
 export const metadata = {
   title: 'Portfolio 2.0 - New Generation',
@@ -47,7 +48,7 @@ export default function Portfolio2Page() {
         </h1>
 
         {/* Subtitle */}
-        <TypingSubtitle />
+        <Subtitle />
 
         {/* Glassmorphic Cards Grid */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-3xl mx-auto text-left">

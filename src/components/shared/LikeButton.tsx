@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { getLikeStatusAction, toggleLikeAction } from './publicActions';
+import { getLikeStatusAction, toggleLikeAction } from '../../actions/publicActions';
 
 interface LikeButtonProps {
   postId: string;

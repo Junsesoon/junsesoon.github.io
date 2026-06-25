@@ -1,9 +1,9 @@
 import React from 'react';
 import Link from 'next/link';
-import TemplateManager, { TemplatesState } from '@/components/TemplateManager';
+import TemplateManager, { TemplatesState } from '@/components/admin/TemplateManager';
 import { query } from '../../../../infra/neon';
-import AdminClock from '../../../../components/AdminClock';
-import { logoutAction } from '../../../../components/actions';
+import AdminClock from '../../../../components/admin/AdminClock';
+import { logoutAction } from '../../../../actions/actions';
 
 export const dynamic = 'force-dynamic'; // 항상 최신 DB 데이터를 패칭하도록 보장
 

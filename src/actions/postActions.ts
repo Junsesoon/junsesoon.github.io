@@ -2,7 +2,7 @@
 
 import { query } from '../infra/neon';
 import { revalidatePath } from 'next/cache';
-import { PostFormData } from './PostEditor';
+import { PostFormData } from '../components/admin/PostEditor';
 
 // 슬러그 생성 시 특수문자 치환 및 정제 헬퍼 함수
 const cleanSlug = (str: string) => {

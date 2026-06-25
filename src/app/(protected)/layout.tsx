@@ -1,7 +1,7 @@
 import React from 'react';
-import GNB from '@/components/GNB';
+import GNB from '@/components/shared/GNB';
 import '@/styles/globals.css';
-import Footer from '@/components/footer';
+import Footer from '@/components/shared/footer';
 import { cookies } from 'next/headers';
 import { verifyAdminToken } from '@/utils/auth';
 

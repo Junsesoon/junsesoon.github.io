@@ -1,8 +1,8 @@
 import { getCategoryPosts, getDbPostBySlug } from '../../../../utils/posts';
-import PostList from '../../../../components/PostList';
-import TOC from '../../../../components/TOC';
-import LikeButton from '../../../../components/LikeButton';
-import ViewTracker from '../../../../components/ViewTracker';
+import PostList from '../../../../components/admin/PostList';
+import TOC from '../../../../components/blog/TOC';
+import LikeButton from '../../../../components/shared/LikeButton';
+import ViewTracker from '../../../../components/admin/ViewTracker';
 import { getParsedMarkdown } from '../../../../utils/markdownCache';
 import { cookies } from 'next/headers';
 import { verifyAdminToken } from '@/utils/auth';
