@@ -1,4 +1,5 @@
 import '@/styles/globals.css';
+import AdminTracker from '@/components/admin/AdminTracker';
 
 export const metadata = {
   title: 'Admin Dashboard',
@@ -13,6 +14,7 @@ export default function AdminLayout({
   return (
     <html lang="ko" style={{ scrollbarGutter: 'stable' }}>
       <body className="m-0 p-0 flex flex-col min-h-screen bg-gray-50 text-gray-900">
+        <AdminTracker />
         {children}
       </body>
     </html>

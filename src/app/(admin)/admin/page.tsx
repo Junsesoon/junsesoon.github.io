@@ -5,6 +5,7 @@ import { query as tursoQuery } from '../../../infra/turso';
 import { logoutAction } from '../../../actions/actions';
 import PostListClient from '../../../components/admin/PostListClient';
 import AdminClock from '../../../components/admin/AdminClock';
+import BackButton from '../../../components/admin/BackButton';
 
 function getStatIcon(label: string) {
   const iconClass = "h-5 w-5 text-gray-400";
@@ -293,12 +294,7 @@ export default async function AdminDashboardPage({ searchParams }: { searchParam
         <header className="mb-8 flex flex-col sm:flex-row sm:items-end justify-between border-b border-gray-200 pb-4 gap-4">
           <AdminClock title="Overview" />
           <div className="flex items-center gap-3">
-            <Link
-              href="/"
-              className="inline-flex items-center justify-center rounded-lg bg-gray-100 px-3.5 py-1.5 text-xs font-medium text-gray-800 transition-all hover:bg-gray-200/80"
-            >
-              ← Back to Home
-            </Link>
+            <BackButton />
             <form action={logoutAction}>
               <button type="submit" className="inline-flex items-center justify-center rounded-lg bg-red-50 px-3.5 py-1.5 text-xs font-medium text-red-600 transition-all hover:bg-red-100/80">
                 Logout
