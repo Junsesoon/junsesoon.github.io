@@ -1,13 +1,22 @@
 import React from 'react';
 import Link from 'next/link';
 import AboutTimeline from '@/components/PF2/AboutTimeline';
+import { getAllPosts } from '@/utils/posts';
 
 export const metadata = {
   title: 'About Junseo - Portfolio 2.0',
   description: 'Learn more about the developer Junseo, his values, and timeline.',
 };
 
-export default function AboutPage() {
+export default async function AboutPage() {
+  const posts = await getAllPosts('portfolio', { category1: 'portfolio', category2: 'about' });
+  
+  const timelineItems = posts.map(post => ({
+    title: post.title,
+    startDate: post.metadata?.startdate || post.metadata?.startDate || post.date || '',
+    endDate: post.metadata?.enddate || post.metadata?.endDate || post.date || '',
+    desc: post.metadata?.summary || post.excerpt || '',
+  }));
   return (
     <main 
       className="w-full min-h-[calc(100vh-4rem)] relative overflow-hidden px-6 md:px-12 flex flex-col items-center pt-16 pb-20"
@@ -62,8 +71,8 @@ export default function AboutPage() {
       <div className="max-w-4xl w-full flex flex-col gap-8 relative z-10">
         
         {/* Card 1: Timeline / Milestones */}
-        <div className="p-8 rounded-3xl bg-white/[0.01] border border-white/[0.04] backdrop-blur-xl hover:border-white/[0.08] transition-all duration-300">
-          <AboutTimeline />
+        <div className="p-8 rounded-3xl bg-white/[0.01] border border-white/[0.04] backdrop-blur-xl hover:border-white/[0.08] transition-all duration-300 min-h-[300px]">
+          <AboutTimeline items={timelineItems} />
         </div>
 
         {/* Card 2: Core Values */}
