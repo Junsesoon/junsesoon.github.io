@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 
 export default function Subtitle() {
   const lines = [
@@ -9,55 +9,40 @@ export default function Subtitle() {
     "견고한 기술로 안정적인 가치를 만들어내는 개발자 오준서 입니다"
   ];
 
-  const [displayedLines, setDisplayedLines] = useState<string[]>(["", "", ""]);
-  const [currentLineIdx, setCurrentLineIdx] = useState(0);
-  const [currentCharIdx, setCurrentCharIdx] = useState(0);
-
-  useEffect(() => {
-    if (currentLineIdx >= lines.length) return;
-
-    const currentFullText = lines[currentLineIdx];
-    if (currentCharIdx < currentFullText.length) {
-      const timeout = setTimeout(() => {
-        setDisplayedLines(prev => {
-          const next = [...prev];
-          next[currentLineIdx] = currentFullText.slice(0, currentCharIdx + 1);
-          return next;
-        });
-        setCurrentCharIdx(prev => prev + 1);
-      }, 35); // Typing speed per character (ms)
-      return () => clearTimeout(timeout);
-    } else {
-      // Pause slightly before typing the next line
-      const timeout = setTimeout(() => {
-        setCurrentLineIdx(prev => prev + 1);
-        setCurrentCharIdx(0);
-      }, 300);
-      return () => clearTimeout(timeout);
-    }
-  }, [currentLineIdx, currentCharIdx]);
-
   return (
     <>
       <style>{`
-        @keyframes cursor-blink {
-          0%, 100% { opacity: 1; }
-          50% { opacity: 0; }
+        @keyframes fade-up {
+          from {
+            opacity: 0;
+            transform: translateY(16px);
+            filter: blur(4px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+            filter: blur(0);
+          }
         }
-        .animate-cursor-blink {
-          animation: cursor-blink 0.8s infinite;
+        .animate-fade-up {
+          opacity: 0;
+          animation: fade-up 3.0s cubic-bezier(0.16, 1, 0.3, 1) forwards;
         }
       `}</style>
-      <p className="text-lg md:text-xl text-slate-400 max-w-3xl mx-auto mb-12 leading-relaxed min-h-[110px] sm:min-h-[90px] md:min-h-[84px] text-center select-none">
-        {displayedLines[0]}
-        {displayedLines[0] && <br />}
-        {displayedLines[1]}
-        {displayedLines[1] && <br />}
-        {displayedLines[2]}
-        {currentLineIdx < lines.length && (
-          <span className="inline-block w-[2px] h-5 bg-indigo-400 ml-1.5 animate-cursor-blink align-middle shadow-[0_0_8px_rgba(99,102,241,0.8)]" />
-        )}
-      </p>
+      <div className="flex flex-col gap-2 md:gap-3 text-lg md:text-xl text-slate-400 max-w-3xl mx-auto mb-12 leading-relaxed text-center select-none">
+        {lines.map((line, idx) => (
+          <span
+            key={idx}
+            className="animate-fade-up block"
+            style={{
+              animationDelay: `${idx * 800 + 150}ms`,
+            }}
+          >
+            {line}
+          </span>
+        ))}
+      </div>
     </>
   );
 }
+

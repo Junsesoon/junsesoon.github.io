@@ -42,6 +42,7 @@ const getColorClass = (color: string) => {
   if (c === 'green' || c === 'emerald') return 'border-emerald-200 bg-emerald-50 text-emerald-600';
   if (c === 'purple') return 'border-purple-200 bg-purple-50 text-purple-600';
   if (c === 'red') return 'border-red-200 bg-red-50 text-red-600';
+  if (c === 'indigo') return 'border-indigo-200 bg-indigo-50 text-indigo-600';
   return 'border-gray-200 bg-gray-50 text-gray-600';
 };
 
@@ -52,7 +53,19 @@ const getDotColorClass = (color: string) => {
   if (c === 'green' || c === 'emerald') return 'bg-emerald-500';
   if (c === 'purple') return 'bg-purple-500';
   if (c === 'red') return 'bg-red-500';
+  if (c === 'indigo') return 'bg-indigo-500';
   return 'bg-gray-500';
+};
+
+const getGradientClass = (color: string) => {
+  const c = color.toLowerCase();
+  if (c === 'amber') return 'bg-gradient-to-r from-amber-500 to-orange-500';
+  if (c === 'blue') return 'bg-gradient-to-r from-blue-500 to-cyan-500';
+  if (c === 'green' || c === 'emerald') return 'bg-gradient-to-r from-emerald-500 to-teal-500';
+  if (c === 'purple') return 'bg-gradient-to-r from-purple-500 to-pink-500';
+  if (c === 'red') return 'bg-gradient-to-r from-red-500 to-rose-500';
+  if (c === 'indigo') return 'bg-gradient-to-r from-indigo-500 to-purple-500';
+  return 'bg-gradient-to-r from-gray-500 to-slate-500';
 };
 
 export default function AboutManager({ initialItems, initialTimelineItems }: AboutManagerProps) {
@@ -294,9 +307,9 @@ export default function AboutManager({ initialItems, initialTimelineItems }: Abo
   };
 
   return (
-    <div className="grid grid-cols-1 xl:grid-cols-10 gap-6 w-full items-start">
+    <div className="grid grid-cols-1 xl:grid-cols-[3.5fr_6.5fr] gap-6 w-full items-start">
       {/* Left Column: Timeline Category 3 Area */}
-      <div className="xl:col-span-3 flex flex-col">
+      <div className="flex flex-col">
         {/* Sample Add Form: Category 3 Item */}
         <div className="overflow-hidden rounded-2xl border border-gray-200/60 bg-white/80 p-6 shadow-sm backdrop-blur-md transition-all hover:shadow-md hover:border-gray-300/80 select-none flex flex-col mb-6">
           <h2 className="mb-4 text-lg font-semibold text-gray-800">{editingItemId ? 'Edit Timeline Item' : 'Add Timeline Item'}</h2>
@@ -314,17 +327,25 @@ export default function AboutManager({ initialItems, initialTimelineItems }: Abo
             </div>
             <div>
               <label className="mb-1 block text-xs font-medium text-gray-700">Bar Color</label>
-              <select 
-                value={newItemColor}
-                onChange={(e) => setNewItemColor(e.target.value)}
-                className="block w-full rounded-lg border border-gray-200/80 bg-gray-50/30 px-3 py-2 text-xs focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-              >
-                <option value="Blue">Blue</option>
-                <option value="Green">Green</option>
-                <option value="Amber">Amber</option>
-                <option value="Purple">Purple</option>
-                <option value="Red">Red</option>
-              </select>
+              <div className="flex items-center gap-3">
+                <div className="w-1/2">
+                  <select 
+                    value={newItemColor}
+                    onChange={(e) => setNewItemColor(e.target.value)}
+                    className="block w-full rounded-lg border border-gray-200/80 bg-gray-50/30 px-3 py-2 text-xs focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                  >
+                    <option value="Blue">Blue</option>
+                    <option value="Green">Green</option>
+                    <option value="Amber">Amber</option>
+                    <option value="Purple">Purple</option>
+                    <option value="Red">Red</option>
+                    <option value="Indigo">Indigo</option>
+                  </select>
+                </div>
+                <div className="flex-1 flex items-center justify-start">
+                  <div className={`h-8 w-full rounded-lg shadow-sm border border-gray-200/30 transition-all duration-300 ${getGradientClass(newItemColor)}`} title="Selected color gradient preview" />
+                </div>
+              </div>
             </div>
             <div className="mt-4 flex gap-3">
               <button 
@@ -362,13 +383,14 @@ export default function AboutManager({ initialItems, initialTimelineItems }: Abo
                 <tr>
                   <th scope="col" className="py-3 px-4 text-[10px] font-bold text-gray-400 uppercase tracking-wider align-middle w-auto min-w-[70px]">Item name</th>
                   <th scope="col" className="py-3 px-4 text-[10px] font-bold text-gray-400 uppercase tracking-wider align-middle w-24">Bar color</th>
+                  <th scope="col" className="py-3 px-4 text-[10px] font-bold text-gray-400 uppercase tracking-wider align-middle w-24">Swatch</th>
                   <th scope="col" className="py-3 px-4 text-[10px] font-bold text-gray-400 uppercase tracking-wider text-right align-middle w-20">Action</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100 bg-white">
                 {timelineItems.length === 0 ? (
                   <tr>
-                    <td colSpan={3} className="p-8 text-center text-xs text-gray-400">
+                    <td colSpan={4} className="p-8 text-center text-xs text-gray-400">
                       등록된 타임라인 아이템이 없습니다.
                     </td>
                   </tr>
@@ -383,6 +405,9 @@ export default function AboutManager({ initialItems, initialTimelineItems }: Abo
                           <span className={`h-1.5 w-1.5 rounded-full ${getDotColorClass(item.color)}`}></span>
                           {item.color}
                         </span>
+                      </td>
+                      <td className="h-[48px] px-4 whitespace-nowrap">
+                        <div className={`h-3 w-16 rounded-full shadow-sm ${getGradientClass(item.color)}`} title={`${item.color} gradient swatch`} />
                       </td>
                       <td className="h-[48px] px-4 whitespace-nowrap">
                         <div className="flex items-center justify-end gap-1 h-full">
@@ -423,7 +448,7 @@ export default function AboutManager({ initialItems, initialTimelineItems }: Abo
       </div>
 
       {/* Right Column: Timeline Card Area */}
-      <div className="xl:col-span-7 flex flex-col">
+      <div className="flex flex-col">
         {/* Sample Add Form: Timeline Card */}
         <div className="overflow-hidden rounded-2xl border border-gray-200/60 bg-white/80 p-6 shadow-sm backdrop-blur-md transition-all hover:shadow-md hover:border-gray-300/80 select-none flex flex-col mb-6">
           <h2 className="mb-4 text-lg font-semibold text-gray-800">{editingCardSlug ? 'Edit Timeline Card' : 'Add Timeline Card'}</h2>

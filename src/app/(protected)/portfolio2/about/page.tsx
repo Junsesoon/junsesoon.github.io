@@ -2,6 +2,7 @@ import React from 'react';
 import Link from 'next/link';
 import AboutTimeline from '@/components/PF2/AboutTimeline';
 import { getAllPosts } from '@/utils/posts';
+import { getTimelineItemsAction } from '@/actions/timelineActions';
 
 export const metadata = {
   title: 'About Junseo - Portfolio 2.0',
@@ -9,14 +10,28 @@ export const metadata = {
 };
 
 export default async function AboutPage() {
-  const posts = await getAllPosts('portfolio', { category1: 'portfolio', category2: 'about' });
+  const [posts, dbItems] = await Promise.all([
+    getAllPosts('portfolio', { category1: 'portfolio', category2: 'about' }),
+    getTimelineItemsAction()
+  ]);
+
+  const colorMap = new Map<string, string>();
+  dbItems.forEach(item => {
+    colorMap.set(item.name.trim().toLowerCase(), item.color);
+  });
   
-  const timelineItems = posts.map(post => ({
-    title: post.title,
-    startDate: post.metadata?.startdate || post.metadata?.startDate || post.date || '',
-    endDate: post.metadata?.enddate || post.metadata?.endDate || post.date || '',
-    desc: post.metadata?.summary || post.excerpt || '',
-  }));
+  const timelineItems = posts.map(post => {
+    const cat3 = (post.metadata?.category3 || '').trim().toLowerCase();
+    const color = colorMap.get(cat3) || 'Indigo';
+    return {
+      title: post.title,
+      startDate: post.metadata?.startdate || post.metadata?.startDate || post.date || '',
+      endDate: post.metadata?.enddate || post.metadata?.endDate || post.date || '',
+      desc: post.metadata?.summary || post.excerpt || '',
+      color: color,
+      category: cat3,
+    };
+  });
   return (
     <main 
       className="w-full min-h-[calc(100vh-4rem)] relative overflow-hidden px-6 md:px-12 flex flex-col items-center pt-16 pb-20"
@@ -34,7 +49,7 @@ export default async function AboutPage() {
           href="/portfolio2"
           className="inline-flex items-center gap-2 px-4 py-2 text-xs md:text-sm font-semibold text-slate-400 bg-white/[0.02] border border-white/[0.05] rounded-full hover:bg-white/[0.06] hover:text-white transition-all duration-200 select-none no-underline group"
         >
-          <span className="group-hover:-translate-x-1 transition-transform duration-200">←</span> Back to Portfolio 2.0
+          <span className="group-hover:-translate-x-1 transition-transform duration-200">←</span> Back to main
         </Link>
       </div>
 
