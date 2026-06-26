@@ -4,6 +4,7 @@ import '@/styles/globals.css';
 import Footer from '@/components/shared/footer';
 import { cookies } from 'next/headers';
 import { verifyAdminToken } from '@/utils/auth';
+import VisitorTracker from '@/components/admin/VisitorTracker';
 
 export const metadata = {
   title: 'Junseo Portfolio',
@@ -23,6 +24,7 @@ export default async function ProtectedLayout({
   return (
     <html lang="ko">
       <body className="m-0 p-0 flex flex-col min-h-screen overflow-y-scroll bg-white text-gray-900 relative">
+        <VisitorTracker />
         <GNB isAdmin={isAdmin} />
         <div className="pt-16 flex-1 protected-container relative">
           {children}

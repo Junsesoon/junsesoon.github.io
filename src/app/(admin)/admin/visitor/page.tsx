@@ -9,7 +9,7 @@ import BackButton from '@/components/admin/BackButton';
 export const dynamic = 'force-dynamic';
 
 export default async function VisitorManagementPage() {
-  const { visitors, totalVisitors, todayVisitors, activeVisitors, blockRules, weeklyIncreaseRate } = await getVisitorDashboardData();
+  const { visitors, totalVisitors, todayVisitors, activeVisitors, blockRules, weeklyIncreaseRate, weeklyTrend, browserStats } = await getVisitorDashboardData();
 
   return (
     <div className="flex min-h-screen w-full bg-gray-50/50 font-sans">
@@ -147,6 +147,8 @@ export default async function VisitorManagementPage() {
             activeVisitors={activeVisitors} 
             initialBlockRules={blockRules}
             weeklyIncreaseRate={weeklyIncreaseRate}
+            weeklyTrend={weeklyTrend}
+            browserStats={browserStats}
           />
         </div>
       </main>

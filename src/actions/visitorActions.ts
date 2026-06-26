@@ -1,6 +1,7 @@
 'use server';
 
 import { query as tursoQuery } from '../infra/turso';
+import { parseUserAgent } from '../utils/userAgent';
 
 export interface VisitorDashboardData {
   visitors: any[];
@@ -9,6 +10,8 @@ export interface VisitorDashboardData {
   activeVisitors: number;
   blockRules: any[];
   weeklyIncreaseRate: number;
+  weeklyTrend: { day: string; count: number }[];
+  browserStats: { name: string; percentage: number }[];
 }
 
 /**
@@ -30,19 +33,28 @@ export async function getVisitorDashboardData(): Promise<VisitorDashboardData> {
         visitor_id, 
         ip_address, 
         session_id, 
-        visited_date
+        visited_date,
+        user_agent
       FROM visitors_manage
       ORDER BY visitor_id DESC
       LIMIT 100
     `);
     
     // SQLite query helper가 반환하는 객체 형식을 UI 구조에 맞춰 매핑
-    const visitors = result.rows.map((row: any) => ({
-      visitor_id: Number(row.visitor_id),
-      ip_address: String(row.ip_address),
-      session_id: String(row.session_id),
-      visited_date: String(row.visited_date),
-    }));
+    const visitors = result.rows.map((row: any) => {
+      let browserInfo = '';
+      if (row.user_agent) {
+        const parsed = parseUserAgent(String(row.user_agent));
+        browserInfo = `${parsed.browser} / ${parsed.device}`;
+      }
+      return {
+        visitor_id: Number(row.visitor_id),
+        ip_address: String(row.ip_address),
+        session_id: String(row.session_id),
+        visited_date: String(row.visited_date),
+        browser: browserInfo,
+      };
+    });
 
     // 2. 전체 누적 방문객 수 조회 (Turso DB의 site_stats 테이블 사용)
     let totalVisitors = 0;
@@ -113,6 +125,76 @@ export async function getVisitorDashboardData(): Promise<VisitorDashboardData> {
       console.error('Failed to calculate weekly increase rate:', e);
     }
 
+    // 7. 최근 7일간의 일별 고유 방문자 수 추이 조회 (Turso DB)
+    const trendDays: { dateStr: string; label: string }[] = [];
+    const dayLabels = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date(kstNow.getTime() - i * 24 * 60 * 60 * 1000);
+      const dateStr = d.toISOString().split('T')[0];
+      const label = dayLabels[d.getUTCDay()]; // KST 보정 시간의 UTC 요일 사용
+      trendDays.push({ dateStr, label });
+    }
+
+    const startDateString = trendDays[0].dateStr;
+    const trendResult = await tursoQuery(`
+      SELECT visited_date, COUNT(DISTINCT session_id) as count
+      FROM visitors_manage
+      WHERE visited_date >= ?
+      GROUP BY visited_date
+    `, [startDateString]);
+
+    const countMap = new Map<string, number>();
+    trendResult.rows.forEach((row: any) => {
+      countMap.set(String(row.visited_date), Number(row.count));
+    });
+
+    const weeklyTrend = trendDays.map(day => ({
+      day: day.label,
+      count: countMap.get(day.dateStr) || 0,
+    }));
+
+    // 8. 브라우저 분포 통계 계산 (최근 1000건 샘플링)
+    const uaResult = await tursoQuery(`
+      SELECT user_agent FROM visitors_manage
+      WHERE user_agent IS NOT NULL AND user_agent != ''
+      ORDER BY visitor_id DESC
+      LIMIT 1000
+    `);
+
+    const browserCounts: Record<string, number> = {
+      'Google Chrome': 0,
+      'Apple Safari': 0,
+      'Mozilla Firefox': 0,
+      'Microsoft Edge': 0,
+      'Opera / Other': 0
+    };
+
+    let totalWithUA = 0;
+    uaResult.rows.forEach((row: any) => {
+      const parsed = parseUserAgent(String(row.user_agent));
+      const b = parsed.browser;
+      let mappedName = 'Opera / Other';
+      if (b === 'Chrome') mappedName = 'Google Chrome';
+      else if (b === 'Safari') mappedName = 'Apple Safari';
+      else if (b === 'Firefox') mappedName = 'Mozilla Firefox';
+      else if (b === 'Edge') mappedName = 'Microsoft Edge';
+      
+      browserCounts[mappedName]++;
+      totalWithUA++;
+    });
+
+    const browserStats = totalWithUA > 0 ? Object.keys(browserCounts).map(name => {
+      const count = browserCounts[name];
+      const percentage = Math.round((count / totalWithUA) * 100);
+      return { name, percentage };
+    }) : [
+      { name: 'Google Chrome', percentage: 45 },
+      { name: 'Apple Safari', percentage: 30 },
+      { name: 'Mozilla Firefox', percentage: 10 },
+      { name: 'Microsoft Edge', percentage: 10 },
+      { name: 'Opera / Other', percentage: 5 }
+    ];
+
     return {
       visitors,
       totalVisitors,
@@ -120,6 +202,8 @@ export async function getVisitorDashboardData(): Promise<VisitorDashboardData> {
       activeVisitors,
       blockRules,
       weeklyIncreaseRate,
+      weeklyTrend,
+      browserStats,
     };
   } catch (error) {
     console.error('Failed to fetch visitor dashboard data:', error);
@@ -130,6 +214,14 @@ export async function getVisitorDashboardData(): Promise<VisitorDashboardData> {
       activeVisitors: 0,
       blockRules: [],
       weeklyIncreaseRate: 0,
+      weeklyTrend: [],
+      browserStats: [
+        { name: 'Google Chrome', percentage: 45 },
+        { name: 'Apple Safari', percentage: 30 },
+        { name: 'Mozilla Firefox', percentage: 10 },
+        { name: 'Microsoft Edge', percentage: 10 },
+        { name: 'Opera / Other', percentage: 5 }
+      ],
     };
   }
 }

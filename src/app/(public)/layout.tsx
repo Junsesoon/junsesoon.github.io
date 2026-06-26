@@ -2,6 +2,7 @@ import GNB from '@/components/shared/GNB';
 import '@/styles/globals.css';
 import Script from 'next/script';
 import Footer from '@/components/shared/footer';
+import VisitorTracker from '@/components/admin/VisitorTracker';
 
 export const metadata = {
   title: 'Junseo Blog',
@@ -17,6 +18,7 @@ export default function RootLayout({
   return (
     <html lang="ko">
       <body className="m-0 p-0 flex flex-col min-h-screen overflow-y-scroll bg-white text-gray-900 relative">
+        <VisitorTracker />
         {process.env.GA_MEASUREMENT_ID && (
           <>
             <Script

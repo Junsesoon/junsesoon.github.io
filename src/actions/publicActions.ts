@@ -76,6 +76,7 @@ export async function trackSiteVisitorAction(sessionId: string) {
 
   const headerList = await headers();
   const ip = headerList.get('x-forwarded-for') || 'unknown';
+  const userAgent = headerList.get('user-agent') || '';
 
   try {
     // 한국 시간(KST) 기준으로 현재 날짜(YYYY-MM-DD) 구하기
@@ -86,10 +87,10 @@ export async function trackSiteVisitorAction(sessionId: string) {
 
     // 오늘 방문 기록 추가 시도 (Turso DB의 visitors_manage 테이블 사용)
     const insertResult = await tursoQuery(
-      `INSERT INTO visitors_manage (ip_address, session_id, visited_date) 
-       VALUES (?, ?, ?) 
+      `INSERT INTO visitors_manage (ip_address, session_id, visited_date, user_agent) 
+       VALUES (?, ?, ?, ?) 
        ON CONFLICT (session_id, visited_date) DO NOTHING`,
-      [ip, sessionId, visitedDate]
+      [ip, sessionId, visitedDate, userAgent]
     );
 
     // 새롭게 추가된 데이터라면 (오늘 첫 방문) 전체 방문자 수 증가
