@@ -170,27 +170,9 @@ export async function updatePostAction(originalSlug: string, formData: PostFormD
   const safeTitle = title?.trim() || 'Untitled';
   const safeContent = content || '';
 
-  const slugParts = [];
-  if (properties.category1) slugParts.push(cleanSlug(properties.category1));
-  if (properties.category2) slugParts.push(cleanSlug(properties.category2));
-  if (properties.category3) slugParts.push(cleanSlug(properties.category3));
-  if (properties.category4) slugParts.push(cleanSlug(properties.category4));
-
-  const titleSlug = cleanSlug(safeTitle) || `post-${Date.now()}`;
-  slugParts.push(titleSlug);
-
-  const baseSlug = slugParts.join('/');
-  let newSlug = baseSlug;
-  let counter = 1;
+  const newSlug = originalSlug;
 
   try {
-    // 중복 슬러그 검사 및 넘버링 처리 (기존 자신의 슬러그는 제외)
-    while (true) {
-      const check = await query('SELECT post_id FROM posts WHERE slug = $1 AND slug != $2', [newSlug, originalSlug]);
-      if ((check.rowCount ?? 0) === 0) break;
-      newSlug = `${baseSlug}-${counter}`;
-      counter++;
-    }
 
     const propertyNames = Object.keys(properties);
 

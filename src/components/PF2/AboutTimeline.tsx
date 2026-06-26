@@ -239,33 +239,21 @@ function TimelineBars({
 // ==========================================
 interface TimelineCardProps {
   item: TimelineItem | null;
-  isVisible: boolean;
 }
 
-function TimelineCard({ item, isVisible }: TimelineCardProps) {
-  // 시작일("YYYY.MM.DD")에서 연도("YYYY")만 파싱해서 뱃지로 사용
-  const displayYear = item && item.startDate ? item.startDate.split('.')[0] : '';
-
+function TimelineCard({ item }: TimelineCardProps) {
   return (
-    <div 
-      className={`w-full flex justify-center select-none overflow-hidden transition-all duration-500 ease-out ${
-        isVisible && item
-          ? "max-h-[300px] opacity-100 mt-6"
-          : "max-h-0 opacity-0 mt-0"
-      }`}
-    >
+    <div className="w-full flex justify-center select-none mt-6">
       <div
-        className={`w-full max-w-2xl p-6 rounded-2xl border bg-white/[0.02] border-white/[0.08] transition-all duration-500 ease-out transform ${
-          isVisible && item
-            ? "opacity-100 translate-y-0 scale-100 pointer-events-auto"
-            : "opacity-0 translate-y-4 scale-95 pointer-events-none"
-        } ${getCardShadowClass(item?.color)}`}
+        className={`w-full max-w-2xl min-h-[168px] p-6 rounded-2xl border bg-white/[0.02] border-white/[0.08] transition-all duration-500 ease-out transform flex flex-col justify-center ${
+          item ? `${getCardShadowClass(item.color)} border-white/[0.12] bg-white/[0.03]` : 'border-dashed border-white/[0.05]'
+        }`}
       >
-        {item && (
-          <>
+        {item ? (
+          <div className="transition-all duration-300 opacity-100 scale-100">
             <div className="flex justify-between items-start gap-4 mb-4">
               <span className={`text-xs font-semibold px-3 py-1 rounded-full uppercase tracking-wider ${getCardBadgeClass(item.color)}`}>
-                {displayYear}
+                {item.category || 'Experience'}
               </span>
               <span className="text-xs text-slate-400 font-medium whitespace-nowrap bg-white/[0.03] border border-white/[0.05] px-3 py-1 rounded-full">
                 📅 {item.startDate} ~ {item.endDate}
@@ -277,7 +265,19 @@ function TimelineCard({ item, isVisible }: TimelineCardProps) {
             <p className="text-sm text-slate-400 leading-relaxed">
               {item.desc}
             </p>
-          </>
+          </div>
+        ) : (
+          <div className="flex flex-col items-center justify-center text-center py-4 transition-all duration-300 opacity-100 scale-100">
+            <div className="w-10 h-10 rounded-full bg-white/[0.02] border border-white/[0.08] flex items-center justify-center mb-3 animate-pulse">
+              <span className="text-base">👆</span>
+            </div>
+            <p className="text-xs font-semibold text-slate-400 mb-1 tracking-wide">
+              상세 이력 확인하기
+            </p>
+            <p className="text-[11px] text-slate-500 max-w-xs leading-relaxed">
+              위 타임라인의 막대(Bar)에 마우스를 올리거나 클릭하면 상세 내역을 보실 수 있습니다.
+            </p>
+          </div>
         )}
       </div>
     </div>
@@ -544,10 +544,9 @@ export default function AboutTimeline({ items = [] }: AboutTimelineProps) {
             selectedCategory={selectedCategory}
           />
 
-          {/* 2. 하단 상세 정보 UI (호버 및 클릭 고정 시 노출) */}
+          {/* 2. 하단 상세 정보 UI (상시 고정 노출) */}
           <TimelineCard 
             item={activeItem}
-            isVisible={activeIndex !== null}
           />
         </>
       )}
