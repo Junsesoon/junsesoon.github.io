@@ -1,17 +1,27 @@
-import React from 'react';
+'use client';
+
+import React, { useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import Subtitle from '@/components/PF2/Subtitle';
 
+export default function Portfolio2HomeClient() {
+  const router = useRouter();
+  const [isExiting, setIsExiting] = useState(false);
 
-export const metadata = {
-  title: 'Portfolio 2.0 - New Generation',
-  description: 'Welcome to the completely redesigned portfolio experience.',
-};
+  const handleAboutClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    e.preventDefault();
+    setIsExiting(true);
+    setTimeout(() => {
+      router.push('/portfolio2/about');
+    }, 600); // 600ms matching transition duration
+  };
 
-export default function Portfolio2Page() {
   return (
     <main 
-      className="w-full min-h-[calc(100vh-4rem)] relative overflow-hidden flex flex-col justify-center items-center px-4 pt-16 pb-20"
+      className={`w-full min-h-[calc(100vh-4rem)] relative overflow-hidden flex flex-col justify-center items-center px-4 pt-16 pb-20 ${
+        isExiting ? 'animate-slide-out-right' : ''
+      }`}
       style={{
         backgroundImage: 'radial-gradient(circle at 50% 30%, rgba(99, 102, 241, 0.15), rgba(168, 85, 247, 0.1), transparent 60%), radial-gradient(circle at 10% 80%, rgba(56, 189, 248, 0.08), transparent 45%)',
       }}
@@ -58,16 +68,17 @@ export default function Portfolio2Page() {
               desc: "개발자 오준서의 다채로운 인생여정을 공유합니다",
               icon: "🧭",
               href: "/portfolio2/about",
+              onClick: handleAboutClick,
             },
             {
               title: "Projects",
-              desc: "다양한 프로젝트를 통해 최신 기술과 트렌드를 경험해보세요",
+              desc: "Frontend, Backend, DevOps 등 다양한 프로젝트를 통해 최신 기술과 트렌드를 반영한 디자인을 경험해보세요",
               icon: "⚡",
               href: "/portfolio2#project",
             },
             {
               title: "Skills",
-              desc: "Frontend/Backend, DevOps등 다양한 기술 스택과 전문성을 소개합니다",
+              desc: "제가 보유한 다양한 기술 스택과 전문성을 소개합니다",
               icon: "🛠️",
               href: "/portfolio2#skill",
             },
@@ -75,6 +86,7 @@ export default function Portfolio2Page() {
             <Link 
               key={index}
               href={item.href}
+              onClick={item.onClick}
               className="p-6 rounded-2xl bg-white/[0.02] border border-white/[0.05] backdrop-blur-xl hover:bg-white/[0.04] hover:border-white/[0.08] transition-all duration-300 shadow-[0_8px_30px_rgb(0,0,0,0.12)] group hover:-translate-y-1 block no-underline"
             >
               <div className="text-3xl mb-4 group-hover:scale-110 transition-transform duration-300 inline-block">{item.icon}</div>
@@ -87,4 +99,3 @@ export default function Portfolio2Page() {
     </main>
   );
 }
-

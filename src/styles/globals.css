@@ -119,3 +119,48 @@
     border-bottom: none;
   }
 }
+
+/* PPT Slide Push Transitions (View Transitions API) */
+::view-transition-old(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+
+/* slide-push-right: 기존 화면 우측으로 퇴장, 새 화면 좌측에서 입장 */
+html.transition-going-about::view-transition-old(root) {
+  animation: 0.6s cubic-bezier(0.4, 0, 0.2, 1) both slide-push-right-exit;
+}
+html.transition-going-about::view-transition-new(root) {
+  animation: 0.6s cubic-bezier(0.4, 0, 0.2, 1) both slide-push-right-enter;
+}
+
+@keyframes slide-push-right-exit {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(100%); }
+}
+@keyframes slide-push-right-enter {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(0); }
+}
+
+/* slide-push-left: 기존 화면 좌측으로 퇴장, 새 화면 우측에서 입장 */
+html.transition-going-home::view-transition-old(root) {
+  animation: 0.6s cubic-bezier(0.4, 0, 0.2, 1) both slide-push-left-exit;
+}
+html.transition-going-home::view-transition-new(root) {
+  animation: 0.6s cubic-bezier(0.4, 0, 0.2, 1) both slide-push-left-enter;
+}
+
+@keyframes slide-push-left-exit {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-100%); }
+}
+@keyframes slide-push-left-enter {
+  0% { transform: translateX(100%); }
+  100% { transform: translateX(0); }
+}
+

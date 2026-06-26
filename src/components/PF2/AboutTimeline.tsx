@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 
 // 1. 타입 정의
 // ==========================================
@@ -171,13 +171,30 @@ function TimelineBars({
           
           const topClass = layers[idx % 3];
 
+          const isLatest = idx === items.length - 1;
+          const shouldPulse = clickedIndex === null && hoveredIndex === null && isLatest;
+
+          const isCurrentFocus = hoveredIndex !== null ? hoveredIndex === idx : clickedIndex === idx;
+          const isAnyFocusActive = hoveredIndex !== null || clickedIndex !== null;
+
+          let focusClass = "opacity-100 scale-100";
+          if (isInteractive && isAnyFocusActive) {
+            if (isCurrentFocus) {
+              focusClass = "opacity-100 scale-100";
+            } else {
+              // 클릭 상태에서는 미선택 바들을 더 어둡게(opacity-25) 처리하여 가시성 확보
+              focusClass = hoveredIndex !== null 
+                ? "opacity-35 scale-[0.98] blur-[0.5px]" 
+                : "opacity-25 scale-[0.98]";
+            }
+          }
+
           return (
             <div
               key={idx}
               onMouseEnter={() => {
                 if (isInteractive) {
                   onHoverChange(idx);
-                  onItemClick(idx, true);
                 }
               }}
               onMouseLeave={() => isInteractive && onHoverChange(null)}
@@ -185,12 +202,16 @@ function TimelineBars({
               style={{ left, width }}
               className={`absolute flex flex-col justify-end transition-all duration-300 ${topClass} ${
                 isInteractive ? "cursor-pointer" : "pointer-events-none opacity-20"
+              } ${
+                isInteractive ? focusClass : ""
               }`}
               title={`${item.title} (${item.startDate} ~ ${item.endDate})`}
             >
               {/* Card Title Label on top of the bar */}
-              <span className={`text-xs font-semibold tracking-wide whitespace-nowrap overflow-visible block pb-1 transition-colors ${
-                isActive ? "text-slate-300" : "text-slate-500"
+              <span className={`text-xs font-semibold tracking-wide whitespace-nowrap overflow-visible block pb-1 transition-all duration-300 ${
+                isHovered 
+                  ? "text-white -translate-y-[2px]" 
+                  : isActive ? "text-slate-300" : "text-slate-500"
               }`}>
                 {item.title}
               </span>
@@ -198,7 +219,11 @@ function TimelineBars({
               {/* Actual timeline bar */}
               <div 
                 className={`h-2 min-w-[16px] rounded-full transition-all duration-300 ${getTimelineBarClass(item.color, isActive)} ${
+                  isHovered ? "scale-y-125 brightness-110 shadow-[0_0_15px_rgba(255,255,255,0.4)]" : ""
+                } ${
                   isInteractive && isClicked ? getClickEffectClass(item.color) : ""
+                } ${
+                  shouldPulse ? "animate-pulse ring-1 ring-white/40" : ""
                 }`}
               />
             </div>
@@ -272,6 +297,34 @@ export default function AboutTimeline({ items = [] }: AboutTimelineProps) {
   const [justOpenedIndex, setJustOpenedIndex] = useState<number | null>(null);
   const [mounted, setMounted] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
+
+  const hoverTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // 컴포넌트 언마운트 시 타이머 정리
+  useEffect(() => {
+    return () => {
+      if (hoverTimeoutRef.current) {
+        clearTimeout(hoverTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  const handleHoverChange = (idx: number | null) => {
+    if (hoverTimeoutRef.current) {
+      clearTimeout(hoverTimeoutRef.current);
+      hoverTimeoutRef.current = null;
+    }
+
+    // 1. 호버 시각 피드백(Glow, Scale, Focus 등)은 즉시 반응
+    setHoveredIndex(idx);
+
+    if (idx !== null) {
+      // 2. 상세 정보 카드 활성화만 150ms 지연 적용
+      hoverTimeoutRef.current = setTimeout(() => {
+        handleItemClick(idx, true);
+      }, 150);
+    }
+  };
 
   // Reset indices when active category changes to avoid out-of-bounds selection
   useEffect(() => {
@@ -428,9 +481,11 @@ export default function AboutTimeline({ items = [] }: AboutTimelineProps) {
     <div className="w-full relative font-sans text-slate-100">
       {/* Title & Range Display */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8 select-none">
-        <h2 className="text-xl font-bold text-slate-100 flex items-center gap-2">
-          <span className="text-purple-400">🌱</span> Life story
-        </h2>
+        <div className="flex flex-col gap-1.5">
+          <h2 className="text-xl font-bold text-slate-100 flex items-center gap-2">
+            <span className="text-purple-400">🌱</span> Life story
+          </h2>
+        </div>
 
         <div className="flex items-center gap-3 self-end sm:self-auto">
           {/* 카테고리 필터 */}
@@ -477,7 +532,7 @@ export default function AboutTimeline({ items = [] }: AboutTimelineProps) {
           <TimelineBars 
             items={items}
             hoveredIndex={hoveredIndex}
-            onHoverChange={setHoveredIndex}
+            onHoverChange={handleHoverChange}
             clickedIndex={clickedIndex}
             onItemClick={handleItemClick}
             yearsList={yearsList}

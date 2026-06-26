@@ -141,15 +141,15 @@ export default function PostListClient({ posts, sort, order }: PostListClientPro
                     />
                   </div>
                 </th>
-                {renderHeader('title', 'Title', 'w-48')}
-                {renderHeader('location', 'Location', 'w-24 hidden sm:table-cell')}
-                {renderHeader('category1', 'Cat1', 'w-28 hidden md:table-cell')}
-                {renderHeader('category2', 'Cat2', 'w-28 hidden lg:table-cell')}
-                {renderHeader('post_status', 'Status', 'w-24 hidden lg:table-cell')}
-                {renderHeader('date', 'Date', 'w-24 hidden md:table-cell')}
-                {renderHeader('views_count', 'View', 'w-16 hidden lg:table-cell')}
-                {renderHeader('likes_count', 'Like', 'w-16 hidden lg:table-cell')}
-                <th scope="col" className="w-16 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider text-center align-middle truncate">
+                {renderHeader('title', 'Title', 'w-40')}
+                {renderHeader('location', 'Location', 'w-20 hidden min-[620px]:table-cell')}
+                {renderHeader('category1', 'Cat1', 'w-20 hidden min-[700px]:table-cell')}
+                {renderHeader('category2', 'Cat2', 'w-20 hidden min-[780px]:table-cell')}
+                {renderHeader('post_status', 'Status', 'w-20 hidden min-[860px]:table-cell')}
+                {renderHeader('date', 'Date', 'w-20 hidden min-[940px]:table-cell')}
+                {renderHeader('views_count', 'View', 'w-12 hidden min-[1020px]:table-cell')}
+                {renderHeader('likes_count', 'Like', 'w-12 hidden min-[1080px]:table-cell')}
+                <th scope="col" className="w-14 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider text-center align-middle truncate">
                   Action
                 </th>
               </tr>
@@ -178,7 +178,7 @@ export default function PostListClient({ posts, sort, order }: PostListClientPro
                           {post.title}
                         </Link>
                       </td>
-                      <td className="h-[48px] px-4 whitespace-nowrap truncate hidden sm:table-cell">
+                      <td className="h-[48px] px-4 whitespace-nowrap truncate hidden min-[620px]:table-cell">
                         {post.location ? (
                           <span className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider ${
                             post.location === 'Portfolio' ? 'bg-red-50 text-red-600 border-red-100' :
@@ -191,13 +191,13 @@ export default function PostListClient({ posts, sort, order }: PostListClientPro
                           <span className="text-gray-300">-</span>
                         )}
                       </td>
-                      <td className="h-[48px] px-4 text-gray-500 text-xs whitespace-nowrap truncate hidden md:table-cell" title={post.category1 || ''}>
+                      <td className="h-[48px] px-4 text-gray-500 text-xs whitespace-nowrap truncate hidden min-[700px]:table-cell" title={post.category1 || ''}>
                         {post.category1 || '-'}
                       </td>
-                      <td className="h-[48px] px-4 text-gray-500 text-xs whitespace-nowrap truncate hidden lg:table-cell" title={post.category2 || ''}>
+                      <td className="h-[48px] px-4 text-gray-500 text-xs whitespace-nowrap truncate hidden min-[780px]:table-cell" title={post.category2 || ''}>
                         {post.category2 || '-'}
                       </td>
-                      <td className="h-[48px] px-4 whitespace-nowrap hidden lg:table-cell">
+                      <td className="h-[48px] px-4 whitespace-nowrap hidden min-[860px]:table-cell">
                         {(post.metadata?.post_status === 'draft' || post.post_status === 'draft') ? (
                           <span className="inline-flex items-center gap-1 rounded-full border border-gray-200 bg-gray-50 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-gray-500">
                             <span className="h-1.5 w-1.5 rounded-full bg-gray-400"></span>
@@ -215,8 +215,8 @@ export default function PostListClient({ posts, sort, order }: PostListClientPro
                           </span>
                         )}
                       </td>
-                      <td className="h-[48px] px-4 text-gray-500 text-xs whitespace-nowrap truncate hidden md:table-cell">{new Date(post.date).toLocaleDateString('ko-KR')}</td>
-                      <td className="h-[48px] px-4 text-gray-500 text-xs whitespace-nowrap truncate hidden lg:table-cell">
+                      <td className="h-[48px] px-4 text-gray-500 text-xs whitespace-nowrap truncate hidden min-[940px]:table-cell">{new Date(post.date).toLocaleDateString('ko-KR')}</td>
+                      <td className="h-[48px] px-4 text-gray-500 text-xs whitespace-nowrap truncate hidden min-[1020px]:table-cell">
                         <div className="flex items-center gap-1">
                           <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5 text-gray-400 shrink-0" viewBox="0 0 20 20" fill="currentColor">
                             <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
@@ -225,7 +225,7 @@ export default function PostListClient({ posts, sort, order }: PostListClientPro
                           <span className="font-semibold text-gray-600 truncate">{Number(post.views_count ?? 0).toLocaleString()}</span>
                         </div>
                       </td>
-                      <td className="h-[48px] px-4 text-gray-500 text-xs whitespace-nowrap truncate hidden lg:table-cell">
+                      <td className="h-[48px] px-4 text-gray-500 text-xs whitespace-nowrap truncate hidden min-[1080px]:table-cell">
                         <div className="flex items-center gap-1">
                           <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5 text-gray-400 shrink-0" viewBox="0 0 20 20" fill="currentColor">
                             <path fillRule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clipRule="evenodd" />
@@ -263,13 +263,13 @@ export default function PostListClient({ posts, sort, order }: PostListClientPro
                         </div>
                       </td>
                       <td className="h-[48px] px-4 font-semibold text-transparent select-none">-</td>
-                      <td className="h-[48px] px-4 hidden sm:table-cell text-transparent select-none">-</td>
-                      <td className="h-[48px] px-4 hidden md:table-cell text-transparent select-none">-</td>
-                      <td className="h-[48px] px-4 hidden lg:table-cell text-transparent select-none">-</td>
-                      <td className="h-[48px] px-4 hidden lg:table-cell text-transparent select-none">-</td>
-                      <td className="h-[48px] px-4 hidden md:table-cell text-transparent select-none">-</td>
-                      <td className="h-[48px] px-4 hidden lg:table-cell text-transparent select-none">-</td>
-                      <td className="h-[48px] px-4 hidden lg:table-cell text-transparent select-none">-</td>
+                      <td className="h-[48px] px-4 hidden min-[620px]:table-cell text-transparent select-none">-</td>
+                      <td className="h-[48px] px-4 hidden min-[700px]:table-cell text-transparent select-none">-</td>
+                      <td className="h-[48px] px-4 hidden min-[780px]:table-cell text-transparent select-none">-</td>
+                      <td className="h-[48px] px-4 hidden min-[860px]:table-cell text-transparent select-none">-</td>
+                      <td className="h-[48px] px-4 hidden min-[940px]:table-cell text-transparent select-none">-</td>
+                      <td className="h-[48px] px-4 hidden min-[1020px]:table-cell text-transparent select-none">-</td>
+                      <td className="h-[48px] px-4 hidden min-[1080px]:table-cell text-transparent select-none">-</td>
                       <td className="h-[48px] text-center text-transparent select-none">-</td>
                     </tr>
                   ))}
@@ -287,13 +287,13 @@ export default function PostListClient({ posts, sort, order }: PostListClientPro
                         </div>
                       </td>
                       <td className="h-[48px] px-4 font-semibold text-transparent select-none">-</td>
-                      <td className="h-[48px] px-4 hidden sm:table-cell text-transparent select-none">-</td>
-                      <td className="h-[48px] px-4 hidden md:table-cell text-transparent select-none">-</td>
-                      <td className="h-[48px] px-4 hidden lg:table-cell text-transparent select-none">-</td>
-                      <td className="h-[48px] px-4 hidden lg:table-cell text-transparent select-none">-</td>
-                      <td className="h-[48px] px-4 hidden md:table-cell text-transparent select-none">-</td>
-                      <td className="h-[48px] px-4 hidden lg:table-cell text-transparent select-none">-</td>
-                      <td className="h-[48px] px-4 hidden lg:table-cell text-transparent select-none">-</td>
+                      <td className="h-[48px] px-4 hidden min-[620px]:table-cell text-transparent select-none">-</td>
+                      <td className="h-[48px] px-4 hidden min-[700px]:table-cell text-transparent select-none">-</td>
+                      <td className="h-[48px] px-4 hidden min-[780px]:table-cell text-transparent select-none">-</td>
+                      <td className="h-[48px] px-4 hidden min-[860px]:table-cell text-transparent select-none">-</td>
+                      <td className="h-[48px] px-4 hidden min-[940px]:table-cell text-transparent select-none">-</td>
+                      <td className="h-[48px] px-4 hidden min-[1020px]:table-cell text-transparent select-none">-</td>
+                      <td className="h-[48px] px-4 hidden min-[1080px]:table-cell text-transparent select-none">-</td>
                       <td className="h-[48px] text-center text-transparent select-none">-</td>
                     </tr>
                   ))}

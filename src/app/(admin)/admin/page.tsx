@@ -303,14 +303,12 @@ export default async function AdminDashboardPage({ searchParams }: { searchParam
           </div>
         </header>
 
-        {/* Split Layout Container (30% : 70% Ratio via grid-cols-10) */}
-        <div className="grid grid-cols-1 lg:grid-cols-10 gap-8">
+        {/* Renewed Full-Width Stacked Layout */}
+        <div className="flex flex-col gap-8">
           
-          {/* Left Column: Stats Cards (30% Width - span 3) */}
-          <div className="lg:col-span-3 flex flex-col gap-6">
-            
-            {/* Detailed Stats Grid (Apple-style Widgets) */}
-            <div className="grid grid-cols-2 gap-4">
+          {/* Top Section: Blog Stats Grid (2x4 on mobile, 4x2 on desktop/tablet) */}
+          <div className="w-full">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               {statCards.map((stat, idx) => (
                 <div key={idx} className="rounded-2xl border border-gray-200/60 bg-white/80 p-4 shadow-sm backdrop-blur-md flex flex-col justify-between min-h-[96px] transition-all hover:shadow-md hover:border-gray-300/80">
                   <div className="flex items-center justify-between w-full">
@@ -323,9 +321,8 @@ export default async function AdminDashboardPage({ searchParams }: { searchParam
             </div>
           </div>
 
-          {/* Right Column: Post List (span 7) */}
-          <div className="lg:col-span-7">
-            {/* Action Bar and Data Grid Layer */}
+          {/* Bottom Section: Post List (Full Width) */}
+          <div className="w-full">
             <PostListClient posts={posts} sort={sort} order={order} />
           </div>
 

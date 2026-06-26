@@ -18,6 +18,16 @@ const cleanSlug = (str: string) => {
   return cleaned || 'untitled';
 };
 
+const formatYM = (dateStr: string) => {
+  if (!dateStr) return '-';
+  const cleanStr = dateStr.trim().replace(/-/g, '.');
+  const parts = cleanStr.split('.');
+  if (parts.length >= 2) {
+    return `${parts[0]}.${parts[1]}`;
+  }
+  return cleanStr;
+};
+
 interface AboutTimelineItem {
   id: string;
   slug: string;
@@ -543,7 +553,8 @@ export default function AboutManager({ initialItems, initialTimelineItems }: Abo
               <thead className="bg-transparent border-b border-gray-100">
                 <tr>
                   <th scope="col" className="py-3 px-4 text-[10px] font-bold text-gray-400 uppercase tracking-wider align-middle w-auto min-w-[120px]">Title</th>
-                  <th scope="col" className="py-3 px-4 text-[10px] font-bold text-gray-400 uppercase tracking-wider align-middle w-28 hidden xl:table-cell">Period</th>
+                  <th scope="col" className="py-3 px-4 text-[10px] font-bold text-gray-400 uppercase tracking-wider align-middle w-24 hidden xl:table-cell">Start Date</th>
+                  <th scope="col" className="py-3 px-4 text-[10px] font-bold text-gray-400 uppercase tracking-wider align-middle w-24 hidden xl:table-cell">End Date</th>
                   <th scope="col" className="py-3 px-4 text-[10px] font-bold text-gray-400 uppercase tracking-wider align-middle w-24 hidden lg:table-cell">Cat3</th>
                   <th scope="col" className="py-3 px-4 text-[10px] font-bold text-gray-400 uppercase tracking-wider align-middle w-28 hidden sm:table-cell">Status</th>
                   <th scope="col" className="py-3 px-4 text-[10px] font-bold text-gray-400 uppercase tracking-wider text-right align-middle w-20">Actions</th>
@@ -552,7 +563,7 @@ export default function AboutManager({ initialItems, initialTimelineItems }: Abo
               <tbody className="divide-y divide-gray-100 bg-white">
                 {currentItems.length === 0 ? (
                   <tr>
-                    <td colSpan={5} className="p-8 text-center text-sm text-gray-400">
+                    <td colSpan={6} className="p-8 text-center text-sm text-gray-400">
                       등록된 타임라인 이력이 없습니다. 상단의 버튼을 눌러 첫 항목을 작성해보세요!
                     </td>
                   </tr>
@@ -563,11 +574,11 @@ export default function AboutManager({ initialItems, initialTimelineItems }: Abo
                         <td className="h-[48px] px-4 font-semibold text-gray-900 whitespace-nowrap truncate min-w-[120px]" title={item.title}>
                           {item.title}
                         </td>
-                        <td className="h-[48px] px-4 text-gray-500 text-[10px] whitespace-normal py-1 hidden xl:table-cell" title={`${item.startDate} ~ ${item.endDate}`}>
-                          <div className="flex flex-col leading-tight">
-                            <span>📅 {item.startDate.replace(/-/g, '.')}</span>
-                            <span>~ {item.endDate.replace(/-/g, '.')}</span>
-                          </div>
+                        <td className="h-[48px] px-4 text-gray-500 text-xs whitespace-nowrap hidden xl:table-cell" title={item.startDate}>
+                          {formatYM(item.startDate)}
+                        </td>
+                        <td className="h-[48px] px-4 text-gray-500 text-xs whitespace-nowrap hidden xl:table-cell" title={item.endDate}>
+                          {formatYM(item.endDate)}
                         </td>
                         <td className="h-[48px] px-4 text-gray-500 text-xs whitespace-nowrap truncate hidden lg:table-cell" title={item.category3 || ''}>
                           {item.category3 || '-'}
