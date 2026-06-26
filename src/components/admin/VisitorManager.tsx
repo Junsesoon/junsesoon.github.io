@@ -1,13 +1,14 @@
 'use client';
 
 import React, { useState, useEffect, useMemo } from 'react';
-import { addBlockRule, removeBlockRule } from './visitorActions';
+import { addBlockRule, removeBlockRule } from '../../actions/visitorActions';
 
 export interface DBVisitor {
   visitor_id: number;
   ip_address: string;
   session_id: string;
   visited_date: string;
+  browser?: string;
 }
 
 interface VisitorDetails extends DBVisitor {
@@ -31,6 +32,8 @@ interface VisitorManagerProps {
   activeVisitors: number;
   initialBlockRules: BlockRule[];
   weeklyIncreaseRate: number;
+  weeklyTrend: { day: string; count: number }[];
+  browserStats: { name: string; percentage: number }[];
 }
 
 // IP 기반 디바이스/위치 정보를 매핑하는 헬퍼 함수
@@ -81,20 +84,22 @@ const getDetailsFromIp = (ip: string, id: number) => {
   };
 };
 
-export default function VisitorManager({ initialVisitors, totalVisitors, todayVisitors, activeVisitors, initialBlockRules, weeklyIncreaseRate }: VisitorManagerProps) {
+export default function VisitorManager({ initialVisitors, totalVisitors, todayVisitors, activeVisitors, initialBlockRules, weeklyIncreaseRate, weeklyTrend, browserStats }: VisitorManagerProps) {
   // 1. 초기 방문자 데이터 구성 (DB 데이터만 사용하도록 목업 데이터 제거)
   const defaultMockVisitors: VisitorDetails[] = useMemo(() => {
     return initialVisitors.map(v => {
       const details = getDetailsFromIp(v.ip_address, v.visitor_id);
+      const isBlocked = initialBlockRules.some(r => r.ip_address === v.ip_address);
+      const matchedRule = initialBlockRules.find(r => r.ip_address === v.ip_address);
       return {
         ...v,
         location: details.location,
-        browser: details.browser,
-        status: details.status,
-        reason: details.reason
+        browser: v.browser || details.browser,
+        status: isBlocked ? 'Blocked' as const : 'Allowed' as const,
+        reason: isBlocked ? (matchedRule?.reason || 'Administrator manual block') : undefined
       };
     });
-  }, [initialVisitors]);
+  }, [initialVisitors, initialBlockRules]);
 
   // 로컬 상태 정의
   const [visitors, setVisitors] = useState<VisitorDetails[]>(defaultMockVisitors);
@@ -240,15 +245,20 @@ export default function VisitorManager({ initialVisitors, totalVisitors, todayVi
   };
 
   // 7일간의 방문 트렌드 통계 생성
-  const trendData = [
-    { day: 'Mon', count: 145 },
-    { day: 'Tue', count: 178 },
-    { day: 'Wed', count: 160 },
-    { day: 'Thu', count: 185 },
-    { day: 'Fri', count: 210 },
-    { day: 'Sat', count: 195 },
-    { day: 'Sun', count: 248 },
+  const trendData = weeklyTrend && weeklyTrend.length === 7 ? weeklyTrend : [
+    { day: 'Mon', count: 0 },
+    { day: 'Tue', count: 0 },
+    { day: 'Wed', count: 0 },
+    { day: 'Thu', count: 0 },
+    { day: 'Fri', count: 0 },
+    { day: 'Sat', count: 0 },
+    { day: 'Sun', count: 0 },
   ];
+
+  // Dynamic scaling for chart
+  const maxCount = Math.max(...trendData.map(d => d.count), 10);
+  const maxVal = Math.max(Math.ceil(maxCount / 30) * 30, 30);
+  const getY = (count: number) => 165 - (count / maxVal) * 135;
 
   const [hoveredTrend, setHoveredTrend] = useState<number | null>(null);
 
@@ -278,6 +288,29 @@ export default function VisitorManager({ initialVisitors, totalVisitors, todayVi
   useEffect(() => {
     setCurrentPage(1);
   }, [searchQuery, statusFilter]);
+
+  // 가장 비중이 높은 지역(Location) 계산
+  const topLocationInfo = useMemo(() => {
+    if (visitors.length === 0) return { name: 'South Korea', percentage: 100 };
+    const counts: Record<string, number> = {};
+    visitors.forEach(v => {
+      if (v.location) {
+        counts[v.location] = (counts[v.location] || 0) + 1;
+      }
+    });
+    
+    let maxLocation = 'Unknown';
+    let maxCount = 0;
+    Object.keys(counts).forEach(loc => {
+      if (counts[loc] > maxCount) {
+        maxCount = counts[loc];
+        maxLocation = loc;
+      }
+    });
+
+    const percentage = Math.round((maxCount / visitors.length) * 100);
+    return { name: maxLocation, percentage };
+  }, [visitors]);
 
   return (
     <div className="space-y-6">
@@ -360,7 +393,7 @@ export default function VisitorManager({ initialVisitors, totalVisitors, todayVi
       {/* SVG 그래프 & 통계 정보 레이아웃 */}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         {/* 그래프 카드 */}
-        <div className="rounded-2xl border border-gray-200/60 bg-white/80 p-5 shadow-sm backdrop-blur-md transition-all hover:shadow-md hover:border-gray-300/80 lg:col-span-2">
+        <div className="relative z-10 rounded-2xl border border-gray-200/60 bg-white/80 p-5 shadow-sm backdrop-blur-md transition-all hover:shadow-md hover:border-gray-300/80 lg:col-span-2">
           <div className="flex items-center justify-between mb-4">
             <div>
               <h3 className="text-base font-bold text-gray-800">Visitor Traffic Trend</h3>
@@ -390,34 +423,34 @@ export default function VisitorManager({ initialVisitors, totalVisitors, todayVi
               <line x1="40" y1="165" x2="560" y2="165" stroke="#e5e7eb" strokeWidth="1.5" />
 
               {/* Grid Y Values */}
-              <text x="15" y="34" className="text-[10px] fill-gray-400 font-medium">300</text>
-              <text x="15" y="79" className="text-[10px] fill-gray-400 font-medium">200</text>
-              <text x="15" y="124" className="text-[10px] fill-gray-400 font-medium">100</text>
+              <text x="15" y="34" className="text-[10px] fill-gray-400 font-medium">{maxVal}</text>
+              <text x="15" y="79" className="text-[10px] fill-gray-400 font-medium">{Math.round(maxVal * 2 / 3)}</text>
+              <text x="15" y="124" className="text-[10px] fill-gray-400 font-medium">{Math.round(maxVal * 1 / 3)}</text>
               <text x="25" y="169" className="text-[10px] fill-gray-400 font-medium">0</text>
 
               {/* Area & Line Calculation */}
               {/* x: 40 + i * (520/6) => i*86.66 */}
-              {/* y: 165 - (count/300) * 135 */}
+              {/* y: 165 - (count/maxVal) * 135 */}
               <path
-                d={`M 40 ${165 - (trendData[0].count/300)*135} 
-                    L 126.6 ${165 - (trendData[1].count/300)*135} 
-                    L 213.3 ${165 - (trendData[2].count/300)*135} 
-                    L 300 ${165 - (trendData[3].count/300)*135} 
-                    L 386.6 ${165 - (trendData[4].count/300)*135} 
-                    L 473.3 ${165 - (trendData[5].count/300)*135} 
-                    L 560 ${165 - (trendData[6].count/300)*135}
+                d={`M 40 ${getY(trendData[0].count)} 
+                    L 126.6 ${getY(trendData[1].count)} 
+                    L 213.3 ${getY(trendData[2].count)} 
+                    L 300 ${getY(trendData[3].count)} 
+                    L 386.6 ${getY(trendData[4].count)} 
+                    L 473.3 ${getY(trendData[5].count)} 
+                    L 560 ${getY(trendData[6].count)}
                     L 560 165 L 40 165 Z`}
                 fill="url(#visitorGrad)"
               />
 
               <path
-                d={`M 40 ${165 - (trendData[0].count/300)*135} 
-                    L 126.6 ${165 - (trendData[1].count/300)*135} 
-                    L 213.3 ${165 - (trendData[2].count/300)*135} 
-                    L 300 ${165 - (trendData[3].count/300)*135} 
-                    L 386.6 ${165 - (trendData[4].count/300)*135} 
-                    L 473.3 ${165 - (trendData[5].count/300)*135} 
-                    L 560 ${165 - (trendData[6].count/300)*135}`}
+                d={`M 40 ${getY(trendData[0].count)} 
+                    L 126.6 ${getY(trendData[1].count)} 
+                    L 213.3 ${getY(trendData[2].count)} 
+                    L 300 ${getY(trendData[3].count)} 
+                    L 386.6 ${getY(trendData[4].count)} 
+                    L 473.3 ${getY(trendData[5].count)} 
+                    L 560 ${getY(trendData[6].count)}`}
                 fill="none"
                 stroke="#6366f1"
                 strokeWidth="3"
@@ -428,7 +461,7 @@ export default function VisitorManager({ initialVisitors, totalVisitors, todayVi
               {/* Interactive nodes */}
               {trendData.map((data, idx) => {
                 const cx = 40 + idx * 86.66;
-                const cy = 165 - (data.count / 300) * 135;
+                const cy = getY(data.count);
                 const isHovered = hoveredTrend === idx;
 
                 return (
@@ -459,11 +492,11 @@ export default function VisitorManager({ initialVisitors, totalVisitors, todayVi
             {/* Custom Interactive Tooltip */}
             {hoveredTrend !== null && (
               <div
-                className="absolute bg-slate-800 text-white rounded px-2.5 py-1.5 text-xs font-semibold shadow-md pointer-events-none transition-all duration-150"
+                className="absolute z-30 bg-slate-800 text-white rounded px-2.5 py-1.5 text-xs font-semibold shadow-md pointer-events-none transition-all duration-150"
                 style={{
-                  left: `${40 + hoveredTrend * 14.4}%`,
+                  left: `${((40 + hoveredTrend * 86.66) / 6).toFixed(2)}%`,
                   transform: 'translate(-50%, -100%)',
-                  top: `${165 - (trendData[hoveredTrend].count / 300) * 135 - 10}px`
+                  top: `${getY(trendData[hoveredTrend].count) - 20}px`
                 }}
               >
                 <div className="text-[9px] text-indigo-200 font-normal">{trendData[hoveredTrend].day} Trend</div>
@@ -479,75 +512,37 @@ export default function VisitorManager({ initialVisitors, totalVisitors, todayVi
           <p className="text-xs text-gray-400 mb-4">Device client types mapping</p>
 
           <div className="space-y-3">
-            <div>
-              <div className="flex items-center justify-between text-xs font-semibold text-gray-600 mb-1.5">
-                <span className="flex items-center gap-1.5">
-                  <span className="h-2 w-2 rounded-full bg-indigo-500" />
-                  Google Chrome
-                </span>
-                <span>45%</span>
-              </div>
-              <div className="h-2 w-full bg-gray-100 rounded-full overflow-hidden">
-                <div className="h-full bg-indigo-500 rounded-full" style={{ width: '45%' }} />
-              </div>
-            </div>
-
-            <div>
-              <div className="flex items-center justify-between text-xs font-semibold text-gray-600 mb-1.5">
-                <span className="flex items-center gap-1.5">
-                  <span className="h-2 w-2 rounded-full bg-violet-500" />
-                  Apple Safari
-                </span>
-                <span>30%</span>
-              </div>
-              <div className="h-2 w-full bg-gray-100 rounded-full overflow-hidden">
-                <div className="h-full bg-violet-500 rounded-full" style={{ width: '30%' }} />
-              </div>
-            </div>
-
-            <div>
-              <div className="flex items-center justify-between text-xs font-semibold text-gray-600 mb-1.5">
-                <span className="flex items-center gap-1.5">
-                  <span className="h-2 w-2 rounded-full bg-pink-500" />
-                  Mozilla Firefox
-                </span>
-                <span>10%</span>
-              </div>
-              <div className="h-2 w-full bg-gray-100 rounded-full overflow-hidden">
-                <div className="h-full bg-pink-500 rounded-full" style={{ width: '10%' }} />
-              </div>
-            </div>
-
-            <div>
-              <div className="flex items-center justify-between text-xs font-semibold text-gray-600 mb-1.5">
-                <span className="flex items-center gap-1.5">
-                  <span className="h-2 w-2 rounded-full bg-amber-500" />
-                  Microsoft Edge
-                </span>
-                <span>10%</span>
-              </div>
-              <div className="h-2 w-full bg-gray-100 rounded-full overflow-hidden">
-                <div className="h-full bg-amber-500 rounded-full" style={{ width: '10%' }} />
-              </div>
-            </div>
-
-            <div>
-              <div className="flex items-center justify-between text-xs font-semibold text-gray-600 mb-1.5">
-                <span className="flex items-center gap-1.5">
-                  <span className="h-2 w-2 rounded-full bg-emerald-500" />
-                  Opera / Other
-                </span>
-                <span>5%</span>
-              </div>
-              <div className="h-2 w-full bg-gray-100 rounded-full overflow-hidden">
-                <div className="h-full bg-emerald-500 rounded-full" style={{ width: '5%' }} />
-              </div>
-            </div>
+            {browserStats.map((stat) => {
+              const getBrowserColorClass = (name: string) => {
+                switch (name) {
+                  case 'Google Chrome': return 'bg-indigo-500';
+                  case 'Apple Safari': return 'bg-violet-500';
+                  case 'Mozilla Firefox': return 'bg-pink-500';
+                  case 'Microsoft Edge': return 'bg-amber-500';
+                  default: return 'bg-emerald-500';
+                }
+              };
+              const colorClass = getBrowserColorClass(stat.name);
+              return (
+                <div key={stat.name}>
+                  <div className="flex items-center justify-between text-xs font-semibold text-gray-600 mb-1.5">
+                    <span className="flex items-center gap-1.5">
+                      <span className={`h-2 w-2 rounded-full ${colorClass}`} />
+                      {stat.name}
+                    </span>
+                    <span>{stat.percentage}%</span>
+                  </div>
+                  <div className="h-2 w-full bg-gray-100 rounded-full overflow-hidden">
+                    <div className={`h-full ${colorClass} rounded-full`} style={{ width: `${stat.percentage}%` }} />
+                  </div>
+                </div>
+              );
+            })}
           </div>
 
           <div className="mt-4 border-t border-gray-100 pt-4 text-center">
             <span className="inline-block text-xs font-semibold text-slate-500 bg-slate-50 px-2 py-1 rounded">
-              🎯 Top Geo-Location: South Korea (62%)
+              🎯 Top Geo-Location: {topLocationInfo.name} ({topLocationInfo.percentage}%)
             </span>
           </div>
         </div>

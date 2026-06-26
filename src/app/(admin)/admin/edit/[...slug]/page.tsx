@@ -1,6 +1,6 @@
 import React from 'react';
 import { getDbPostBySlug } from '../../../../../utils/posts';
-import EditClient from '../../../../../components/EditClient';
+import EditClient from '../../../../../components/admin/EditClient';
 
 export default async function EditPostPage({ params }: { params: Promise<{ slug: string | string[] }> }) {
   const resolvedParams = await params;

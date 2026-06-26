@@ -1,11 +1,12 @@
 import path from 'path';
 import SkillTreeInteractive from './SkillTreeInteractive';
-import { getSkillTreePosts } from '../utils/posts';
+import { getSkillTreePosts } from '../../utils/posts';
 import { cookies } from 'next/headers';
 import { verifyAdminToken } from '@/utils/auth';
 
 
 export interface SkillNode {
+  postId: string;
   file: string;
   title: string;
   hasCat3: boolean;
@@ -16,15 +17,17 @@ export interface SkillNode {
   slug: string;
   col: number;
   row: number;
+  likesCount?: number;
 }
 
 interface SkillTreeGridProps {
   title?: string;
   description?: string;
   matchCategory2: string;
+  colorIndex?: number;
 }
 
-export default async function SkillTreeGrid({ title, description, matchCategory2 }: SkillTreeGridProps) {
+export default async function SkillTreeGrid({ title, description, matchCategory2, colorIndex }: SkillTreeGridProps) {
   const cookieStore = await cookies();
   const token = cookieStore.get('admin_auth')?.value;
   const isAdmin = token ? await verifyAdminToken(token) : false;
@@ -58,6 +61,7 @@ export default async function SkillTreeGrid({ title, description, matchCategory2
       const fileName = `${path.basename(post.slug)}.md`;
 
       nodes.set(nodeKey, {
+        postId: post.post_id || '',
         file: fileName,
         title: rawTitle, // 화면에 표시될 원본 대소문자 유지
         hasCat3: !!post.metadata.category3,
@@ -68,6 +72,7 @@ export default async function SkillTreeGrid({ title, description, matchCategory2
         slug: post.slug,
         col: -1,
         row: -1,
+        likesCount: post.likes_count || 0,
       });
     } catch (err) {
       console.error(`Failed to parse skill tree post: ${post.slug}`, err);
@@ -181,18 +186,28 @@ export default async function SkillTreeGrid({ title, description, matchCategory2
 
   const nodesRecord: Record<string, SkillNode> = Object.fromEntries(nodes);
 
+  const ACCENT_BORDERS = [
+    'border-sky-500/60',
+    'border-emerald-500/60',
+    'border-purple-500/60',
+    'border-amber-500/60',
+    'border-rose-500/60'
+  ];
+  const borderClass = ACCENT_BORDERS[(colorIndex ?? 0) % ACCENT_BORDERS.length];
+
   return (
     <div className="w-full">
       {(title || description) && (
-        <header className="mb-2 px-4">
-          {title && <h2 className="text-3xl font-bold text-gray-800">{title}</h2>}
-          {description && <p className="text-sm text-gray-500 mt-2">{description}</p>}
+        <header className={`mb-6 px-4 border-l-2 ${borderClass} pl-4 py-1`}>
+          {title && <h2 className="text-2xl sm:text-3xl font-bold text-slate-100 tracking-tight">{title}</h2>}
+          {description && <p className="text-sm text-slate-400 mt-1.5 leading-relaxed">{description}</p>}
         </header>
       )}
       <SkillTreeInteractive
         nodes={nodesRecord} 
         COLUMNS={COLUMNS} 
         isAdmin={isAdmin}
+        colorIndex={colorIndex ?? 0}
       />
     </div>
   );

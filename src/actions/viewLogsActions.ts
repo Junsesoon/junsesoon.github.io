@@ -61,8 +61,8 @@ export async function getViewLogsDashboardData(): Promise<ViewLogsDashboardData>
       LIMIT 100
     `);
 
-    // Neon DB에서 실시간 글 상태(post_status)를 조회해서 매핑
-    const postIds = [...new Set(result.rows.map((row: any) => String(row.post_id)))];
+    // Neon DB에서 실시간 글 상태(post_status)를 조회해서 매핑 (수정: -overlay 접미사 제거 후 조회)
+    const postIds = [...new Set(result.rows.map((row: any) => String(row.post_id).replace('-overlay', '')))];
     const statusMap = new Map<string, string>();
     
     if (postIds.length > 0) {
@@ -80,13 +80,14 @@ export async function getViewLogsDashboardData(): Promise<ViewLogsDashboardData>
     }
 
     const logs: DBViewLog[] = result.rows.map((row: any) => {
-      const pId = String(row.post_id);
+      const rawPId = String(row.post_id);
+      const pId = rawPId.replace('-overlay', ''); // 상태 조회를 위해 순수 UUID 매칭
       const isStatusExist = statusMap.has(pId);
       const postStatus = isStatusExist ? statusMap.get(pId)! : 'deleted'; // 상태 맵에 없으면 삭제된 글
       
       return {
         view_id: Number(row.view_id),
-        post_id: pId,
+        post_id: rawPId,
         post_title: String(row.post_title),
         post_slug: String(row.post_slug),
         post_status: postStatus,

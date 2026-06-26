@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { type TocHeading } from '../utils/parser';
+import { type TocHeading } from '../../utils/parser';
 
 interface TOCProps {
   headings: TocHeading[];

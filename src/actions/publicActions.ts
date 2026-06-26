@@ -76,6 +76,7 @@ export async function trackSiteVisitorAction(sessionId: string) {
 
   const headerList = await headers();
   const ip = headerList.get('x-forwarded-for') || 'unknown';
+  const userAgent = headerList.get('user-agent') || '';
 
   try {
     // 한국 시간(KST) 기준으로 현재 날짜(YYYY-MM-DD) 구하기
@@ -86,10 +87,10 @@ export async function trackSiteVisitorAction(sessionId: string) {
 
     // 오늘 방문 기록 추가 시도 (Turso DB의 visitors_manage 테이블 사용)
     const insertResult = await tursoQuery(
-      `INSERT INTO visitors_manage (ip_address, session_id, visited_date) 
-       VALUES (?, ?, ?) 
+      `INSERT INTO visitors_manage (ip_address, session_id, visited_date, user_agent) 
+       VALUES (?, ?, ?, ?) 
        ON CONFLICT (session_id, visited_date) DO NOTHING`,
-      [ip, sessionId, visitedDate]
+      [ip, sessionId, visitedDate, userAgent]
     );
 
     // 새롭게 추가된 데이터라면 (오늘 첫 방문) 전체 방문자 수 증가
@@ -105,9 +106,12 @@ export async function trackSiteVisitorAction(sessionId: string) {
   }
 }
 
-export async function incrementViewCountAction(postId: string, sessionId: string) {
+export async function incrementViewCountAction(postId: string, sessionId: string, viewType: 'detail' | 'overlay' = 'detail') {
   const headerList = await headers();
   const ip = headerList.get('x-forwarded-for') || 'unknown';
+
+  // 1. Turso에 기록하고 쿨다운을 별도로 매길 post_id 정의
+  const tursoPostId = viewType === 'overlay' ? `${postId}-overlay` : postId;
 
   try {
     // KST 기준으로 매일 새벽 4시를 쿨다운 기준점(threshold)으로 설정
@@ -124,12 +128,12 @@ export async function incrementViewCountAction(postId: string, sessionId: string
     // DB 비교를 위해 다시 UTC ISO 문자열로 변환
     const thresholdUTC = new Date(kstNow.getTime() - kstOffset).toISOString();
 
-    // 1. 기준점 이후에 동일한 IP에서 해당 게시물을 조회한 기록이 있는지 Turso DB에서 확인
+    // 2. 기준점 이후에 동일한 IP에서 해당 게시물을 조회한 기록이 있는지 Turso DB에서 확인
     const check = await tursoQuery(
       `SELECT view_id FROM views_manage 
        WHERE post_id = ? AND ip_address = ? 
          AND viewed_at > ?`,
-      [postId, ip, thresholdUTC]
+      [tursoPostId, ip, thresholdUTC]
     );
 
     // 기록이 있다면 쿨다운 적용 (조회수 증가 안 함)
@@ -137,7 +141,7 @@ export async function incrementViewCountAction(postId: string, sessionId: string
       return { success: true, incremented: false };
     }
 
-    // 2. Neon DB의 posts 테이블에서 역정규화 보관을 위한 글 제목(title)과 슬러그(slug) 조회
+    // 3. Neon DB의 posts 테이블에서 역정규화 보관을 위한 글 제목(title)과 슬러그(slug) 조회
     const postQuery = await neonQuery(
       'SELECT title, slug FROM posts WHERE post_id = $1',
       [postId]
@@ -145,12 +149,19 @@ export async function incrementViewCountAction(postId: string, sessionId: string
     const postTitle = postQuery.rows[0]?.title || 'Unknown Post';
     const postSlug = postQuery.rows[0]?.slug || '';
 
-    // 3. 기록이 없다면 Turso DB에 조회 이력 추가 (제목, 슬러그 백업) 및 Neon DB 게시물 조회수 1 증가
+    // 오버레이 조회 로그를 구분할 수 있도록 제목 정보만 가공 (슬러그는 404 방지를 위해 순수 슬러그 유지)
+    const targetTitle = viewType === 'overlay' ? `${postTitle} (Overlay)` : postTitle;
+
+    // 4. 기록이 없다면 Turso DB에 조회 이력 추가
     await tursoQuery(
       'INSERT INTO views_manage (post_id, post_title, post_slug, ip_address, session_id) VALUES (?, ?, ?, ?, ?)',
-      [postId, postTitle, postSlug, ip, sessionId]
+      [tursoPostId, targetTitle, postSlug, ip, sessionId]
     );
-    await neonQuery('UPDATE posts SET views_count = views_count + 1 WHERE post_id = $1', [postId]);
+
+    // 5. 상세 글 진입(detail)인 경우에만 Neon DB의 views_count 1 증가
+    if (viewType === 'detail') {
+      await neonQuery('UPDATE posts SET views_count = views_count + 1 WHERE post_id = $1', [postId]);
+    }
 
     return { success: true, incremented: true };
   } catch (error) {

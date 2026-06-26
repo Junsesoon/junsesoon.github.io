@@ -1,9 +1,10 @@
 import React from 'react';
 import Link from 'next/link';
-import ViewLogsManager from '@/components/ViewLogsManager';
-import { getViewLogsDashboardData } from '@/components/viewLogsActions';
-import AdminClock from '../../../../components/AdminClock';
-import { logoutAction } from '../../../../components/actions';
+import ViewLogsManager from '@/components/admin/ViewLogsManager';
+import { getViewLogsDashboardData } from '@/actions/viewLogsActions';
+import AdminClock from '../../../../components/admin/AdminClock';
+import { logoutAction } from '../../../../actions/actions';
+import BackButton from '@/components/admin/BackButton';
 
 export const dynamic = 'force-dynamic';
 
@@ -37,6 +38,15 @@ export default async function ViewLogsPage() {
                 <path strokeLinecap="round" strokeLinejoin="round" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2H6a2 2 0 01-2-2v-4zM14 16a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2h-2a2 2 0 01-2-2v-4z" />
               </svg>
               Overview
+            </Link>
+            <Link
+              href="/admin/about"
+              className="flex items-center gap-3 px-3 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-100/70 rounded-lg transition-colors no-underline"
+            >
+              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              About
             </Link>
             <Link
               href="/admin/skilltree"
@@ -120,12 +130,7 @@ export default async function ViewLogsPage() {
         <header className="mb-8 flex flex-col sm:flex-row sm:items-end justify-between border-b border-gray-200 pb-4 gap-4">
           <AdminClock title="View Logs" />
           <div className="flex items-center gap-3">
-            <Link
-              href="/"
-              className="inline-flex items-center justify-center rounded-lg bg-gray-100 px-3.5 py-1.5 text-xs font-medium text-gray-800 transition-all hover:bg-gray-200/80"
-            >
-              ← Back to Home
-            </Link>
+            <BackButton />
             <form action={logoutAction}>
               <button type="submit" className="inline-flex items-center justify-center rounded-lg bg-red-50 px-3.5 py-1.5 text-xs font-medium text-red-600 transition-all hover:bg-red-100/80">
                 Logout

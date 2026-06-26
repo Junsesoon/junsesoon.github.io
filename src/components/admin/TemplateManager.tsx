@@ -1,8 +1,8 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { addTemplateAction, deleteTemplateAction } from './actions';
-import { addPropertyAction, deletePropertyAction, getAllPropertiesWithTypesAction, updatePropertyTypeAction } from './propertyActions';
+import { addTemplateAction, deleteTemplateAction } from '../../actions/actions';
+import { addPropertyAction, deletePropertyAction, getAllPropertiesWithTypesAction, updatePropertyTypeAction } from '../../actions/propertyActions';
 
 export type Property = {
   propertyName: string;

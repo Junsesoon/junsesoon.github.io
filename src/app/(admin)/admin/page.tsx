@@ -2,9 +2,10 @@ import React from 'react';
 import Link from 'next/link';
 import { query as neonQuery } from '../../../infra/neon';
 import { query as tursoQuery } from '../../../infra/turso';
-import { logoutAction } from '../../../components/actions';
-import PostListClient from '../../../components/PostListClient';
-import AdminClock from '../../../components/AdminClock';
+import { logoutAction } from '../../../actions/actions';
+import PostListClient from '../../../components/admin/PostListClient';
+import AdminClock from '../../../components/admin/AdminClock';
+import BackButton from '../../../components/admin/BackButton';
 
 function getStatIcon(label: string) {
   const iconClass = "h-5 w-5 text-gray-400";
@@ -203,6 +204,15 @@ export default async function AdminDashboardPage({ searchParams }: { searchParam
               Overview
             </Link>
             <Link
+              href="/admin/about"
+              className="flex items-center gap-3 px-3 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-100/70 rounded-lg transition-colors no-underline"
+            >
+              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              About
+            </Link>
+            <Link
               href="/admin/skilltree"
               className="flex items-center gap-3 px-3 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-100/70 rounded-lg transition-colors"
             >
@@ -284,12 +294,7 @@ export default async function AdminDashboardPage({ searchParams }: { searchParam
         <header className="mb-8 flex flex-col sm:flex-row sm:items-end justify-between border-b border-gray-200 pb-4 gap-4">
           <AdminClock title="Overview" />
           <div className="flex items-center gap-3">
-            <Link
-              href="/"
-              className="inline-flex items-center justify-center rounded-lg bg-gray-100 px-3.5 py-1.5 text-xs font-medium text-gray-800 transition-all hover:bg-gray-200/80"
-            >
-              ← Back to Home
-            </Link>
+            <BackButton />
             <form action={logoutAction}>
               <button type="submit" className="inline-flex items-center justify-center rounded-lg bg-red-50 px-3.5 py-1.5 text-xs font-medium text-red-600 transition-all hover:bg-red-100/80">
                 Logout
@@ -298,14 +303,12 @@ export default async function AdminDashboardPage({ searchParams }: { searchParam
           </div>
         </header>
 
-        {/* Split Layout Container (30% : 70% Ratio via grid-cols-10) */}
-        <div className="grid grid-cols-1 lg:grid-cols-10 gap-8">
+        {/* Renewed Full-Width Stacked Layout */}
+        <div className="flex flex-col gap-8">
           
-          {/* Left Column: Stats Cards (30% Width - span 3) */}
-          <div className="lg:col-span-3 flex flex-col gap-6">
-            
-            {/* Detailed Stats Grid (Apple-style Widgets) */}
-            <div className="grid grid-cols-2 gap-4">
+          {/* Top Section: Blog Stats Grid (2x4 on mobile, 4x2 on desktop/tablet) */}
+          <div className="w-full">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               {statCards.map((stat, idx) => (
                 <div key={idx} className="rounded-2xl border border-gray-200/60 bg-white/80 p-4 shadow-sm backdrop-blur-md flex flex-col justify-between min-h-[96px] transition-all hover:shadow-md hover:border-gray-300/80">
                   <div className="flex items-center justify-between w-full">
@@ -318,9 +321,8 @@ export default async function AdminDashboardPage({ searchParams }: { searchParam
             </div>
           </div>
 
-          {/* Right Column: Post List (span 7) */}
-          <div className="lg:col-span-7">
-            {/* Action Bar and Data Grid Layer */}
+          {/* Bottom Section: Post List (Full Width) */}
+          <div className="w-full">
             <PostListClient posts={posts} sort={sort} order={order} />
           </div>
 

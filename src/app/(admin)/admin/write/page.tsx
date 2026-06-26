@@ -3,10 +3,10 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import PostEditor, { PostFormData } from '@/components/PostEditor';
-import { getTemplatesAction } from '../../../../components/actions';
-import { createPostAction } from '../../../../components/postActions';
-import { getEssentialPropertiesAction, getRequiredPropertiesAction } from '../../../../components/propertyActions';
+import PostEditor, { PostFormData } from '@/components/admin/PostEditor';
+import { getTemplatesAction } from '../../../../actions/actions';
+import { createPostAction } from '../../../../actions/postActions';
+import { getEssentialPropertiesAction, getRequiredPropertiesAction } from '../../../../actions/propertyActions';
 
 export default function WritePostPage() {
   const router = useRouter();

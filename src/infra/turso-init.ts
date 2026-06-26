@@ -42,7 +42,16 @@ async function initTursoDatabase() {
         const stmt = statements[i];
         const titleLine = stmt.split('\n')[0].replace('CREATE TABLE IF NOT EXISTS', 'Table:').replace('CREATE INDEX IF NOT EXISTS', 'Index:').trim();
         console.log(`  [${i + 1}/${statements.length}] Running: ${titleLine}...`);
-        await client.execute(stmt);
+        try {
+          await client.execute(stmt);
+        } catch (err: any) {
+          const errMsg = err?.message || String(err);
+          if (errMsg.includes('duplicate column name')) {
+            console.log(`  -> Column already exists. Skipping.`);
+          } else {
+            throw err;
+          }
+        }
       }
     }
 
