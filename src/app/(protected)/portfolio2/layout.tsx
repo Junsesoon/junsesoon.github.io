@@ -46,10 +46,23 @@ export default function Portfolio2Layout({
 
           // 이동 방향 확인 및 HTML 태그에 적절한 트랜지션 방향 클래스 추가
           const currentPath = window.location.pathname;
-          if (href === '/portfolio2/about' && currentPath === '/portfolio2') {
-            document.documentElement.classList.add('transition-going-about');
-          } else if (href === '/portfolio2' && currentPath === '/portfolio2/about') {
-            document.documentElement.classList.add('transition-going-home');
+
+          if (currentPath === '/portfolio2') {
+            if (href === '/portfolio2/about') {
+              document.documentElement.classList.add('transition-going-about');
+            } else if (href === '/portfolio2/projects') {
+              document.documentElement.classList.add('transition-going-projects');
+            } else if (href === '/portfolio2/skills') {
+              document.documentElement.classList.add('transition-going-skills');
+            }
+          } else if (href === '/portfolio2') {
+            if (currentPath === '/portfolio2/about') {
+              document.documentElement.classList.add('transition-coming-about');
+            } else if (currentPath === '/portfolio2/projects') {
+              document.documentElement.classList.add('transition-coming-projects');
+            } else if (currentPath === '/portfolio2/skills') {
+              document.documentElement.classList.add('transition-coming-skills');
+            }
           }
 
           // Next.js 페이지 라우팅 완료를 감지하기 위한 프로미스 생성
@@ -65,7 +78,11 @@ export default function Portfolio2Layout({
 
           // 애니메이션이 끝나면 추가된 클래스 정리
           transition.finished.then(() => {
-            document.documentElement.classList.remove('transition-going-about', 'transition-going-home');
+            document.documentElement.classList.remove(
+              'transition-going-about', 'transition-coming-about',
+              'transition-going-projects', 'transition-coming-projects',
+              'transition-going-skills', 'transition-coming-skills'
+            );
           });
         }
       }

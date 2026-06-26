@@ -11,7 +11,7 @@ export const metadata = {
 export default function Portfolio2Page() {
   return (
     <main 
-      className="w-full min-h-[calc(100vh-4rem)] relative overflow-hidden flex flex-col justify-center items-center px-4 pt-16 pb-20"
+      className="w-full min-h-screen relative overflow-hidden flex flex-col justify-center items-center px-4 pt-16 pb-20"
       style={{
         backgroundImage: 'radial-gradient(circle at 50% 30%, rgba(99, 102, 241, 0.15), rgba(168, 85, 247, 0.1), transparent 60%), radial-gradient(circle at 10% 80%, rgba(56, 189, 248, 0.08), transparent 45%)',
       }}
@@ -21,7 +21,7 @@ export default function Portfolio2Page() {
       <div className="absolute bottom-20 right-1/4 w-96 h-96 bg-purple-500/10 rounded-full blur-[120px] pointer-events-none" />
 
       {/* Page-level Mode Switch Buttons */}
-      <div className="absolute top-8 right-8 z-20 flex gap-3">
+      <div className="absolute top-8 right-8 z-20 flex gap-3 transition-hide">
         <Link 
           href="/"
           className="px-4 py-2 text-xs md:text-sm font-semibold text-slate-300 bg-white/[0.03] border border-white/[0.08] rounded-full backdrop-blur-md hover:bg-white/[0.08] hover:text-white transition-all duration-200 select-none no-underline"
@@ -63,13 +63,13 @@ export default function Portfolio2Page() {
               title: "Projects",
               desc: "다양한 프로젝트를 통해 최신 기술과 트렌드를 경험해보세요",
               icon: "⚡",
-              href: "/portfolio2#project",
+              href: "/portfolio2/projects",
             },
             {
               title: "Skills",
               desc: "Frontend/Backend, DevOps등 다양한 기술 스택과 전문성을 소개합니다",
               icon: "🛠️",
-              href: "/portfolio2#skill",
+              href: "/portfolio2/skills",
             },
           ].map((item, index) => (
             <Link 
