@@ -1,6 +1,7 @@
 import React from 'react';
 import Link from 'next/link';
 import Subtitle from '@/components/PF2/Subtitle';
+import ContactSection from '@/components/PF2/ContactSection';
 
 
 export const metadata = {
@@ -82,6 +83,10 @@ export default function Portfolio2Page() {
               <p className="text-sm text-slate-400 leading-relaxed">{item.desc}</p>
             </Link>
           ))}
+        </div>
+
+        <div className="mt-12 w-full">
+          <ContactSection />
         </div>
       </div>
     </main>

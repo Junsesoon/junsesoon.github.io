@@ -30,3 +30,14 @@ export type MenuItem =
 
 export const ENABLE_MODE_TOGGLE = false;
 
+export const DEFAULT_CONTACT_EMAIL = 'junsesoon@gmail.com' as const;
+
+export const emailConfig = {
+  host: process.env.CONTACT_SMTP_HOST || '',
+  port: parseInt(process.env.CONTACT_SMTP_PORT || '587'),
+  secure: process.env.CONTACT_SMTP_SECURE === 'true',
+  user: process.env.CONTACT_SMTP_USER || '',
+  pass: process.env.CONTACT_SMTP_PASS || '',
+  from: process.env.CONTACT_FROM_EMAIL || '',
+  to: process.env.CONTACT_TO_EMAIL || DEFAULT_CONTACT_EMAIL,
+};

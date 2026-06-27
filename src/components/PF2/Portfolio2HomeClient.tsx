@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import Subtitle from '@/components/PF2/Subtitle';
+import ContactSection from '@/components/PF2/ContactSection';
 
 export default function Portfolio2HomeClient() {
   const router = useRouter();
@@ -94,6 +95,10 @@ export default function Portfolio2HomeClient() {
               <p className="text-sm text-slate-400 leading-relaxed">{item.desc}</p>
             </Link>
           ))}
+        </div>
+
+        <div className="mt-12 w-full">
+          <ContactSection />
         </div>
       </div>
     </main>

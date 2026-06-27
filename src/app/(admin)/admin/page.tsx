@@ -1,5 +1,6 @@
 import React from 'react';
 import Link from 'next/link';
+import { DEFAULT_CONTACT_EMAIL } from '@/constants';
 import { query as neonQuery } from '../../../infra/neon';
 import { query as tursoQuery } from '../../../infra/turso';
 import { logoutAction } from '../../../actions/actions';
@@ -283,7 +284,7 @@ export default async function AdminDashboardPage({ searchParams }: { searchParam
             </div>
             <div>
               <p className="text-xs font-semibold text-gray-800 leading-none">Junseo (Admin)</p>
-              <span className="text-[10px] text-gray-400">junsesoon@gmail.com</span>
+              <span className="text-[10px] text-gray-400">{DEFAULT_CONTACT_EMAIL}</span>
             </div>
           </div>
         </div>

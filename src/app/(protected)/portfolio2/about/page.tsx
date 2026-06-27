@@ -98,7 +98,7 @@ export default async function AboutPage() {
             </h2>
             <div className="space-y-6">
               {[
-                { title: "User-Centric DX", desc: "사용자 중심의 부드럽고 매끄러운 UX와 고성능 UI 인터랙션을 고민합니다." },
+                { title: "Trade-off Management", desc: "무분별한 신기술이나 과잉 엔지니어링을 경계합니다. 인프라의 한계와 비즈니스의 제약 조건 속에서 비용과 성능, 확장성 사이의 최적의 균형점을 찾아내는 결단을 지향합니다" },
                 { title: "Clean & Maintainable", desc: "유지보수하기 쉽고 명확한 아키텍처 설계를 지향하며, 불필요한 중복을 줄입니다." },
                 { title: "Constant Learner", desc: "매 순간 새로운 라이브러리와 프레임워크 트렌드를 학습하고 프로덕트에 녹여냅니다." },
               ].map((value, idx) => (
