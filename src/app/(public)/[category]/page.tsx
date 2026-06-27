@@ -1,5 +1,5 @@
 import { getCategoryPosts, getDbPostBySlug } from '@/utils/posts';
-import PostList from '@/components/admin/PostList';
+import PostList from '@/components/shared/PostList';
 import TOC from '@/components/blog/TOC';
 import LikeButton from '@/components/shared/LikeButton';
 import ViewTracker from '@/components/admin/ViewTracker';
