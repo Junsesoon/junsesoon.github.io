@@ -7,12 +7,12 @@ interface HeaderProps {
 }
 
 export default function Header({
-  title = "Junseo's Blog 🚀",
+  title = "Junseo's Blog",
   description = "What are you looking for?",
   className = '',
 }: HeaderProps) {
   return (
-    <header className={`mb-12 border-b border-gray-100 pb-8 ${className}`}>
+    <header className={`mb-12 border-b border-gray-100 pb-8 text-center ${className}`}>
       <h1 className="text-5xl font-bold tracking-tight text-slate-900">
         {title}
       </h1>

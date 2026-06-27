@@ -4,7 +4,15 @@ import HomeContent from '@/components/blog/HomeContent';
 
 export const revalidate = 1200; // ISR 적용 시, 게시물 수정 후 최대 20분까지는 수정 내용이 반영되지 않을 수 있음
 
-export default async function Home() {
+export default async function Home({
+  searchParams,
+}: {
+  searchParams?: Promise<{ page?: string; popPage?: string }>;
+}) {
+  const resolvedSearchParams = await searchParams;
+  const currentPage = parseInt(resolvedSearchParams?.page || '1', 10);
+  const currentPopPage = parseInt(resolvedSearchParams?.popPage || '1', 10);
+
   return (
     <main className="w-full px-4 md:px-12 py-8 pb-24 font-sans">
       <Header />
@@ -15,7 +23,7 @@ export default async function Home() {
         </aside>
 
         {/* Content Section */}
-        <HomeContent />
+        <HomeContent currentPage={currentPage} currentPopPage={currentPopPage} />
 
         {/* Right Sidebar */}
         <aside className="hidden md:block w-full">
