@@ -6,7 +6,6 @@ import { getDbPostBySlug, getAllPosts } from '../../../../utils/posts';
 import { getParsedMarkdown } from '../../../../utils/markdownCache';
 import { cookies } from 'next/headers';
 import { verifyAdminToken } from '@/utils/auth';
-import BlogStats from '@/components/blog/BlogStats';
 import '@/styles/atom-one-dark.css';
 
 export const dynamic = 'force-dynamic';
@@ -89,10 +88,8 @@ export default async function PostPage({
   return (
     <main className="w-full px-4 md:px-12 py-8 pb-24 font-sans">
       <div className="grid grid-cols-1 md:grid-cols-[15%_1fr_15%] gap-8 w-full">
-        {/* Left Sidebar */}
-        <aside className="w-full">
-          <BlogStats category={category} />
-        </aside>
+        {/* Left Sidebar Spacer */}
+        <aside className="hidden md:block w-full" />
 
         {/* Content Section */}
         <section className="min-w-0">
