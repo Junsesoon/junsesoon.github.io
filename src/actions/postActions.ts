@@ -313,3 +313,83 @@ export async function deletePostAction(slug: string) {
     throw new Error('Database query failed.');
   }
 }
+
+
+
+export async function getMySkillDomainsAction() {
+  try {
+    const result = await query(
+      `SELECT domain_id as id, domain_key as "domainKey", title, icon, color, display_order as "displayOrder" 
+       FROM myskill_domains 
+       ORDER BY display_order ASC, domain_id ASC`
+    );
+    return result.rows;
+  } catch (error) {
+    console.error('getMySkillDomainsAction error:', error);
+    return [];
+  }
+}
+
+export async function addMySkillDomainAction(title: string, icon: string, color: string) {
+  if (!title || !title.trim()) {
+    return { success: false, message: 'Title is required.' };
+  }
+  try {
+    const domainKey = cleanSlug(title.trim());
+
+    // Get max display order to append at the end
+    const orderRes = await query('SELECT MAX(display_order) as max FROM myskill_domains');
+    const maxOrder = orderRes.rows[0]?.max || 0;
+    const displayOrder = maxOrder + 1;
+
+    await query(
+      `INSERT INTO myskill_domains (domain_key, title, icon, color, display_order)
+       VALUES ($1, $2, $3, $4, $5)`,
+      [domainKey, title.trim(), icon || '💻', color || 'cyan', displayOrder]
+    );
+    revalidatePath('/admin/myskill');
+    revalidatePath('/portfolio2/skills');
+    return { success: true };
+  } catch (error: any) {
+    console.error('addMySkillDomainAction error:', error);
+    if (error.code === '23505') {
+      return { success: false, message: 'A domain with this domain key (derived from title) already exists.' };
+    }
+    return { success: false, message: 'Internal Server Error' };
+  }
+}
+
+export async function updateMySkillDomainAction(id: number, title: string, icon: string, color: string) {
+  if (!id || !title || !title.trim()) {
+    return { success: false, message: 'ID and title are required.' };
+  }
+  try {
+    await query(
+      `UPDATE myskill_domains 
+       SET title = $1, icon = $2, color = $3, updated_at = CURRENT_TIMESTAMP
+       WHERE domain_id = $4`,
+      [title.trim(), icon || '💻', color || 'cyan', id]
+    );
+    revalidatePath('/admin/myskill');
+    revalidatePath('/portfolio2/skills');
+    return { success: true };
+  } catch (error: any) {
+    console.error('updateMySkillDomainAction error:', error);
+    return { success: false, message: 'Internal Server Error' };
+  }
+}
+
+export async function deleteMySkillDomainAction(id: number) {
+  if (!id) {
+    return { success: false, message: 'Domain ID is required.' };
+  }
+  try {
+    await query('DELETE FROM myskill_domains WHERE domain_id = $1', [id]);
+    revalidatePath('/admin/myskill');
+    revalidatePath('/portfolio2/skills');
+    return { success: true };
+  } catch (error) {
+    console.error('deleteMySkillDomainAction error:', error);
+    return { success: false, message: 'Internal Server Error' };
+  }
+}
