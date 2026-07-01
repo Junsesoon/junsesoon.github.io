@@ -26,6 +26,15 @@ export default async function ProjectsPage() {
       ? meta.features 
       : [];
 
+    let period = '';
+    if (meta.startdate) {
+      const startFormatted = meta.startdate.replace(/-/g, '.');
+      const endFormatted = meta.enddate ? meta.enddate.replace(/-/g, '.') : '진행 중';
+      period = `${startFormatted} - ${endFormatted}`;
+    } else {
+      period = meta.period || post.date || '';
+    }
+
     return {
       id: post.slug,
       title: post.title,
@@ -35,7 +44,7 @@ export default async function ProjectsPage() {
       icon: meta.icon || '⚡',
       techs: techs,
       color: (meta.color || 'blue').toLowerCase() as Project['color'],
-      period: meta.period || post.date || '',
+      period: period,
       features: features,
     };
   });
