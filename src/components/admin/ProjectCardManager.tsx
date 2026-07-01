@@ -229,11 +229,19 @@ function CustomDatePicker({ value, onChange, disabled, label }: CustomDatePicker
   );
 }
 
+const CURATED_EMOJIS = [
+  '💻', '📱', '🌐', '🚀', '⚡', '🎨',
+  '⚙️', '📊', '🔒', '🎮', '🤖', '🧠',
+  '📦', '🧪', '📅', '📝', '🔧', '💬',
+  '🛍️', '🔑', '🔥', '💡', '🛠️', '📈'
+];
+
 export default function ProjectCardManager({ initialProjects }: ProjectCardManagerProps) {
   const router = useRouter();
   const [projects, setProjects] = useState<AdminProject[]>(initialProjects);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isDeletingSlug, setIsDeletingSlug] = useState<string | null>(null);
+  const [isEmojiPickerOpen, setIsEmojiPickerOpen] = useState(false);
   const [selectedPreviewProject, setSelectedPreviewProject] = useState<AdminProject | null>(null);
 
   // Form State
@@ -263,6 +271,7 @@ export default function ProjectCardManager({ initialProjects }: ProjectCardManag
     setDesc(project.desc);
     setLongDesc(project.longDesc);
     setFeatures(project.features.join('\n'));
+    setIsEmojiPickerOpen(false);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -279,6 +288,7 @@ export default function ProjectCardManager({ initialProjects }: ProjectCardManag
     setDesc('');
     setLongDesc('');
     setFeatures('');
+    setIsEmojiPickerOpen(false);
   };
 
   const handleDelete = async (slug: string) => {
@@ -442,16 +452,63 @@ export default function ProjectCardManager({ initialProjects }: ProjectCardManag
           </div>
 
           <div className="flex flex-col sm:flex-row gap-4">
-            <div className="sm:w-20 shrink-0">
+            <div className="sm:w-20 shrink-0 relative">
               <label className="mb-1 block text-xs font-semibold text-gray-600">아이콘</label>
-              <input
-                type="text"
-                value={icon}
-                onChange={(e) => setIcon(e.target.value)}
-                placeholder="예: ⚡"
-                className="block w-full rounded-lg border border-gray-200/80 bg-gray-50/30 px-3 py-2 text-xs focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-                required
-              />
+              <div className="relative">
+                <input
+                  type="text"
+                  value={icon}
+                  onChange={(e) => setIcon(e.target.value)}
+                  placeholder="예: ⚡"
+                  className="block w-full rounded-lg border border-gray-200/80 bg-gray-50/30 pl-3 pr-7 py-2 text-xs focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 text-center"
+                  required
+                />
+                <button
+                  type="button"
+                  onClick={() => setIsEmojiPickerOpen(!isEmojiPickerOpen)}
+                  className="absolute right-1.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-blue-500 transition-all cursor-pointer flex items-center justify-center p-0.5 hover:scale-110"
+                  title="추천 아이콘 선택"
+                >
+                  <svg className="w-4 h-4 stroke-current fill-none" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <circle cx="12" cy="12" r="10" />
+                    <path d="M8 14s1.5 2 4 2 4-2 4-2" />
+                    <line x1="9" y1="9" x2="9.01" y2="9" />
+                    <line x1="15" y1="9" x2="15.01" y2="9" />
+                  </svg>
+                </button>
+              </div>
+
+              {isEmojiPickerOpen && (
+                <div className="absolute z-50 mt-1 left-0 w-48 bg-white border border-gray-200 rounded-xl shadow-xl p-2.5">
+                  <div className="flex items-center justify-between mb-1.5 pb-1 border-b border-gray-100">
+                    <span className="text-[10px] font-bold text-gray-500">추천 아이콘</span>
+                    <button
+                      type="button"
+                      onClick={() => setIsEmojiPickerOpen(false)}
+                      className="text-gray-400 hover:text-gray-700 text-[10px] font-bold cursor-pointer"
+                    >
+                      닫기
+                    </button>
+                  </div>
+                  <div className="grid grid-cols-6 gap-1">
+                    {CURATED_EMOJIS.map((emoji) => (
+                      <button
+                        key={emoji}
+                        type="button"
+                        onClick={() => {
+                          setIcon(emoji);
+                          setIsEmojiPickerOpen(false);
+                        }}
+                        className={`w-6.5 h-6.5 rounded-lg text-base flex items-center justify-center hover:bg-gray-100 transition-all cursor-pointer ${
+                          icon === emoji ? 'bg-blue-50 border border-blue-200' : ''
+                        }`}
+                      >
+                        {emoji}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
 
             <div className="sm:w-32 shrink-0">
