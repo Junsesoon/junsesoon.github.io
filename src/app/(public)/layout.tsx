@@ -3,6 +3,7 @@ import '@/styles/globals.css';
 import Script from 'next/script';
 import Footer from '@/components/shared/footer';
 import VisitorTracker from '@/components/admin/VisitorTracker';
+import SkillTreeThemeToggle from '@/components/blog/SkillTreeThemeToggle';
 
 export const metadata = {
   title: 'Junseo Blog',
@@ -16,8 +17,24 @@ export default function RootLayout({
 }) {
 
   return (
-    <html lang="ko">
-      <body className="m-0 p-0 flex flex-col min-h-screen overflow-y-scroll bg-white text-gray-900 relative">
+    <html lang="ko" suppressHydrationWarning>
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                try {
+                  var saved = localStorage.getItem('skilltree_theme') || 'light';
+                  document.documentElement.classList.remove('light-theme', 'sepia-theme');
+                  if (saved === 'light') document.documentElement.classList.add('light-theme');
+                  else if (saved === 'sepia') document.documentElement.classList.add('sepia-theme');
+                } catch (e) {}
+              })();
+            `,
+          }}
+        />
+      </head>
+      <body className="m-0 p-0 flex flex-col min-h-screen overflow-y-scroll bg-theme-bg text-theme-text-body relative transition-colors duration-300">
         <VisitorTracker />
         {process.env.GA_MEASUREMENT_ID && (
           <>
@@ -40,6 +57,7 @@ export default function RootLayout({
           </>
         )}
         <GNB />
+        <SkillTreeThemeToggle />
         <div className="pt-16 flex-1 relative">
           {children}
           <Footer />

@@ -128,15 +128,15 @@ export default function LikeButton({ postId, initialLikesCount = 0 }: LikeButton
     setIsLoading(false);
   };
 
-  if (!postId) return null;
-
   return (
     <button
       type="button"
       onClick={handleToggle}
       disabled={isLoading || isCooldown}
       className={`relative group inline-flex flex-col items-center justify-center gap-1 shrink-0 rounded-lg border w-[60px] h-[60px] shadow-sm transition-all duration-300 ease-out active:scale-95 ${
-        isLiked ? 'border-blue-400 bg-blue-50' : 'border-gray-200 bg-white hover:bg-gray-50'
+        isLiked 
+          ? 'border-theme-accent bg-theme-bg-hover' 
+          : 'border-theme-border bg-theme-surface hover:bg-theme-bg-hover'
       } ${(isLoading || isCooldown) ? 'opacity-70 cursor-not-allowed' : ''}`}
     >
       {showParticles && (
@@ -158,7 +158,7 @@ export default function LikeButton({ postId, initialLikesCount = 0 }: LikeButton
               return (
                 <span
                   key={i}
-                  className="absolute bg-blue-400 rounded-full animate-particle"
+                  className="absolute bg-theme-accent rounded-full animate-particle"
                   style={{
                     width: `${size}px`,
                     height: `${size}px`,
@@ -171,15 +171,15 @@ export default function LikeButton({ postId, initialLikesCount = 0 }: LikeButton
           </div>
         </>
       )}
-      <svg xmlns="http://www.w3.org/2000/svg" className={`h-5 w-5 transition-all duration-300 ${isLiked ? 'text-blue-600 fill-blue-200 scale-110' : 'text-gray-400 fill-transparent group-hover:text-gray-500'}`} viewBox="0 0 24 24" stroke="currentColor">
+      <svg xmlns="http://www.w3.org/2000/svg" className={`h-5 w-5 transition-all duration-300 ${isLiked ? 'text-theme-accent fill-current opacity-90 scale-110' : 'text-theme-text-muted fill-transparent group-hover:text-theme-text-title'}`} viewBox="0 0 24 24" stroke="currentColor">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905 0 .714-.211 1.412-.608 2.006L7 11v9m7-10h-2M7 20H5a2 2 0 01-2-2v-6a2 2 0 012-2h2.514" />
       </svg>
       {isLiked ? (
-        <span className="text-sm font-semibold transition-colors text-blue-600">
+        <span className="text-sm font-semibold transition-colors text-theme-accent">
           {likesCount}
         </span>
       ) : (
-        <span className="text-sm font-semibold transition-colors text-gray-500 group-hover:text-gray-700">
+        <span className="text-sm font-semibold transition-colors text-theme-text-muted group-hover:text-theme-text-title">
           유익함
         </span>
       )}

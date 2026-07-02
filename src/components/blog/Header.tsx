@@ -12,11 +12,11 @@ export default function Header({
   className = '',
 }: HeaderProps) {
   return (
-    <header className={`mb-12 border-b border-gray-100 pb-8 text-center ${className}`}>
-      <h1 className="text-5xl font-bold tracking-tight text-slate-900">
+    <header className={`mb-12 border-b border-theme-border pb-8 text-center ${className}`}>
+      <h1 className="text-5xl font-bold tracking-tight text-theme-text-title">
         {title}
       </h1>
-      <p className="mt-3 text-xl text-slate-500">
+      <p className="mt-3 text-xl text-theme-text-muted">
         {description}
       </p>
     </header>

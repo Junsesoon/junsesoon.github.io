@@ -16,8 +16,8 @@ interface PostListProps {
 }
 
 export default function PostList({ posts, theme = 'blog', showLikes = false }: PostListProps) {
-  const titleColor = theme === 'portfolio' ? 'text-red-800' : 'text-blue-600';
-  const heartColor = theme === 'portfolio' ? 'text-red-800' : 'text-blue-600';
+  const titleColor = theme === 'portfolio' ? 'text-red-800' : 'text-theme-accent';
+  const heartColor = theme === 'portfolio' ? 'text-red-800' : 'text-theme-accent';
   const basePath = theme === 'portfolio' ? '/portfolio' : '';
 
   if (!posts || posts.length === 0) {
@@ -39,8 +39,8 @@ export default function PostList({ posts, theme = 'blog', showLikes = false }: P
             <h3 className={`mb-2 text-2xl transition-colors group-hover:opacity-80 ${titleColor}`}>
               {post.title}
             </h3>
-            <p className="mb-2 text-1xl text-gray-800">{post.excerpt}</p>
-            <div className="flex items-center gap-3 text-sm text-gray-500">
+            <p className="mb-2 text-1xl text-theme-text-body">{post.excerpt}</p>
+            <div className="flex items-center gap-3 text-sm text-theme-text-muted">
               <span>{new Date(post.date).toLocaleDateString('ko-KR')}</span>
               {showLikes && post.likes_count !== undefined && (
                 <span className={`flex items-center gap-1 ${heartColor} font-semibold`}>

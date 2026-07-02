@@ -14,7 +14,7 @@ export default async function Home({
   const currentPopPage = parseInt(resolvedSearchParams?.popPage || '1', 10);
 
   return (
-    <main className="w-full px-4 md:px-12 py-8 pb-24 font-sans">
+    <main className="w-full px-4 md:px-4 py-8 pb-24 font-sans">
       <Header />
       <div className="grid grid-cols-1 md:grid-cols-[15%_1fr_15%] gap-8 w-full">
         {/* Left Sidebar */}

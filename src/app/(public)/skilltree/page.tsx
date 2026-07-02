@@ -1,6 +1,5 @@
 import SkillTreeGrid from '@/components/blog/SkillTreeGrid';
 import SkillTreeTOC from '@/components/blog/SkillTreeTOC';
-import SkillTreeThemeToggle from '@/components/blog/SkillTreeThemeToggle';
 import { query } from '../../../infra/neon';
 
 export const revalidate = 3600;
@@ -13,7 +12,6 @@ export default async function SkillTreePage() {
       id="skilltree-main"
       className="w-full min-h-screen bg-theme-bg text-theme-text-body font-sans pb-16 -mt-16 pt-16 relative transition-colors duration-300"
     >
-      <SkillTreeThemeToggle />
 
       <div className="mx-auto max-w-6xl px-4 sm:px-8">
         <header className="relative mb-8 flex min-h-[300px] flex-col items-center justify-center gap-6 py-10 text-center select-none">

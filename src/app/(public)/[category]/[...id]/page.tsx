@@ -86,7 +86,7 @@ export default async function PostPage({
   const postData = displayProps;
 
   return (
-    <main className="w-full px-4 md:px-12 py-8 pb-24 font-sans">
+    <main className="w-full px-4 md:px-4 py-8 pb-24 font-sans">
       <div className="grid grid-cols-1 md:grid-cols-[15%_1fr_15%] gap-8 w-full">
         {/* Left Sidebar Spacer */}
         <aside className="hidden md:block w-full" />
@@ -94,7 +94,7 @@ export default async function PostPage({
         {/* Content Section */}
         <section className="min-w-0">
           <article>
-            <header className="mb-6 flex min-h-40 flex-col justify-center gap-4 border-b border-gray-200 py-10">
+            <header className="mb-6 flex min-h-40 flex-col justify-center gap-4 border-b border-theme-border py-10">
               <h1 className="text-4xl">
                 {showDraft && (
                   <span className="mr-2 inline-block rounded bg-amber-100 text-amber-800 text-sm px-2.5 py-0.5 font-medium align-middle">
@@ -105,7 +105,7 @@ export default async function PostPage({
               </h1>
               
               <div className="flex items-start justify-between gap-4">
-                <div className="my-0 text-gray-600">
+                <div className="my-0 text-theme-text-muted">
                   <p>
                     작성일: {formatKoreanDate(postData.posted_at) ?? '정보 없음'}
                   </p>
@@ -116,7 +116,7 @@ export default async function PostPage({
                 <LikeButton postId={post.post_id || ''} initialLikesCount={post.likes_count || 0} />
               </div>
               {postData.summary && (
-                <p className="my-0 text-lg text-gray-800">
+                <p className="my-0 text-lg text-theme-text-body">
                   {postData.summary}
                 </p>
               )}
@@ -126,7 +126,7 @@ export default async function PostPage({
                   {postData.tags.map((tag: string) => (
                     <span
                       key={tag}
-                      className="m-1 inline-block rounded bg-gray-100 px-2 py-1 text-sm"
+                      className="m-1 inline-block rounded bg-theme-bg-hover text-theme-text-body px-2 py-1 text-sm border border-theme-border"
                     >
                       {tag}
                     </span>
