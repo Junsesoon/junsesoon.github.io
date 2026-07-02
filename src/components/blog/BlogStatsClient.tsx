@@ -4,14 +4,17 @@ import React, { useState, useEffect } from 'react';
 
 function AnimatedNumber({ value }: { value: string }) {
   const [count, setCount] = useState(0);
+  const [mounted, setMounted] = useState(false);
   
   // 분리 (예: "1,200+" -> "", "1,200", "+")
   const match = value.match(/^(\D*)?([\d,]+)(\D*)$/);
   
   useEffect(() => {
-    if (!match) return;
+    setMounted(true);
+    const localMatch = value.match(/^(\D*)?([\d,]+)(\D*)$/);
+    if (!localMatch) return;
     
-    const target = parseInt(match[2].replace(/,/g, ''), 10);
+    const target = parseInt(localMatch[2].replace(/,/g, ''), 10);
     let startTimestamp: number | null = null;
     let animationFrameId: number;
     const duration = 1500; // 1.5초
@@ -32,9 +35,9 @@ function AnimatedNumber({ value }: { value: string }) {
 
     animationFrameId = window.requestAnimationFrame(step);
     return () => window.cancelAnimationFrame(animationFrameId);
-  }, [value, match]);
+  }, [value]);
 
-  if (!match) return <>{value}</>;
+  if (!mounted || !match) return <>{value}</>;
 
   const prefix = match[1] || '';
   const numStr = match[2];
