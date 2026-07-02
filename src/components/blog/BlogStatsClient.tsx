@@ -5,7 +5,7 @@ import React, { useState, useEffect } from 'react';
 function AnimatedNumber({ value }: { value: string }) {
   const [count, setCount] = useState(0);
   
-  // 앞의 기호, 숫자, 뒤의 기호를 분리합니다 (예: "1,200+" -> "", "1,200", "+")
+  // 분리 (예: "1,200+" -> "", "1,200", "+")
   const match = value.match(/^(\D*)?([\d,]+)(\D*)$/);
   
   useEffect(() => {
@@ -14,13 +14,12 @@ function AnimatedNumber({ value }: { value: string }) {
     const target = parseInt(match[2].replace(/,/g, ''), 10);
     let startTimestamp: number | null = null;
     let animationFrameId: number;
-    const duration = 1500; // 애니메이션 지속 시간 (1.5초)
+    const duration = 1500; // 1.5초
 
     const step = (timestamp: number) => {
       if (!startTimestamp) startTimestamp = timestamp;
       const progress = Math.min((timestamp - startTimestamp) / duration, 1);
       
-      // Ease-out 효과 (점점 느려지며 도달)
       const easeOut = 1 - Math.pow(1 - progress, 4);
       setCount(Math.floor(easeOut * target));
 
@@ -33,7 +32,7 @@ function AnimatedNumber({ value }: { value: string }) {
 
     animationFrameId = window.requestAnimationFrame(step);
     return () => window.cancelAnimationFrame(animationFrameId);
-  }, [value]);
+  }, [value, match]);
 
   if (!match) return <>{value}</>;
 
@@ -49,31 +48,127 @@ function AnimatedNumber({ value }: { value: string }) {
 
 interface BlogStatsClientProps {
   title?: string;
-  totalPosts: number;
-  totalLikes: number;
+  category?: string;
+  layout?: 'grid' | 'sidebar';
+  totalPosts?: number;
+  totalLikes?: number;
   totalSkills?: number;
-  totalVisitors: number;
+  totalVisitors?: number;
   totalUniqueVisitors?: number;
   todayVisitors?: number;
-  layout?: 'grid' | 'sidebar';
+}
+
+interface StatsData {
+  totalPosts: number;
+  totalLikes: number;
+  totalVisitors: number;
+  totalUniqueVisitors: number;
+  todayVisitors: number;
 }
 
 export default function BlogStatsClient({
   title = 'Blog Stats',
-  totalPosts = 0,
-  totalLikes = 0,
-  totalSkills = 0,
-  totalVisitors = 0,
-  totalUniqueVisitors = 0,
-  todayVisitors = 0,
-  layout = 'grid',
+  category,
+  layout = 'sidebar',
+  totalPosts,
+  totalLikes,
+  totalSkills,
+  totalVisitors,
+  totalUniqueVisitors,
+  todayVisitors,
 }: BlogStatsClientProps) {
+  // If stats props are provided directly (e.g., from portfolio), bypass loading and fetch
+  const [data, setData] = useState<StatsData | null>(() => {
+    if (
+      totalPosts !== undefined &&
+      totalLikes !== undefined &&
+      totalVisitors !== undefined
+    ) {
+      return {
+        totalPosts,
+        totalLikes,
+        totalVisitors,
+        totalUniqueVisitors: totalUniqueVisitors || 0,
+        todayVisitors: todayVisitors || 0,
+      };
+    }
+    return null;
+  });
+
+  const [loading, setLoading] = useState(() => {
+    return !(
+      totalPosts !== undefined &&
+      totalLikes !== undefined &&
+      totalVisitors !== undefined
+    );
+  });
+
+  useEffect(() => {
+    // If stats are already initialized through props, no need to fetch asynchronously
+    if (
+      totalPosts !== undefined &&
+      totalLikes !== undefined &&
+      totalVisitors !== undefined
+    ) {
+      return;
+    }
+
+    const url = `/api/blog-stats${category ? `?category=${encodeURIComponent(category)}` : ''}`;
+    fetch(url)
+      .then((res) => res.json())
+      .then((resData) => {
+        if (resData.success) {
+          setData(resData);
+        }
+        setLoading(false);
+      })
+      .catch((err) => {
+        console.error('Failed to load blog stats:', err);
+        setLoading(false);
+      });
+  }, [category, totalPosts, totalLikes, totalVisitors]);
+
+  // Loading Skeleton State
+  if (loading || !data) {
+    if (layout === 'sidebar') {
+      return (
+        <div className="border border-theme-border bg-theme-surface rounded-2xl p-5 shadow-sm animate-pulse">
+          <div className="h-4 bg-theme-border rounded w-2/3 mb-4" />
+          <ul className="space-y-3.5">
+            {Array.from({ length: 5 }).map((_, idx) => (
+              <li key={idx} className="flex justify-between items-center">
+                <div className="flex items-center gap-2">
+                  <div className="h-2.5 w-2.5 rounded-full bg-theme-border/60" />
+                  <div className="h-3 bg-theme-border/60 rounded w-16" />
+                </div>
+                <div className="h-4 bg-theme-border/60 rounded w-8" />
+              </li>
+            ))}
+          </ul>
+        </div>
+      );
+    }
+
+    return (
+      <section className="w-full max-w-[1440px] mx-auto py-8 px-4 md:px-8">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 md:gap-6">
+          {Array.from({ length: 3 }).map((_, idx) => (
+            <div key={idx} className="flex flex-col space-y-2 items-center justify-center p-6 border border-theme-border bg-theme-surface rounded-xl animate-pulse">
+              <div className="h-8 bg-theme-border/60 rounded w-12" />
+              <div className="h-3 bg-theme-border/60 rounded w-16" />
+            </div>
+          ))}
+        </div>
+      </section>
+    );
+  }
+
   const stats = [
-    { value: totalPosts.toString(), label: 'Total Posts', borderColor: 'border-rose-300', dotColor: 'bg-rose-500' },
-    { value: totalVisitors.toString(), label: 'Total Views', borderColor: 'border-purple-300', dotColor: 'bg-purple-500' },
-    { value: totalLikes.toString(), label: 'Total Likes', borderColor: 'border-blue-300', dotColor: 'bg-blue-500' },
-    { value: totalUniqueVisitors.toString(), label: 'Total Visit', borderColor: 'border-emerald-300', dotColor: 'bg-emerald-500' },
-    { value: todayVisitors.toString(), label: "Today Visit", borderColor: 'border-amber-300', dotColor: 'bg-amber-500' },
+    { value: data.totalPosts.toString(), label: 'Total Posts', borderColor: 'border-rose-300', dotColor: 'bg-rose-500' },
+    { value: data.totalVisitors.toString(), label: 'Total Views', borderColor: 'border-purple-300', dotColor: 'bg-purple-500' },
+    { value: data.totalLikes.toString(), label: 'Total Likes', borderColor: 'border-blue-300', dotColor: 'bg-blue-500' },
+    { value: data.totalUniqueVisitors.toString(), label: 'Total Visitors', borderColor: 'border-emerald-300', dotColor: 'bg-emerald-500' },
+    { value: data.todayVisitors.toString(), label: "Today's Visitors", borderColor: 'border-amber-300', dotColor: 'bg-amber-500' },
   ];
 
   if (layout === 'sidebar') {
