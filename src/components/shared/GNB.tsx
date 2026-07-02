@@ -19,23 +19,7 @@ const GNBContent: React.FC<GNBProps> = ({ isAdmin: initialIsAdmin }) => {
   }
 
   const isSkilltree = pathname === '/skilltree';
-  const [skilltreeTheme, setSkilltreeTheme] = useState<'dark' | 'light'>('dark');
-
-  useEffect(() => {
-    if (isSkilltree) {
-      const saved = localStorage.getItem('skilltree_theme') as 'dark' | 'light';
-      if (saved) setSkilltreeTheme(saved);
-
-      const handleThemeChange = () => {
-        const current = localStorage.getItem('skilltree_theme') as 'dark' | 'light';
-        setSkilltreeTheme(current || 'dark');
-      };
-      window.addEventListener('skilltree-theme-change', handleThemeChange);
-      return () => window.removeEventListener('skilltree-theme-change', handleThemeChange);
-    }
-  }, [isSkilltree]);
-
-  const isDarkTheme = (isSkilltree && skilltreeTheme === 'dark') || pathname.startsWith('/portfolio2');
+  const isDarkTheme = pathname.startsWith('/portfolio2');
   const [isOpen, setIsOpen] = useState(false);
   const [isAdmin, setIsAdmin] = useState(initialIsAdmin ?? false);
 
@@ -111,8 +95,8 @@ const GNBContent: React.FC<GNBProps> = ({ isAdmin: initialIsAdmin }) => {
     <nav className={`fixed top-0 left-0 right-0 z-50 border-b transition-colors duration-300 ${
       mode === 'portfolio2'
         ? 'bg-[#030712]/80 border-white/[0.08] backdrop-blur-md'
-        : isSkilltree && skilltreeTheme === 'dark'
-        ? 'bg-[#02040a]/80 border-[#30363d]/50 backdrop-blur-md'
+        : isSkilltree
+        ? 'bg-theme-surface border-theme-border backdrop-blur-md text-theme-text-body'
         : mode === 'portfolio'
         ? 'bg-red-50/90 border-red-200 backdrop-blur-md'
         : 'bg-white/90 border-gray-200 backdrop-blur-md'
@@ -123,7 +107,11 @@ const GNBContent: React.FC<GNBProps> = ({ isAdmin: initialIsAdmin }) => {
           <Link
             href={mode === 'portfolio' ? '/portfolio' : mode === 'portfolio2' ? '/portfolio2' : '/'}
             className={`text-2xl font-bold no-underline transition-opacity duration-200 hover:opacity-80 ${
-              isDarkTheme ? 'text-[#f0f6fc]' : 'text-gray-900'
+              isSkilltree
+                ? 'text-theme-text-title'
+                : isDarkTheme
+                ? 'text-[#f0f6fc]'
+                : 'text-gray-900'
             }`}
             onClick={() => setIsOpen(false)}
           >
@@ -136,7 +124,11 @@ const GNBContent: React.FC<GNBProps> = ({ isAdmin: initialIsAdmin }) => {
           <button 
             onClick={() => setIsOpen(!isOpen)} 
             className={`focus:outline-none ${
-              isDarkTheme ? 'text-[#8b949e] hover:text-[#f0f6fc]' : 'text-gray-500 hover:text-gray-900'
+              isSkilltree
+                ? 'text-theme-text-muted hover:text-theme-text-title'
+                : isDarkTheme
+                ? 'text-[#8b949e] hover:text-[#f0f6fc]'
+                : 'text-gray-500 hover:text-gray-900'
             }`} 
             aria-label="Toggle menu"
           >
@@ -160,14 +152,18 @@ const GNBContent: React.FC<GNBProps> = ({ isAdmin: initialIsAdmin }) => {
                 href={item.href}
                 className={`no-underline text-base font-medium whitespace-nowrap transition-colors duration-200 ${
                   isActive
-                    ? isDarkTheme
+                    ? isSkilltree
+                      ? 'text-theme-text-title font-bold'
+                      : isDarkTheme
                       ? 'text-[#f0f6fc] font-bold'
                       : 'text-gray-900 font-bold'
-                  : isDarkTheme
-                  ? 'text-[#8b949e] hover:text-[#f0f6fc]'
-                  : mode === 'portfolio'
-                  ? 'text-red-800 hover:text-red-900'
-                  : 'text-gray-600 hover:text-gray-900'
+                    : isSkilltree
+                    ? 'text-theme-text-muted hover:text-theme-text-title'
+                    : isDarkTheme
+                    ? 'text-[#8b949e] hover:text-[#f0f6fc]'
+                    : mode === 'portfolio'
+                    ? 'text-red-800 hover:text-red-900'
+                    : 'text-gray-600 hover:text-gray-900'
                 }`}
               >
                 {item.text}
@@ -183,7 +179,9 @@ const GNBContent: React.FC<GNBProps> = ({ isAdmin: initialIsAdmin }) => {
               {showBlogButton && (
                 <button
                   onClick={() => handleModeSwitch('blog')}
-                  className={isDarkTheme
+                  className={isSkilltree
+                    ? "bg-theme-bg-hover text-theme-text-body border border-theme-border px-4 py-2 cursor-pointer font-sans text-sm rounded-md font-semibold transition-colors duration-200 hover:bg-theme-surface"
+                    : isDarkTheme
                     ? "bg-[#21262d] text-[#c9d1d9] border border-[#30363d] px-4 py-2 cursor-pointer font-sans text-sm rounded-md font-semibold transition-colors duration-200 hover:bg-[#30363d]"
                     : "bg-red-100 text-red-800 px-4 py-2 cursor-pointer font-sans text-sm rounded-md font-semibold transition-colors duration-200 hover:bg-red-200"
                   }
@@ -194,7 +192,9 @@ const GNBContent: React.FC<GNBProps> = ({ isAdmin: initialIsAdmin }) => {
               {showPortfolioButton && (
                 <button
                   onClick={() => handleModeSwitch('portfolio')}
-                  className={isDarkTheme
+                  className={isSkilltree
+                    ? "bg-theme-bg-hover text-theme-text-body border border-theme-border px-4 py-2 cursor-pointer font-sans text-sm rounded-md font-semibold transition-colors duration-200 hover:bg-theme-surface"
+                    : isDarkTheme
                     ? "bg-[#21262d] text-[#c9d1d9] border border-[#30363d] px-4 py-2 cursor-pointer font-sans text-sm rounded-md font-semibold transition-colors duration-200 hover:bg-[#30363d]"
                     : "bg-gray-100 text-gray-800 px-4 py-2 cursor-pointer font-sans text-sm rounded-md font-semibold transition-colors duration-200 hover:bg-gray-200"
                   }
@@ -205,7 +205,9 @@ const GNBContent: React.FC<GNBProps> = ({ isAdmin: initialIsAdmin }) => {
               {showPortfolio2Button && (
                 <button
                   onClick={() => handleModeSwitch('portfolio2')}
-                  className={isDarkTheme
+                  className={isSkilltree
+                    ? "bg-theme-bg-hover text-theme-text-body border border-theme-border px-4 py-2 cursor-pointer font-sans text-sm rounded-md font-semibold transition-colors duration-200 hover:bg-theme-surface"
+                    : isDarkTheme
                     ? "bg-[#21262d] text-[#c9d1d9] border border-[#30363d] px-4 py-2 cursor-pointer font-sans text-sm rounded-md font-semibold transition-colors duration-200 hover:bg-[#30363d]"
                     : "bg-indigo-100 text-indigo-800 px-4 py-2 cursor-pointer font-sans text-sm rounded-md font-semibold transition-colors duration-200 hover:bg-indigo-200"
                   }
@@ -223,8 +225,8 @@ const GNBContent: React.FC<GNBProps> = ({ isAdmin: initialIsAdmin }) => {
         <div className={`flex flex-col items-center gap-4 border-t pb-6 pt-4 font-sans md:hidden ${
           mode === 'portfolio2'
             ? 'bg-[#030712]/95 border-white/[0.08] text-slate-100'
-            : isSkilltree && skilltreeTheme === 'dark'
-            ? 'bg-[#0d1117]/95 border-[#30363d] text-[#c9d1d9]'
+            : isSkilltree
+            ? 'bg-theme-surface border-theme-border text-theme-text-body'
             : 'bg-white border-gray-100 text-gray-900'
         }`}>
           {currentMenu.map((item) => {
@@ -236,9 +238,13 @@ const GNBContent: React.FC<GNBProps> = ({ isAdmin: initialIsAdmin }) => {
                 onClick={() => setIsOpen(false)}
                 className={`no-underline text-base font-medium whitespace-nowrap transition-colors duration-200 ${
                   isActive
-                    ? isDarkTheme
+                    ? isSkilltree
+                      ? 'text-theme-text-title font-bold'
+                      : isDarkTheme
                       ? 'text-[#f0f6fc] font-bold'
                       : 'text-gray-900 font-bold'
+                    : isSkilltree
+                    ? 'text-theme-text-muted hover:text-theme-text-title'
                     : isDarkTheme
                     ? 'text-[#8b949e] hover:text-[#f0f6fc]'
                     : mode === 'portfolio'
@@ -255,7 +261,9 @@ const GNBContent: React.FC<GNBProps> = ({ isAdmin: initialIsAdmin }) => {
               {showBlogButton && (
                 <button 
                   onClick={() => handleModeSwitch('blog')} 
-                  className={isDarkTheme
+                  className={isSkilltree
+                    ? "bg-theme-bg-hover text-theme-text-body border border-theme-border px-4 py-2 cursor-pointer font-sans text-sm rounded-md font-semibold transition-colors duration-200 hover:bg-theme-surface"
+                    : isDarkTheme
                     ? "bg-[#21262d] text-[#c9d1d9] border border-[#30363d] px-4 py-2 cursor-pointer font-sans text-sm rounded-md font-semibold transition-colors duration-200 hover:bg-[#30363d]"
                     : "bg-red-100 text-red-800 px-4 py-2 cursor-pointer font-sans text-sm rounded-md font-semibold transition-colors duration-200 hover:bg-red-200"
                   }
@@ -266,7 +274,9 @@ const GNBContent: React.FC<GNBProps> = ({ isAdmin: initialIsAdmin }) => {
               {showPortfolioButton && (
                 <button 
                   onClick={() => handleModeSwitch('portfolio')} 
-                  className={isDarkTheme
+                  className={isSkilltree
+                    ? "bg-theme-bg-hover text-theme-text-body border border-theme-border px-4 py-2 cursor-pointer font-sans text-sm rounded-md font-semibold transition-colors duration-200 hover:bg-theme-surface"
+                    : isDarkTheme
                     ? "bg-[#21262d] text-[#c9d1d9] border border-[#30363d] px-4 py-2 cursor-pointer font-sans text-sm rounded-md font-semibold transition-colors duration-200 hover:bg-[#30363d]"
                     : "bg-gray-100 text-gray-800 px-4 py-2 cursor-pointer font-sans text-sm rounded-md font-semibold transition-colors duration-200 hover:bg-gray-200"
                   }
@@ -277,7 +287,9 @@ const GNBContent: React.FC<GNBProps> = ({ isAdmin: initialIsAdmin }) => {
               {showPortfolio2Button && (
                 <button 
                   onClick={() => handleModeSwitch('portfolio2')} 
-                  className={isDarkTheme
+                  className={isSkilltree
+                    ? "bg-theme-bg-hover text-theme-text-body border border-theme-border px-4 py-2 cursor-pointer font-sans text-sm rounded-md font-semibold transition-colors duration-200 hover:bg-theme-surface"
+                    : isDarkTheme
                     ? "bg-[#21262d] text-[#c9d1d9] border border-[#30363d] px-4 py-2 cursor-pointer font-sans text-sm rounded-md font-semibold transition-colors duration-200 hover:bg-[#30363d]"
                     : "bg-indigo-100 text-indigo-800 px-4 py-2 cursor-pointer font-sans text-sm rounded-md font-semibold transition-colors duration-200 hover:bg-indigo-200"
                   }

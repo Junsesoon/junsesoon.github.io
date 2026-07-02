@@ -28,19 +28,6 @@ export default function SkillTreeInteractive({ nodes, COLUMNS, isAdmin, colorInd
   const [selectedNode, setSelectedNode] = useState<SkillNode | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [hoveredNode, setHoveredNode] = useState<string | null>(null);
-  const [theme, setTheme] = useState<'dark' | 'light'>('dark');
-
-  useEffect(() => {
-    const saved = localStorage.getItem('skilltree_theme') as 'dark' | 'light';
-    if (saved) setTheme(saved);
-
-    const handleThemeChange = () => {
-      const current = localStorage.getItem('skilltree_theme') as 'dark' | 'light';
-      setTheme(current || 'dark');
-    };
-    window.addEventListener('skilltree-theme-change', handleThemeChange);
-    return () => window.removeEventListener('skilltree-theme-change', handleThemeChange);
-  }, []);
 
   // 마우스 드래그(Pan) 스크롤 처리를 위한 상태 및 Ref
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -187,22 +174,6 @@ export default function SkillTreeInteractive({ nodes, COLUMNS, isAdmin, colorInd
     'bg-rose-400 shadow-[0_0_8px_rgba(244,63,94,0.75)]',
   ];
 
-  const PALETTE_HOVERS = [
-    'hover:bg-[#0c1b2d] hover:border-sky-400/80 hover:text-sky-300 hover:shadow-[0_0_15px_rgba(56,189,248,0.3)]',
-    'hover:bg-[#0d211b] hover:border-emerald-400/80 hover:text-emerald-300 hover:shadow-[0_0_15px_rgba(52,211,153,0.3)]',
-    'hover:bg-[#1a1426] hover:border-purple-400/80 hover:text-purple-300 hover:shadow-[0_0_15px_rgba(167,139,250,0.3)]',
-    'hover:bg-[#1f1d16] hover:border-amber-400/80 hover:text-amber-300 hover:shadow-[0_0_15px_rgba(251,191,36,0.3)]',
-    'hover:bg-[#271018] hover:border-rose-400/80 hover:text-rose-300 hover:shadow-[0_0_15px_rgba(244,63,94,0.3)]',
-  ];
-
-  const PALETTE_HOVERS_LIGHT = [
-    'hover:bg-sky-50/50 hover:border-sky-400/80 hover:text-sky-600 hover:shadow-[0_0_15px_rgba(56,189,248,0.2)]',
-    'hover:bg-emerald-50/50 hover:border-emerald-400/80 hover:text-emerald-600 hover:shadow-[0_0_15px_rgba(52,211,153,0.2)]',
-    'hover:bg-purple-50/50 hover:border-purple-400/80 hover:text-purple-600 hover:shadow-[0_0_15px_rgba(167,139,250,0.2)]',
-    'hover:bg-amber-50/50 hover:border-amber-400/80 hover:text-amber-600 hover:shadow-[0_0_15px_rgba(251,191,36,0.2)]',
-    'hover:bg-rose-50/50 hover:border-rose-400/80 hover:text-rose-600 hover:shadow-[0_0_15px_rgba(244,63,94,0.2)]',
-  ];
-
   const PALETTE_LINE_STROKES = [
     '#38bdf8', // Sky
     '#34d399', // Emerald
@@ -222,9 +193,6 @@ export default function SkillTreeInteractive({ nodes, COLUMNS, isAdmin, colorInd
   const activeStroke = PALETTE_LINE_STROKES[colorIndex % PALETTE_LINE_STROKES.length];
   const activeGlow = PALETTE_LINE_GLOWS[colorIndex % PALETTE_LINE_GLOWS.length];
   const activeDotClass = PALETTE_DOTS[colorIndex % PALETTE_DOTS.length];
-  const activeHoverClass = theme === 'light'
-    ? PALETTE_HOVERS_LIGHT[colorIndex % PALETTE_HOVERS_LIGHT.length]
-    : PALETTE_HOVERS[colorIndex % PALETTE_HOVERS.length];
 
   return (
     <>
@@ -241,11 +209,7 @@ export default function SkillTreeInteractive({ nodes, COLUMNS, isAdmin, colorInd
             isDragged.current = false;
           }}
           onMouseMove={onMouseMove}
-          className={`w-full py-10 px-6 overflow-auto relative rounded-3xl border transition-colors duration-300 max-h-[600px] [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none'] ${isDragging ? 'cursor-grabbing' : 'cursor-grab'} ${
-            theme === 'light'
-              ? 'bg-white/60 border-slate-200/80 shadow-[0_12px_40px_rgba(0,0,0,0.06)]'
-              : 'bg-[#0d1117]/30 border-[#30363d]/45 shadow-[0_12px_40px_rgba(0,0,0,0.4)]'
-          }`}
+          className={`w-full py-10 px-6 overflow-auto relative rounded-3xl border transition-colors duration-300 max-h-[600px] [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none'] ${isDragging ? 'cursor-grabbing' : 'cursor-grab'} bg-theme-surface border-theme-border shadow-[0_12px_40px_var(--color-shadow-surface)]`}
         >
           <div className="relative w-max mx-auto">
             {/* SVG layer for connecting lines */}
@@ -277,7 +241,7 @@ export default function SkillTreeInteractive({ nodes, COLUMNS, isAdmin, colorInd
                             return `M ${line.x1} ${line.y1} L ${midX - r} ${line.y1} Q ${midX} ${line.y1}, ${midX} ${line.y1 + r * yDirection} L ${midX} ${line.y2 - r * yDirection} Q ${midX} ${line.y2}, ${midX + r} ${line.y2} L ${line.x2} ${line.y2}`;
                           })()
                     }
-                    stroke={isHighlighted ? activeStroke : isDimmed ? (theme === 'light' ? "rgba(100, 116, 139, 0.06)" : "rgba(139, 148, 158, 0.05)") : (theme === 'light' ? "rgba(100, 116, 139, 0.25)" : "rgba(139, 148, 158, 0.28)")} // Dim non-active paths in focus mode
+                    stroke={isHighlighted ? activeStroke : isDimmed ? "var(--color-line-dimmed)" : "var(--color-line-stroke)"} // Dim non-active paths in focus mode
                     strokeWidth={isHighlighted ? "2" : "1.2"}
                     style={isHighlighted ? { filter: `drop-shadow(0 0 3.5px ${activeGlow})` } : undefined}
                     fill="none"
@@ -317,12 +281,8 @@ export default function SkillTreeInteractive({ nodes, COLUMNS, isAdmin, colorInd
                     }}
                     className={`
                       h-[55px] rounded-xl transition-all duration-300 flex flex-col items-center justify-center text-xs text-center overflow-hidden break-words px-2.5 select-none
-                      font-medium cursor-pointer
-                      ${theme === 'light' 
-                        ? 'bg-white border border-slate-200 text-slate-700 shadow-[0_4px_12px_rgba(0,0,0,0.04)]' 
-                        : 'bg-[#0d1117]/85 border border-[#30363d]/80 text-[#c9d1d9] shadow-[0_4px_12px_rgba(0,0,0,0.3)]'
-                      }
-                      ${activeHoverClass}
+                      font-medium cursor-pointer bg-theme-surface border border-theme-border text-theme-text-body shadow-[0_4px_12px_var(--color-shadow-surface)]
+                      node-hover-${colorIndex % 5}
                       hover:-translate-y-0.5
                       ${isNodeActive ? 'opacity-100' : 'opacity-25'}
                     `}
@@ -331,7 +291,7 @@ export default function SkillTreeInteractive({ nodes, COLUMNS, isAdmin, colorInd
                       <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${activeDotClass}`} />
                       <span className="font-semibold tracking-tight truncate max-w-[90px]">{displayName}</span>
                     </div>
-                    {nodeInfo?.year && <span className={`text-[9px] font-normal mt-0.5 ${theme === 'light' ? 'text-slate-400' : 'text-[#8b949e]'}`}>{nodeInfo.year}</span>}
+                    {nodeInfo?.year && <span className="text-[9px] font-normal mt-0.5 text-theme-text-muted">{nodeInfo.year}</span>}
                   </div>
                 );
               })}
@@ -340,11 +300,7 @@ export default function SkillTreeInteractive({ nodes, COLUMNS, isAdmin, colorInd
         </div>
         
         {/* Floating Drag Hint Widget */}
-        <div className={`absolute top-4 right-4 z-20 pointer-events-none flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-semibold tracking-wider uppercase select-none transition-colors duration-300 ${
-          theme === 'light'
-            ? 'bg-white/90 border border-slate-200/80 text-slate-500 shadow-[0_4px_12px_rgba(0,0,0,0.06)]'
-            : 'bg-[#0d1117]/90 border border-[#30363d]/85 text-[#8b949e] shadow-[0_4px_12px_rgba(0,0,0,0.5)]'
-        }`}>
+        <div className="absolute top-4 right-4 z-20 pointer-events-none flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-semibold tracking-wider uppercase select-none transition-colors duration-300 bg-theme-surface/90 border border-theme-border text-theme-text-muted shadow-[0_4px_12px_var(--color-shadow-surface)]">
           <span className="text-xs animate-spin" style={{ animationDuration: '4s' }}>✥</span> Drag to explore Tech Map
         </div>
       </div>
@@ -359,28 +315,20 @@ export default function SkillTreeInteractive({ nodes, COLUMNS, isAdmin, colorInd
           />
 
           {/* Modal Content */}
-          <div className={`relative w-full max-w-[600px] max-h-[600px] rounded-2xl border flex flex-col z-10 overflow-hidden transform transition-all scale-100 opacity-100 ${
-            theme === 'light'
-              ? 'bg-white border-slate-200 shadow-[0_24px_50px_rgba(0,0,0,0.12)]'
-              : 'bg-[#0d1117]/95 border-[#30363d] shadow-[0_24px_50px_rgba(0,0,0,0.6)]'
-          }`}>
+          <div className="relative w-full max-w-[600px] max-h-[600px] rounded-2xl border flex flex-col z-10 overflow-hidden transform transition-all scale-100 opacity-100 bg-[var(--color-bg-modal)] border-[var(--color-border-modal)] shadow-[0_24px_50px_var(--color-shadow-surface)]">
             <div className="p-6 sm:p-8 overflow-y-auto">
               <button 
                 onClick={closeModal}
-                className={`absolute top-4 right-4 text-2xl font-bold w-8 h-8 flex items-center justify-center rounded-full transition-colors ${
-                  theme === 'light'
-                    ? 'text-slate-400 hover:text-slate-700 hover:bg-slate-100'
-                    : 'text-[#8b949e] hover:text-[#f0f6fc] hover:bg-[#21262d]'
-                }`}
+                className="absolute top-4 right-4 text-2xl font-bold w-8 h-8 flex items-center justify-center rounded-full transition-colors text-theme-text-muted hover:text-theme-text-title hover:bg-theme-bg-hover"
               >
                 &times;
               </button>
               
               {selectedNode && (
-                <div className={`mt-2 flex flex-1 flex-col ${theme === 'light' ? 'text-slate-700' : 'text-[#c9d1d9]'}`}>
-                  <div className={`flex items-center justify-between mb-4 border-b pb-3 pr-6 ${theme === 'light' ? 'border-slate-200' : 'border-[#30363d]'}`}>
+                <div className="mt-2 flex flex-1 flex-col text-theme-text-body">
+                  <div className="flex items-center justify-between mb-4 border-b pb-3 pr-6 border-theme-border">
                     <div className="flex items-center gap-3">
-                      <h2 className={`text-2xl font-bold ${theme === 'light' ? 'text-slate-800' : 'text-[#f0f6fc]'}`}>
+                      <h2 className="text-2xl font-bold text-theme-text-title">
                         {selectedNode.title}
                       </h2>
                       <SkillTreeLikeButton 
@@ -390,7 +338,7 @@ export default function SkillTreeInteractive({ nodes, COLUMNS, isAdmin, colorInd
                     </div>
                     <div className="flex items-center gap-4 shrink-0">
                       {selectedNode.frontmatter?.modified_at && (
-                        <span className={`text-xs font-normal ${theme === 'light' ? 'text-slate-400' : 'text-[#8b949e]'}`}>
+                        <span className="text-xs font-normal text-theme-text-muted">
                           최종 수정일: {selectedNode.frontmatter.modified_at.match(/^\d{4}-\d{2}-\d{2}/)?.[0] || selectedNode.frontmatter.modified_at}
                         </span>
                       )}
@@ -398,11 +346,7 @@ export default function SkillTreeInteractive({ nodes, COLUMNS, isAdmin, colorInd
                         <Link 
                           href={`/admin/edit/${selectedNode.slug.split('/').map(encodeURIComponent).join('/')}?redirect=/skilltree`}
                           onClick={closeModal}
-                          className={`px-3 py-1.5 text-sm font-semibold border rounded-md transition-colors focus:outline-none ${
-                            theme === 'light'
-                              ? 'text-slate-600 bg-slate-100 hover:bg-slate-200 border-slate-200'
-                              : 'text-[#c9d1d9] bg-[#21262d] hover:bg-[#30363d] border-[#30363d]'
-                          }`}
+                          className="px-3 py-1.5 text-sm font-semibold border rounded-md transition-colors focus:outline-none text-theme-text-body bg-theme-bg-hover hover:bg-theme-surface border-theme-border"
                         >
                             수정
                         </Link>
@@ -411,7 +355,7 @@ export default function SkillTreeInteractive({ nodes, COLUMNS, isAdmin, colorInd
                   </div>
                   
                   <div>
-                    <pre className={`whitespace-pre-wrap font-sans text-sm leading-relaxed break-words m-0 ${theme === 'light' ? 'text-slate-600' : 'text-[#c9d1d9]'}`}>{selectedNode.content || <span className="text-gray-400 italic">No content</span>}</pre>
+                    <pre className="whitespace-pre-wrap font-sans text-sm leading-relaxed break-words m-0 text-theme-text-body">{selectedNode.content || <span className="text-gray-400 italic">No content</span>}</pre>
                   </div>
 
                   <div className="mt-8 flex justify-end">

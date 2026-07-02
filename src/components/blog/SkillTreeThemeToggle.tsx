@@ -18,14 +18,12 @@ export default function SkillTreeThemeToggle() {
   }, []);
 
   const applyTheme = (t: 'dark' | 'light') => {
-    const mainEl = document.getElementById('skilltree-main');
-    if (mainEl) {
+    const rootEl = document.documentElement;
+    if (rootEl) {
       if (t === 'light') {
-        mainEl.classList.add('light-theme');
-        mainEl.style.backgroundImage = 'radial-gradient(circle at 50% 30%, rgba(99, 102, 241, 0.05), rgba(168, 85, 247, 0.03), transparent 60%), radial-gradient(circle at 10% 80%, rgba(56, 189, 248, 0.04), transparent 40%)';
+        rootEl.classList.add('light-theme');
       } else {
-        mainEl.classList.remove('light-theme');
-        mainEl.style.backgroundImage = 'radial-gradient(circle at 50% 30%, rgba(99, 102, 241, 0.12), rgba(168, 85, 247, 0.08), transparent 60%), radial-gradient(circle at 10% 80%, rgba(56, 189, 248, 0.06), transparent 40%)';
+        rootEl.classList.remove('light-theme');
       }
     }
   };
