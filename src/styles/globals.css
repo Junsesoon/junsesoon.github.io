@@ -1,5 +1,194 @@
 @import "tailwindcss";
 
+@theme {
+  --color-theme-bg: var(--color-bg-page);
+  --color-theme-surface: var(--color-bg-surface);
+  --color-theme-border: var(--color-border-subtle);
+  --color-theme-text-title: var(--color-text-title);
+  --color-theme-text-body: var(--color-text-body);
+  --color-theme-text-muted: var(--color-text-muted);
+  --color-theme-accent: var(--color-accent-primary);
+  --color-theme-accent-hover: var(--color-accent-hover);
+  --color-theme-bg-hover: var(--color-bg-hover);
+  --color-theme-grad-from: var(--color-gradient-from);
+  --color-theme-grad-via: var(--color-gradient-via);
+  --color-theme-grad-to: var(--color-gradient-to);
+}
+
+:root {
+  --color-bg-page: #02040a;
+  --color-bg-surface: rgba(13, 17, 23, 0.3);
+  --color-border-subtle: rgba(48, 54, 61, 0.45);
+  --color-text-title: #f0f6fc;
+  --color-text-body: #c9d1d9;
+  --color-text-muted: #8b949e;
+  --color-bg-gnb: rgba(2, 4, 10, 0.8);
+  
+  --color-accent-primary: #38bdf8;
+  --color-accent-hover: #0284c7;
+  --color-bg-hover: rgba(56, 189, 248, 0.15);
+
+  --color-gradient-from: #ffffff;
+  --color-gradient-via: #e2e8f0;
+  --color-gradient-to: #94a3b8;
+
+  --color-shadow-surface: rgba(0, 0, 0, 0.4);
+  --color-bg-modal: rgba(13, 17, 23, 0.95);
+  --color-border-modal: #30363d;
+
+  --color-line-stroke: rgba(139, 148, 158, 0.28);
+  --color-line-dimmed: rgba(139, 148, 158, 0.05);
+
+  /* Hover Variables for Node Palettes (Dark) */
+  --color-hover-bg-0: #0c1b2d;
+  --color-hover-border-0: rgba(56, 189, 248, 0.8);
+  --color-hover-text-0: #7dd3fc;
+  --color-hover-shadow-0: rgba(56, 189, 248, 0.3);
+
+  --color-hover-bg-1: #0d211b;
+  --color-hover-border-1: rgba(52, 211, 153, 0.8);
+  --color-hover-text-1: #6ee7b7;
+  --color-hover-shadow-1: rgba(52, 211, 153, 0.3);
+
+  --color-hover-bg-2: #1a1426;
+  --color-hover-border-2: rgba(167, 139, 250, 0.8);
+  --color-hover-text-2: #c084fc;
+  --color-hover-shadow-2: rgba(167, 139, 250, 0.3);
+
+  --color-hover-bg-3: #1f1d16;
+  --color-hover-border-3: rgba(251, 191, 36, 0.8);
+  --color-hover-text-3: #fde047;
+  --color-hover-shadow-3: rgba(251, 191, 36, 0.3);
+
+  --color-hover-bg-4: #271018;
+  --color-hover-border-4: rgba(244, 63, 94, 0.8);
+  --color-hover-text-4: #fda4af;
+  --color-hover-shadow-4: rgba(244, 63, 94, 0.3);
+
+  /* Active Menu Colors (Dark) */
+  --color-active-0: #38bdf8;
+  --color-active-1: #34d399;
+  --color-active-2: #a78bfa;
+  --color-active-3: #fbbf24;
+  --color-active-4: #fb7185;
+}
+
+:root.light-theme {
+  --color-bg-page: #f8fafc;
+  --color-bg-surface: rgba(255, 255, 255, 0.6);
+  --color-border-subtle: rgba(226, 232, 240, 0.8);
+  --color-text-title: #0f172a;
+  --color-text-body: #334155;
+  --color-text-muted: #64748b;
+  --color-bg-gnb: rgba(255, 255, 255, 0.8);
+  
+  --color-accent-primary: #0284c7;
+  --color-accent-hover: #0369a1;
+  --color-bg-hover: rgba(2, 132, 199, 0.08);
+
+  --color-gradient-from: #1e293b;
+  --color-gradient-via: #334155;
+  --color-gradient-to: #475569;
+
+  --color-shadow-surface: rgba(0, 0, 0, 0.06);
+  --color-bg-modal: #ffffff;
+  --color-border-modal: #e2e8f0;
+
+  --color-line-stroke: rgba(100, 116, 139, 0.25);
+  --color-line-dimmed: rgba(100, 116, 139, 0.06);
+
+  /* Hover Variables for Node Palettes (Light) */
+  --color-hover-bg-0: #f0f9ff;
+  --color-hover-border-0: rgba(56, 189, 248, 0.8);
+  --color-hover-text-0: #0284c7;
+  --color-hover-shadow-0: rgba(56, 189, 248, 0.2);
+
+  --color-hover-bg-1: #ecfdf5;
+  --color-hover-border-1: rgba(52, 211, 153, 0.8);
+  --color-hover-text-1: #047857;
+  --color-hover-shadow-1: rgba(52, 211, 153, 0.2);
+
+  --color-hover-bg-2: #f5f3ff;
+  --color-hover-border-2: rgba(167, 139, 250, 0.8);
+  --color-hover-text-2: #6d28d9;
+  --color-hover-shadow-2: rgba(167, 139, 250, 0.2);
+
+  --color-hover-bg-3: #fffbeb;
+  --color-hover-border-3: rgba(251, 191, 36, 0.8);
+  --color-hover-text-3: #b45309;
+  --color-hover-shadow-3: rgba(251, 191, 36, 0.2);
+
+  --color-hover-bg-4: #fff1f2;
+  --color-hover-border-4: rgba(244, 63, 94, 0.8);
+  --color-hover-text-4: #be123c;
+  --color-hover-shadow-4: rgba(244, 63, 94, 0.2);
+
+  /* Active Menu Colors (Light) */
+  --color-active-0: #0284c7;
+  --color-active-1: #047857;
+  --color-active-2: #6d28d9;
+  --color-active-3: #b45309;
+  --color-active-4: #be123c;
+}
+
+:root.sepia-theme {
+  --color-bg-page: #f4ecd8;
+  --color-bg-surface: rgba(244, 236, 216, 0.7);
+  --color-border-subtle: rgba(210, 195, 170, 0.7);
+  --color-text-title: #433422;
+  --color-text-body: #5c4c38;
+  --color-text-muted: #8b7e6c;
+  --color-bg-gnb: rgba(244, 236, 216, 0.8);
+  
+  --color-accent-primary: #8b4513;
+  --color-accent-hover: #a0522d;
+  --color-bg-hover: rgba(139, 69, 19, 0.08);
+
+  --color-gradient-from: #5c4c38;
+  --color-gradient-via: #8b7e6c;
+  --color-gradient-to: #a0522d;
+
+  --color-shadow-surface: rgba(60, 50, 40, 0.06);
+  --color-bg-modal: #faf4e4;
+  --color-border-modal: #dfd5c0;
+
+  --color-line-stroke: rgba(139, 126, 108, 0.28);
+  --color-line-dimmed: rgba(139, 126, 108, 0.06);
+
+  /* Hover Variables for Node Palettes (Sepia) */
+  --color-hover-bg-0: #fbf8f0;
+  --color-hover-border-0: rgba(139, 69, 19, 0.8);
+  --color-hover-text-0: #8b4513;
+  --color-hover-shadow-0: rgba(139, 69, 19, 0.15);
+
+  --color-hover-bg-1: #fbf8f0;
+  --color-hover-border-1: rgba(52, 120, 93, 0.8);
+  --color-hover-text-1: #047857;
+  --color-hover-shadow-1: rgba(52, 120, 93, 0.15);
+
+  --color-hover-bg-2: #fbf8f0;
+  --color-hover-border-2: rgba(109, 40, 217, 0.8);
+  --color-hover-text-2: #6d28d9;
+  --color-hover-shadow-2: rgba(109, 40, 217, 0.15);
+
+  --color-hover-bg-3: #fbf8f0;
+  --color-hover-border-3: rgba(180, 83, 9, 0.8);
+  --color-hover-text-3: #b45309;
+  --color-hover-shadow-3: rgba(180, 83, 9, 0.15);
+
+  --color-hover-bg-4: #fbf8f0;
+  --color-hover-border-4: rgba(190, 18, 60, 0.8);
+  --color-hover-text-4: #be123c;
+  --color-hover-shadow-4: rgba(190, 18, 60, 0.15);
+
+  /* Active Menu Colors (Sepia) */
+  --color-active-0: #8b4513;
+  --color-active-1: #047857;
+  --color-active-2: #6d28d9;
+  --color-active-3: #b45309;
+  --color-active-4: #be123c;
+}
+
 @layer base {
   body {
     line-height: 1.6;
@@ -43,33 +232,29 @@
   /* Post content heading styles */
   .post-body h1 {
     font-size: 2em;
-    margin-top: 20px;
-    margin-bottom: 0;
-    color: red;
+    margin-top: 1.5em;
+    margin-bottom: 0.5em;
     scroll-margin-top: 100px;
   }
 
   .post-body h2 {
     font-size: 1.7em;
-    margin-top: 5px;
-    margin-bottom: 0;
-    color: orange;
+    margin-top: 1.5em;
+    margin-bottom: 0.5em;
     scroll-margin-top: 100px;
   }
 
   .post-body h3 {
     font-size: 1.2em;
-    margin-top: 5px;
-    margin-bottom: 0;
-    color: blue;
+    margin-top: 1.5em;
+    margin-bottom: 0.5em;
     scroll-margin-top: 100px;
   }
 
   .post-body h4 {
     font-size: 1em;
-    margin-top: 0;
-    margin-bottom: 0;
-    color: green;
+    margin-top: 1.5em;
+    margin-bottom: 0.5em;
     scroll-margin-top: 100px;
   }
 
@@ -130,60 +315,23 @@
   mix-blend-mode: normal;
 }
 
-/* slide-push-right (About 진입 및 Skills 복귀) */
-html.transition-going-about::view-transition-old(root),
-html.transition-coming-skills::view-transition-old(root) {
-  animation: 0.6s cubic-bezier(0.4, 0, 0.2, 1) both slide-push-right-exit;
-}
-html.transition-going-about::view-transition-new(root),
-html.transition-coming-skills::view-transition-new(root) {
-  animation: 0.6s cubic-bezier(0.4, 0, 0.2, 1) both slide-push-right-enter;
-}
-
-/* slide-push-left (About 복귀 및 Skills 진입) */
-html.transition-coming-about::view-transition-old(root),
-html.transition-going-skills::view-transition-old(root) {
-  animation: 0.6s cubic-bezier(0.4, 0, 0.2, 1) both slide-push-left-exit;
-}
-html.transition-coming-about::view-transition-new(root),
-html.transition-going-skills::view-transition-new(root) {
-  animation: 0.6s cubic-bezier(0.4, 0, 0.2, 1) both slide-push-left-enter;
-}
-
-/* slide-push-up (Projects 진입) */
-html.transition-going-projects::view-transition-old(root) {
+/* transition-going-down (아래쪽 페이지로 이동: 아래에서 위로 슬라이드) */
+html.transition-going-down::view-transition-old(root) {
   animation: 0.6s cubic-bezier(0.4, 0, 0.2, 1) both slide-push-up-exit;
 }
-html.transition-going-projects::view-transition-new(root) {
+html.transition-going-down::view-transition-new(root) {
   animation: 0.6s cubic-bezier(0.4, 0, 0.2, 1) both slide-push-up-enter;
 }
 
-/* slide-push-down (Projects 복귀) */
-html.transition-coming-projects::view-transition-old(root) {
+/* transition-coming-up (위쪽 페이지로 이동: 위에서 아래로 슬라이드) */
+html.transition-coming-up::view-transition-old(root) {
   animation: 0.6s cubic-bezier(0.4, 0, 0.2, 1) both slide-push-down-exit;
 }
-html.transition-coming-projects::view-transition-new(root) {
+html.transition-coming-up::view-transition-new(root) {
   animation: 0.6s cubic-bezier(0.4, 0, 0.2, 1) both slide-push-down-enter;
 }
 
 /* Keyframes */
-@keyframes slide-push-right-exit {
-  0% { transform: translateX(0); }
-  100% { transform: translateX(100%); }
-}
-@keyframes slide-push-right-enter {
-  0% { transform: translateX(-100%); }
-  100% { transform: translateX(0); }
-}
-
-@keyframes slide-push-left-exit {
-  0% { transform: translateX(0); }
-  100% { transform: translateX(-100%); }
-}
-@keyframes slide-push-left-enter {
-  0% { transform: translateX(100%); }
-  100% { transform: translateX(0); }
-}
 
 @keyframes slide-push-up-exit {
   0% { transform: translateY(0); }
@@ -213,6 +361,171 @@ html[class*="transition-coming-"] .transition-hide {
 .transition-hide {
   transition: opacity 0.25s ease-in-out;
 }
+
+/* Keep GNB fixed and still during page transitions */
+.pf2-gnb-dock {
+  view-transition-name: pf2-gnb;
+}
+
+::view-transition-group(pf2-gnb) {
+  animation: none !important;
+}
+::view-transition-old(pf2-gnb),
+::view-transition-new(pf2-gnb) {
+  animation: none !important;
+  mix-blend-mode: normal !important;
+}
+
+.pf2-metal-silver {
+  background-image: linear-gradient(to right, #ffffff 0%, #f1f5f9 50%, #94a3b8 100%);
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+  display: inline-block;
+}
+
+.pf2-metal-titanium {
+  background-image: linear-gradient(to right, #818cf8 0%, #c084fc 100%);
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+  display: inline-block;
+}
+
+#skilltree-main {
+  background-image: radial-gradient(circle at 50% 30%, rgba(99, 102, 241, 0.12), rgba(168, 85, 247, 0.08), transparent 60%), radial-gradient(circle at 10% 80%, rgba(56, 189, 248, 0.06), transparent 40%);
+}
+
+.light-theme #skilltree-main {
+  background-image: radial-gradient(circle at 50% 30%, rgba(99, 102, 241, 0.05), rgba(168, 85, 247, 0.03), transparent 60%), radial-gradient(circle at 10% 80%, rgba(56, 189, 248, 0.04), transparent 40%) !important;
+}
+
+/* Sparkle Star custom utilities */
+.sparkle-sky {
+  color: rgba(56, 189, 248, 0.6);
+  filter: drop-shadow(0 0 8px rgba(56, 189, 248, 0.6));
+}
+.light-theme .sparkle-sky {
+  color: rgba(14, 165, 233, 0.4) !important;
+  filter: none !important;
+}
+
+.sparkle-indigo {
+  color: rgba(129, 140, 248, 0.5);
+  filter: drop-shadow(0 0 6px rgba(167, 139, 250, 0.4));
+}
+.light-theme .sparkle-indigo {
+  color: rgba(99, 102, 241, 0.4) !important;
+  filter: none !important;
+}
+
+.sparkle-amber {
+  color: rgba(251, 191, 36, 0.4);
+  filter: drop-shadow(0 0 6px rgba(251, 191, 36, 0.4));
+}
+.light-theme .sparkle-amber {
+  color: rgba(217, 119, 6, 0.4) !important;
+  filter: none !important;
+}
+
+.sparkle-slate {
+  color: rgba(203, 213, 225, 0.4);
+}
+.light-theme .sparkle-slate {
+  color: rgba(148, 163, 184, 0.3) !important;
+}
+
+/* Node Hover Styles matching the 5 index colors */
+.node-hover-0:hover {
+  background-color: var(--color-hover-bg-0) !important;
+  border-color: var(--color-hover-border-0) !important;
+  color: var(--color-hover-text-0) !important;
+  box-shadow: 0 0 15px var(--color-hover-shadow-0) !important;
+}
+
+.node-hover-1:hover {
+  background-color: var(--color-hover-bg-1) !important;
+  border-color: var(--color-hover-border-1) !important;
+  color: var(--color-hover-text-1) !important;
+  box-shadow: 0 0 15px var(--color-hover-shadow-1) !important;
+}
+
+.node-hover-2:hover {
+  background-color: var(--color-hover-bg-2) !important;
+  border-color: var(--color-hover-border-2) !important;
+  color: var(--color-hover-text-2) !important;
+  box-shadow: 0 0 15px var(--color-hover-shadow-2) !important;
+}
+
+.node-hover-3:hover {
+  background-color: var(--color-hover-bg-3) !important;
+  border-color: var(--color-hover-border-3) !important;
+  color: var(--color-hover-text-3) !important;
+  box-shadow: 0 0 15px var(--color-hover-shadow-3) !important;
+}
+
+.node-hover-4:hover {
+  background-color: var(--color-hover-bg-4) !important;
+  border-color: var(--color-hover-border-4) !important;
+  color: var(--color-hover-text-4) !important;
+  box-shadow: 0 0 15px var(--color-hover-shadow-4) !important;
+}
+
+/* TOC inactive dot color variable override */
+.toc-dot-inactive {
+  background-color: rgba(51, 65, 85, 0.6);
+}
+.light-theme .toc-dot-inactive {
+  background-color: #cbd5e1 !important;
+}
+.sepia-theme .toc-dot-inactive {
+  background-color: #dfd5c0 !important;
+}
+
+.sepia-theme #skilltree-main {
+  background-image: radial-gradient(circle at 50% 30%, rgba(139, 69, 19, 0.04), rgba(160, 82, 45, 0.03), transparent 60%), radial-gradient(circle at 10% 80%, rgba(217, 119, 6, 0.03), transparent 40%) !important;
+}
+
+/* Sepia Sparkle Star color overrides */
+.sepia-theme .sparkle-sky {
+  color: rgba(139, 69, 19, 0.4) !important;
+  filter: none !important;
+}
+.sepia-theme .sparkle-indigo {
+  color: rgba(139, 69, 19, 0.3) !important;
+  filter: none !important;
+}
+.sepia-theme .sparkle-amber {
+  color: rgba(217, 119, 6, 0.35) !important;
+  filter: none !important;
+}
+.sepia-theme .sparkle-slate {
+  color: rgba(139, 126, 108, 0.3) !important;
+}
+
+/* TOC active text styles */
+.toc-active-0 { color: var(--color-active-0) !important; font-weight: bold; }
+.toc-active-1 { color: var(--color-active-1) !important; font-weight: bold; }
+.toc-active-2 { color: var(--color-active-2) !important; font-weight: bold; }
+.toc-active-3 { color: var(--color-active-3) !important; font-weight: bold; }
+.toc-active-4 { color: var(--color-active-4) !important; font-weight: bold; }
+
+/* TOC inactive text hover styles */
+.toc-link-0:hover { color: var(--color-hover-text-0) !important; }
+.toc-link-1:hover { color: var(--color-hover-text-1) !important; }
+.toc-link-2:hover { color: var(--color-hover-text-2) !important; }
+.toc-link-3:hover { color: var(--color-hover-text-3) !important; }
+.toc-link-4:hover { color: var(--color-hover-text-4) !important; }
+
+
+
+
 
 
 

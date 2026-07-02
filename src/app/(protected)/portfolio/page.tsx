@@ -1,6 +1,6 @@
 import { getAllPosts } from '../../../utils/posts';
 import BlogStats from '../../../components/blog/BlogStats';
-import PostList from '../../../components/admin/PostList';
+import PostList from '../../../components/shared/PostList';
 
 export const revalidate = 1200; // ISR 적용
 
@@ -22,7 +22,7 @@ export default async function PortfolioHome() {
       <header className="mb-0 flex min-h-80 flex-col items-center justify-center gap-6 py-10 text-center">
         <h1 className="text-5xl">Junseo's Portfolio 🚀</h1>
         <p className="text-xl text-gray-600">What are you looking for?</p>
-        <BlogStats totalPosts={totalPostsCount} totalLikes={totalLikesCount} totalSkills={totalSkillsCount} totalVisitors={totalViewsCount} />
+        <BlogStats totalPosts={totalPostsCount} totalLikes={totalLikesCount} totalSkills={totalSkillsCount} totalVisitors={totalViewsCount} layout="grid" />
       </header>
       <section>
         <h2 className="mb-6 border-b border-gray-200 pb-2 text-3xl">최신글</h2>

@@ -128,8 +128,8 @@ export default function SkillTreeLikeButton({ postId, initialLikesCount = 0 }: S
       disabled={isLoading || isCooldown}
       className={`relative group inline-flex items-center gap-1.5 shrink-0 rounded-md border h-[36px] px-3 shadow-sm transition-all duration-300 ease-out active:scale-95 text-xs font-semibold ${
         isLiked 
-          ? 'border-blue-500/80 bg-blue-500/15 text-blue-400' 
-          : 'border-[#30363d] bg-[#0d1117] text-[#c9d1d9] hover:bg-[#161b22]'
+          ? 'border-theme-accent/80 bg-theme-bg-hover text-theme-accent' 
+          : 'border-theme-border bg-theme-surface text-theme-text-body hover:bg-theme-bg-hover'
       } ${(isLoading || isCooldown) ? 'opacity-70 cursor-not-allowed' : ''}`}
     >
       {showParticles && (
@@ -151,7 +151,7 @@ export default function SkillTreeLikeButton({ postId, initialLikesCount = 0 }: S
               return (
                 <span
                   key={i}
-                  className="absolute bg-blue-400 rounded-full animate-particle"
+                  className="absolute bg-theme-accent rounded-full animate-particle"
                   style={{
                     width: `${size}px`,
                     height: `${size}px`,
@@ -164,7 +164,7 @@ export default function SkillTreeLikeButton({ postId, initialLikesCount = 0 }: S
           </div>
         </>
       )}
-      <svg xmlns="http://www.w3.org/2000/svg" className={`h-4 w-4 transition-all duration-300 ${isLiked ? 'text-blue-400 fill-blue-500/30 scale-110' : 'text-[#8b949e] fill-transparent group-hover:text-[#c9d1d9]'}`} viewBox="0 0 24 24" stroke="currentColor">
+      <svg xmlns="http://www.w3.org/2000/svg" className={`h-4 w-4 transition-all duration-300 ${isLiked ? 'text-theme-accent fill-current opacity-90 scale-110' : 'text-theme-text-muted fill-transparent group-hover:text-theme-text-title'}`} viewBox="0 0 24 24" stroke="currentColor">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905 0 .714-.211 1.412-.608 2.006L7 11v9m7-10h-2M7 20H5a2 2 0 01-2-2v-6a2 2 0 012-2h2.514" />
       </svg>
       <span>

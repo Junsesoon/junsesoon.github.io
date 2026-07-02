@@ -44,8 +44,9 @@ export default function Portfolio2Page() {
         </span>
 
         {/* Title */}
-        <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white via-slate-100 to-slate-400 mb-6 drop-shadow-[0_0_15px_rgba(99,102,241,0.5)] drop-shadow-[0_0_35px_rgba(168,85,247,0.3)]">
-          소통이 되는 <span className="bg-clip-text text-transparent bg-gradient-to-r from-indigo-400 to-purple-400">개발자</span>
+        <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight mb-6 drop-shadow-[0_0_15px_rgba(99,102,241,0.5)] drop-shadow-[0_0_35px_rgba(168,85,247,0.3)]">
+          <span className="pf2-metal-silver">소통이 되는</span>{' '}
+          <span className="pf2-metal-titanium">개발자</span>
         </h1>
 
         {/* Subtitle */}
@@ -78,8 +79,8 @@ export default function Portfolio2Page() {
               href={item.href}
               className="p-6 rounded-2xl bg-white/[0.02] border border-white/[0.05] backdrop-blur-xl hover:bg-white/[0.04] hover:border-white/[0.08] transition-all duration-300 shadow-[0_8px_30px_rgb(0,0,0,0.12)] group hover:-translate-y-1 block no-underline"
             >
-              <div className="text-3xl mb-4 group-hover:scale-110 transition-transform duration-300 inline-block">{item.icon}</div>
-              <h3 className="text-lg font-bold text-slate-200 mb-2">{item.title}</h3>
+              {/* <div className="text-3xl mb-4 group-hover:scale-110 transition-transform duration-300 inline-block">{item.icon}</div> */}
+              <h3 className="text-lg font-bold text-slate-200 mb-2">{item.icon}{item.title}</h3>
               <p className="text-sm text-slate-400 leading-relaxed">{item.desc}</p>
             </Link>
           ))}

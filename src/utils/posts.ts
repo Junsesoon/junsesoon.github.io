@@ -1,3 +1,4 @@
+import { cache } from 'react';
 import { getParsedMarkdown } from './markdownCache';
 import { query } from '../infra/neon';
 import { Post, PostFilterOptions, FrontMatter, DbPost, DbPostRow } from '../types/blog';
@@ -102,7 +103,7 @@ export const getTotalPostCount = async (): Promise<number> => {
   return parseInt(result.rows[0].count, 10);
 };
 
-export const getAllPosts = async (
+export const getAllPosts = cache(async (
   mode: string = 'blog',
   filters: PostFilterOptions = {},
 ): Promise<Post[]> => {
@@ -142,7 +143,7 @@ export const getAllPosts = async (
   }
 
   return rows.map(rowToPost);
-};
+});
 
 export const getCategoryPosts = async (category: string, mode: string = 'blog'): Promise<Post[]> => {
   const result = await query<any>(`
