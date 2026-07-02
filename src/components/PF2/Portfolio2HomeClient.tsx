@@ -54,8 +54,9 @@ export default function Portfolio2HomeClient() {
         </span>
 
         {/* Title */}
-        <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white via-slate-100 to-slate-400 mb-6 drop-shadow-[0_0_15px_rgba(99,102,241,0.5)] drop-shadow-[0_0_35px_rgba(168,85,247,0.3)]">
-          소통이 되는 <span className="bg-clip-text text-transparent bg-gradient-to-r from-indigo-400 to-purple-400">개발자</span>
+        <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight mb-6 drop-shadow-[0_0_15px_rgba(99,102,241,0.5)] drop-shadow-[0_0_35px_rgba(168,85,247,0.3)]">
+          <span className="pf2-metal-silver">소통이 되는</span>{' '}
+          <span className="pf2-metal-titanium">개발자</span>
         </h1>
 
         {/* Subtitle */}

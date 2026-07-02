@@ -126,39 +126,19 @@
   mix-blend-mode: normal;
 }
 
-/* slide-push-right (About 진입 및 Skills 복귀) */
-html.transition-going-about::view-transition-old(root),
-html.transition-coming-skills::view-transition-old(root) {
-  animation: 0.6s cubic-bezier(0.4, 0, 0.2, 1) both slide-push-right-exit;
-}
-html.transition-going-about::view-transition-new(root),
-html.transition-coming-skills::view-transition-new(root) {
-  animation: 0.6s cubic-bezier(0.4, 0, 0.2, 1) both slide-push-right-enter;
-}
-
-/* slide-push-left (About 복귀 및 Skills 진입) */
-html.transition-coming-about::view-transition-old(root),
-html.transition-going-skills::view-transition-old(root) {
-  animation: 0.6s cubic-bezier(0.4, 0, 0.2, 1) both slide-push-left-exit;
-}
-html.transition-coming-about::view-transition-new(root),
-html.transition-going-skills::view-transition-new(root) {
-  animation: 0.6s cubic-bezier(0.4, 0, 0.2, 1) both slide-push-left-enter;
-}
-
-/* slide-push-up (Projects 진입) */
-html.transition-going-projects::view-transition-old(root) {
+/* transition-going-down (아래쪽 페이지로 이동: 아래에서 위로 슬라이드) */
+html.transition-going-down::view-transition-old(root) {
   animation: 0.6s cubic-bezier(0.4, 0, 0.2, 1) both slide-push-up-exit;
 }
-html.transition-going-projects::view-transition-new(root) {
+html.transition-going-down::view-transition-new(root) {
   animation: 0.6s cubic-bezier(0.4, 0, 0.2, 1) both slide-push-up-enter;
 }
 
-/* slide-push-down (Projects 복귀) */
-html.transition-coming-projects::view-transition-old(root) {
+/* transition-coming-up (위쪽 페이지로 이동: 위에서 아래로 슬라이드) */
+html.transition-coming-up::view-transition-old(root) {
   animation: 0.6s cubic-bezier(0.4, 0, 0.2, 1) both slide-push-down-exit;
 }
-html.transition-coming-projects::view-transition-new(root) {
+html.transition-coming-up::view-transition-new(root) {
   animation: 0.6s cubic-bezier(0.4, 0, 0.2, 1) both slide-push-down-enter;
 }
 
@@ -209,6 +189,46 @@ html[class*="transition-coming-"] .transition-hide {
 .transition-hide {
   transition: opacity 0.25s ease-in-out;
 }
+
+/* Keep GNB fixed and still during page transitions */
+.pf2-gnb-dock {
+  view-transition-name: pf2-gnb;
+}
+
+::view-transition-group(pf2-gnb) {
+  animation: none !important;
+}
+::view-transition-old(pf2-gnb),
+::view-transition-new(pf2-gnb) {
+  animation: none !important;
+  mix-blend-mode: normal !important;
+}
+
+.pf2-metal-silver {
+  background-image: linear-gradient(to right, #ffffff 0%, #f1f5f9 50%, #94a3b8 100%);
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+  display: inline-block;
+}
+
+.pf2-metal-titanium {
+  background-image: linear-gradient(to right, #818cf8 0%, #c084fc 100%);
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+  display: inline-block;
+}
+
+
+
+
 
 
 
