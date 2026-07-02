@@ -199,8 +199,8 @@ export default async function SkillTreeGrid({ title, description, matchCategory2
     <div className="w-full">
       {(title || description) && (
         <header className={`mb-6 px-4 border-l-2 ${borderClass} pl-4 py-1`}>
-          {title && <h2 className="text-2xl sm:text-3xl font-bold text-slate-100 tracking-tight">{title}</h2>}
-          {description && <p className="text-sm text-slate-400 mt-1.5 leading-relaxed">{description}</p>}
+          {title && <h2 className="text-2xl sm:text-3xl font-bold text-slate-100 tracking-tight group-[.light-theme]:text-slate-800">{title}</h2>}
+          {description && <p className="text-sm text-slate-400 mt-1.5 leading-relaxed group-[.light-theme]:text-slate-500">{description}</p>}
         </header>
       )}
       <SkillTreeInteractive

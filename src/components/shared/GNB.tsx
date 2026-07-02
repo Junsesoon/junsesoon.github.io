@@ -19,7 +19,23 @@ const GNBContent: React.FC<GNBProps> = ({ isAdmin: initialIsAdmin }) => {
   }
 
   const isSkilltree = pathname === '/skilltree';
-  const isDarkTheme = isSkilltree || pathname.startsWith('/portfolio2');
+  const [skilltreeTheme, setSkilltreeTheme] = useState<'dark' | 'light'>('dark');
+
+  useEffect(() => {
+    if (isSkilltree) {
+      const saved = localStorage.getItem('skilltree_theme') as 'dark' | 'light';
+      if (saved) setSkilltreeTheme(saved);
+
+      const handleThemeChange = () => {
+        const current = localStorage.getItem('skilltree_theme') as 'dark' | 'light';
+        setSkilltreeTheme(current || 'dark');
+      };
+      window.addEventListener('skilltree-theme-change', handleThemeChange);
+      return () => window.removeEventListener('skilltree-theme-change', handleThemeChange);
+    }
+  }, [isSkilltree]);
+
+  const isDarkTheme = (isSkilltree && skilltreeTheme === 'dark') || pathname.startsWith('/portfolio2');
   const [isOpen, setIsOpen] = useState(false);
   const [isAdmin, setIsAdmin] = useState(initialIsAdmin ?? false);
 
@@ -95,7 +111,7 @@ const GNBContent: React.FC<GNBProps> = ({ isAdmin: initialIsAdmin }) => {
     <nav className={`fixed top-0 left-0 right-0 z-50 border-b transition-colors duration-300 ${
       mode === 'portfolio2'
         ? 'bg-[#030712]/80 border-white/[0.08] backdrop-blur-md'
-        : isSkilltree
+        : isSkilltree && skilltreeTheme === 'dark'
         ? 'bg-[#02040a]/80 border-[#30363d]/50 backdrop-blur-md'
         : mode === 'portfolio'
         ? 'bg-red-50/90 border-red-200 backdrop-blur-md'
@@ -207,7 +223,7 @@ const GNBContent: React.FC<GNBProps> = ({ isAdmin: initialIsAdmin }) => {
         <div className={`flex flex-col items-center gap-4 border-t pb-6 pt-4 font-sans md:hidden ${
           mode === 'portfolio2'
             ? 'bg-[#030712]/95 border-white/[0.08] text-slate-100'
-            : isSkilltree
+            : isSkilltree && skilltreeTheme === 'dark'
             ? 'bg-[#0d1117]/95 border-[#30363d] text-[#c9d1d9]'
             : 'bg-white border-gray-100 text-gray-900'
         }`}>

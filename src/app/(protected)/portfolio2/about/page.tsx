@@ -78,7 +78,7 @@ export default async function AboutPage() {
           About <span className="bg-clip-text text-transparent bg-gradient-to-r from-indigo-400 to-purple-400">오준서</span>
         </h1>
         <p className="text-slate-400 text-base md:text-lg max-w-xl mx-auto leading-relaxed">
-          어제보다 성장한 오늘을 꿈꾸며, 깔끔하고 확장성 있는 코드로 최상의 UXUI를 조각해 나가는 풀스택 개발자입니다.
+          어제보다 성장한 오늘을 꿈꾸며, 깔끔하고 확장성 있는 코드로 최상의 UXUI를 조각해 나가는 풀스택 개발자입니다
         </p>
       </div>
 
@@ -98,9 +98,9 @@ export default async function AboutPage() {
             </h2>
             <div className="space-y-6">
               {[
-                { title: "Trade-off Management", desc: "무분별한 신기술이나 과잉 엔지니어링을 경계합니다. 인프라의 한계와 비즈니스의 제약 조건 속에서 비용과 성능, 확장성 사이의 최적의 균형점을 찾아내는 결단을 지향합니다" },
-                { title: "Clean & Maintainable", desc: "유지보수하기 쉽고 명확한 아키텍처 설계를 지향하며, 불필요한 중복을 줄입니다." },
-                { title: "Constant Learner", desc: "매 순간 새로운 라이브러리와 프레임워크 트렌드를 학습하고 프로덕트에 녹여냅니다." },
+                { title: "Trade-off Management", desc: "인프라의 한계와 비즈니스의 제약 조건 속에서 비용과 성능, 확장성 사이의 최적의 균형점을 찾아내는 결단을 지향합니다" },
+                { title: "Clean & Maintainable", desc: "유지보수하기 쉽고 명확한 아키텍처 설계를 지향하며, 불필요한 중복을 줄입니다" },
+                { title: "Constant Learner", desc: "매 순간 새로운 라이브러리와 프레임워크 트렌드를 학습하고 프로덕트에 녹여냅니다" },
               ].map((value, idx) => (
                 <div key={idx} className="group">
                   <h3 className="text-slate-200 font-semibold mb-1 group-hover:text-indigo-400 transition-colors duration-200">{value.title}</h3>
