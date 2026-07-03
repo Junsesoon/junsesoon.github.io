@@ -18,6 +18,7 @@ export interface SkillNode {
   col: number;
   row: number;
   likesCount?: number;
+  viewsCount?: number;
 }
 
 interface SkillTreeGridProps {
@@ -73,6 +74,7 @@ export default async function SkillTreeGrid({ title, description, matchCategory2
         col: -1,
         row: -1,
         likesCount: post.likes_count || 0,
+        viewsCount: post.views_count || 0,
       });
     } catch (err) {
       console.error(`Failed to parse skill tree post: ${post.slug}`, err);

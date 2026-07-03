@@ -335,6 +335,14 @@ export default function SkillTreeInteractive({ nodes, COLUMNS, isAdmin, colorInd
                         postId={selectedNode.postId} 
                         initialLikesCount={selectedNode.likesCount || 0}
                       />
+                      {selectedNode.viewsCount !== undefined && (
+                        <span className="flex items-center gap-1 text-sm text-theme-text-muted font-medium ml-2" title="조회수">
+                          <svg className="w-4 h-4 fill-current text-theme-accent" viewBox="0 0 24 24">
+                            <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/>
+                          </svg>
+                          {selectedNode.viewsCount}
+                        </span>
+                      )}
                     </div>
                     <div className="flex items-center gap-4 shrink-0">
                       {selectedNode.frontmatter?.modified_at && (
