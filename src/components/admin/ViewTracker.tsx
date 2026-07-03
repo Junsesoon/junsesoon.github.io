@@ -14,7 +14,7 @@ const generateUUID = () => {
   });
 };
 
-export default function ViewTracker({ postId }: { postId: string }) {
+export default function ViewTracker({ postId, isAdmin = false }: { postId: string; isAdmin?: boolean }) {
   const hasTracked = useRef(false);
 
   useEffect(() => {
@@ -28,8 +28,8 @@ export default function ViewTracker({ postId }: { postId: string }) {
     }
 
     // 백그라운드에서 서버 액션 호출 (UI 블로킹 없음)
-    incrementViewCountAction(postId, sid).catch(console.error);
-  }, [postId]);
+    incrementViewCountAction(postId, sid, 'detail', isAdmin).catch(console.error);
+  }, [postId, isAdmin]);
 
   return null; // 시각적으로 렌더링할 요소가 없는 백그라운드 전용 컴포넌트
 }

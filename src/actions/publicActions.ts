@@ -24,7 +24,8 @@ export async function getLikeStatusAction(postId: string, sessionId: string) {
 
 export async function toggleLikeAction(postId: string, sessionId: string) {
   const headerList = await headers();
-  const ip = headerList.get('x-forwarded-for') || 'unknown';
+  const rawIp = headerList.get('x-forwarded-for') || 'unknown';
+  const ip = rawIp.split(',')[0].trim();
   const rateLimitKey = `${ip}:${sessionId}`;
   const now = Date.now();
 
@@ -75,7 +76,8 @@ export async function trackSiteVisitorAction(sessionId: string) {
   if (!sessionId) return { success: false, message: 'Invalid session' };
 
   const headerList = await headers();
-  const ip = headerList.get('x-forwarded-for') || 'unknown';
+  const rawIp = headerList.get('x-forwarded-for') || 'unknown';
+  const ip = rawIp.split(',')[0].trim();
   const userAgent = headerList.get('user-agent') || '';
 
   try {
@@ -106,9 +108,10 @@ export async function trackSiteVisitorAction(sessionId: string) {
   }
 }
 
-export async function incrementViewCountAction(postId: string, sessionId: string, viewType: 'detail' | 'overlay' = 'detail') {
+export async function incrementViewCountAction(postId: string, sessionId: string, viewType: 'detail' | 'overlay' = 'detail', isAdmin: boolean = false) {
   const headerList = await headers();
-  const ip = headerList.get('x-forwarded-for') || 'unknown';
+  const rawIp = headerList.get('x-forwarded-for') || 'unknown';
+  const ip = rawIp.split(',')[0].trim();
 
   // 1. Turso에 기록하고 쿨다운을 별도로 매길 post_id 정의
   const tursoPostId = viewType === 'overlay' ? `${postId}-overlay` : postId;
@@ -153,13 +156,14 @@ export async function incrementViewCountAction(postId: string, sessionId: string
     const targetTitle = viewType === 'overlay' ? `${postTitle} (Overlay)` : postTitle;
 
     // 4. 기록이 없다면 Turso DB에 조회 이력 추가
+    const targetSessionId = isAdmin ? `admin_${sessionId}` : sessionId;
     await tursoQuery(
       'INSERT INTO views_manage (post_id, post_title, post_slug, ip_address, session_id) VALUES (?, ?, ?, ?, ?)',
-      [tursoPostId, targetTitle, postSlug, ip, sessionId]
+      [tursoPostId, targetTitle, postSlug, ip, targetSessionId]
     );
 
-    // 5. 상세 글 진입(detail)인 경우에만 Neon DB의 views_count 1 증가
-    if (viewType === 'detail') {
+    // 5. 상세 글 진입(detail)인 경우에만 Neon DB의 views_count 1 증가 (관리자 제외)
+    if (viewType === 'detail' && !isAdmin) {
       await neonQuery('UPDATE posts SET views_count = views_count + 1 WHERE post_id = $1', [postId]);
     }
 
