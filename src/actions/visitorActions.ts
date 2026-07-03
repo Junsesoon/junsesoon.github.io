@@ -91,7 +91,7 @@ export async function getVisitorDashboardData(): Promise<VisitorDashboardData> {
     let blockRules: any[] = [];
     try {
       const rulesResult = await tursoQuery(`
-        SELECT ip_hash as ip_address, reason, datetime(blocked_at, 'localtime') as created_at 
+        SELECT ip_hash as ip_address, reason, datetime(blocked_at, '+9 hours') as created_at 
         FROM blocked_ips 
         ORDER BY blocked_at DESC
       `);

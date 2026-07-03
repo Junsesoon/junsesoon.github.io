@@ -55,7 +55,7 @@ export async function getViewLogsDashboardData(): Promise<ViewLogsDashboardData>
         post_slug,
         ip_address, 
         session_id, 
-        datetime(viewed_at, 'localtime') as viewed_at
+        datetime(viewed_at, '+9 hours') as viewed_at
       FROM views_manage
       ORDER BY view_id DESC
       LIMIT 100
