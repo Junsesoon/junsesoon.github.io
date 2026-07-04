@@ -1,9 +1,9 @@
 import GNB from '@/components/shared/GNB';
 import '@/styles/globals.css';
-import Script from 'next/script';
 import Footer from '@/components/shared/footer';
 import VisitorTracker from '@/components/admin/VisitorTracker';
 import SkillTreeThemeToggle from '@/components/blog/SkillTreeThemeToggle';
+import Script from 'next/script';
 
 export const metadata = {
   title: 'Junseo Blog',
@@ -39,12 +39,12 @@ export default function RootLayout({
         {process.env.GA_MEASUREMENT_ID && (
           <>
             <Script
-              strategy="afterInteractive"
+              strategy="worker"
               src={`https://www.googletagmanager.com/gtag/js?id=${process.env.GA_MEASUREMENT_ID}`}
             />
             <Script
               id="google-analytics"
-              strategy="afterInteractive"
+              strategy="worker"
               dangerouslySetInnerHTML={{
                 __html: `
                   window.dataLayer = window.dataLayer || [];

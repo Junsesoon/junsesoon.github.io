@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 
 export default function BackButton() {
   const router = useRouter();
@@ -18,12 +19,26 @@ export default function BackButton() {
   };
 
   return (
-    <button
-      type="button"
-      onClick={handleBack}
-      className="inline-flex items-center justify-center rounded-lg bg-gray-100 px-3.5 py-1.5 text-xs font-medium text-gray-800 transition-all hover:bg-gray-200/80"
-    >
-      ← Back
-    </button>
+    <>
+      <Link
+        href="/"
+        className="inline-flex items-center justify-center rounded-lg bg-gray-100 px-3.5 py-1.5 text-xs font-medium text-gray-800 transition-all hover:bg-gray-200/80"
+      >
+        🏠 Blog
+      </Link>
+      <Link
+        href="/portfolio2"
+        className="inline-flex items-center justify-center rounded-lg bg-gray-100 px-3.5 py-1.5 text-xs font-medium text-gray-800 transition-all hover:bg-gray-200/80"
+      >
+        💼 PF2
+      </Link>
+      <button
+        type="button"
+        onClick={handleBack}
+        className="inline-flex items-center justify-center rounded-lg bg-gray-100 px-3.5 py-1.5 text-xs font-medium text-gray-800 transition-all hover:bg-gray-200/80"
+      >
+        ← Back
+      </button>
+    </>
   );
 }

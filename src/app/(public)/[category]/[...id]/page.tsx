@@ -8,7 +8,7 @@ import { cookies } from 'next/headers';
 import { verifyAdminToken } from '@/utils/auth';
 import '@/styles/atom-one-dark.css';
 
-export const dynamic = 'force-dynamic';
+export const revalidate = 1200; // Revalidate every 20 minutes
 
 async function checkIsAdmin(): Promise<boolean> {
   try {
@@ -146,7 +146,7 @@ export default async function PostPage({
             </div>
             
             {/* 백그라운드 조회수 집계 트리거 */}
-            <ViewTracker postId={post.post_id || ''} />
+            <ViewTracker postId={post.post_id || ''} isAdmin={isAdmin} />
           </article>
         </section>
 

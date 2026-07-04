@@ -1,5 +1,6 @@
 import { unified } from 'unified';
 import remarkParse from 'remark-parse';
+import remarkBreaks from 'remark-breaks';
 import remarkGfm from 'remark-gfm';
 import remarkSlug from 'remark-slug';
 import remarkRehype from 'remark-rehype';
@@ -28,7 +29,8 @@ export async function getParsedMarkdown(
   updatedAt: any
 ): Promise<MarkdownParseResult> {
   const timestamp = updatedAt instanceof Date ? updatedAt.getTime() : String(updatedAt || '');
-  const cacheKey = `${slug}_${timestamp}`;
+  // Invalidate old cache as remark-breaks was introduced in the markdown pipeline
+  const cacheKey = `${slug}_${timestamp}_v2`;
 
   if (cache.has(cacheKey)) {
     return cache.get(cacheKey)!;
@@ -37,6 +39,7 @@ export async function getParsedMarkdown(
   const headings: TocHeading[] = [];
   const processedContent = await unified()
     .use(remarkParse)
+    .use(remarkBreaks)
     .use(remarkGfm)
     .use(remarkSlug as any)
     .use(collectTocHeadings(headings))

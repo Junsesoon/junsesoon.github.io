@@ -20,7 +20,7 @@ export default function ViewLogsManager({
 }: ViewLogsManagerProps) {
   const [logs, setLogs] = useState<DBViewLog[]>(initialLogs);
   const [searchQuery, setSearchQuery] = useState('');
-  const [statusFilter, setStatusFilter] = useState<'All' | 'Published' | 'Draft' | 'Editing' | 'Deleted'>('All');
+  const [viewerFilter, setViewerFilter] = useState<'All' | 'Admin' | 'Visitor'>('All');
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
 
@@ -172,12 +172,14 @@ export default function ViewLogsManager({
         log.session_id.toLowerCase().includes(searchQuery.toLowerCase()) ||
         log.post_slug.toLowerCase().includes(searchQuery.toLowerCase());
 
-      const matchesStatus =
-        statusFilter === 'All'
+      const matchesViewer =
+        viewerFilter === 'All'
           ? true
-          : log.post_status === statusFilter.toLowerCase();
+          : viewerFilter === 'Admin'
+          ? log.is_admin
+          : !log.is_admin;
 
-      return matchesSearch && matchesStatus;
+      return matchesSearch && matchesViewer;
     });
 
     return [...filtered].sort((a, b) => {
@@ -202,7 +204,7 @@ export default function ViewLogsManager({
 
       return 0;
     });
-  }, [logs, searchQuery, statusFilter, sortField, sortDirection]);
+  }, [logs, searchQuery, viewerFilter, sortField, sortDirection]);
 
   // Pagination
   const totalPages = Math.ceil(sortedAndFilteredLogs.length / itemsPerPage);
@@ -213,7 +215,7 @@ export default function ViewLogsManager({
 
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchQuery, statusFilter]);
+  }, [searchQuery, viewerFilter]);
 
   return (
     <div className="space-y-6">
@@ -464,14 +466,14 @@ export default function ViewLogsManager({
           </nav>
 
           <div className="flex flex-col sm:flex-row gap-3 items-center w-full sm:w-auto pb-2 sm:pb-0 justify-end">
-            {/* Status Filter buttons */}
+            {/* Viewer Filter buttons */}
             <div className="flex gap-1 w-full sm:w-auto justify-end">
-              {(['All', 'Published', 'Draft', 'Editing', 'Deleted'] as const).map(filter => (
+              {(['All', 'Admin', 'Visitor'] as const).map(filter => (
                 <button
                   key={filter}
-                  onClick={() => setStatusFilter(filter)}
+                  onClick={() => setViewerFilter(filter)}
                   className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all duration-200 ${
-                    statusFilter === filter
+                    viewerFilter === filter
                       ? 'bg-indigo-600 text-white shadow-sm'
                       : 'bg-gray-50 text-gray-600 hover:bg-gray-100 border border-gray-200'
                   }`}
@@ -507,7 +509,7 @@ export default function ViewLogsManager({
               <button
                 onClick={() => {
                   setSearchQuery('');
-                  setStatusFilter('All');
+                  setViewerFilter('All');
                 }}
                 className="mt-2 text-sm text-indigo-600 hover:underline"
               >
@@ -524,7 +526,7 @@ export default function ViewLogsManager({
                     {renderSortableHeader('ip_address', 'IP Address', 'center', 'min-w-[160px]')}
                     {renderSortableHeader('session_id', 'Session UUID')}
                     {renderSortableHeader('viewed_at', 'Viewed At')}
-                    {renderSortableHeader('post_status', 'Status')}
+                    {renderSortableHeader('is_admin', 'Viewer')}
                     <th scope="col" className="px-1 py-3 text-center text-[10px] font-bold text-gray-400 uppercase tracking-wider">Actions</th>
                   </tr>
                 </thead>
@@ -582,25 +584,15 @@ export default function ViewLogsManager({
                         {log.viewed_at ? log.viewed_at.replace('T', ' ').substring(0, 16) : ''}
                       </td>
                       <td className="px-1 py-3 text-center">
-                        {log.post_status === 'deleted' ? (
-                          <span className="inline-flex items-center gap-1.5 rounded-full border border-rose-200 bg-rose-50 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-rose-600">
-                            <span className="h-1.5 w-1.5 rounded-full bg-rose-500"></span>
-                            Deleted
-                          </span>
-                        ) : log.post_status === 'draft' ? (
-                          <span className="inline-flex items-center gap-1 rounded-full border border-gray-200 bg-gray-50 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-gray-500">
-                            <span className="h-1.5 w-1.5 rounded-full bg-gray-400"></span>
-                            Draft
-                          </span>
-                        ) : log.post_status === 'editing' ? (
-                          <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-200 bg-amber-50 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-amber-600">
-                            <span className="h-1.5 w-1.5 rounded-full bg-amber-500"></span>
-                            Editing
+                        {log.is_admin ? (
+                          <span className="inline-flex items-center gap-1.5 rounded-full border border-violet-200 bg-violet-50 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-violet-600">
+                            <span className="h-1.5 w-1.5 rounded-full bg-violet-500"></span>
+                            Admin
                           </span>
                         ) : (
-                          <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-emerald-600">
-                            <span className="h-1.5 w-1.5 rounded-full bg-emerald-500"></span>
-                            Published
+                          <span className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-slate-50 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-slate-600">
+                            <span className="h-1.5 w-1.5 rounded-full bg-slate-400"></span>
+                            Visitor
                           </span>
                         )}
                       </td>

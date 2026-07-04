@@ -141,7 +141,7 @@ export default async function PortfolioDetailPage({
           </div>
           
           {/* 백그라운드 조회수 집계 트리커 */}
-          <ViewTracker postId={post.post_id || ''} />
+          <ViewTracker postId={post.post_id || ''} isAdmin={isAdmin} />
         </article>
       </main>
 
