@@ -8,7 +8,7 @@ import { cookies } from 'next/headers';
 import { verifyAdminToken } from '@/utils/auth';
 import '@/styles/atom-one-dark.css';
 
-export const dynamic = 'force-dynamic';
+export const revalidate = 1200; // Revalidate every 20 minutes
 
 async function checkIsAdmin(): Promise<boolean> {
   try {

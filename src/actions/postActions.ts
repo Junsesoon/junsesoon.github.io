@@ -150,8 +150,10 @@ export async function createPostAction(formData: PostFormData & { _isDraft?: boo
     throw err;
   }
 
+  const category1 = slug.split('/')[0];
   revalidatePath('/');
   revalidatePath('/admin');
+  revalidatePath(`/${category1}`);
   revalidatePath(`/${slug}`);
   
   return { success: true, slug };
@@ -287,10 +289,14 @@ export async function updatePostAction(originalSlug: string, formData: PostFormD
 
     await query('COMMIT');
 
+    const origCategory = originalSlug.split('/')[0];
     revalidatePath('/');
     revalidatePath('/admin');
+    revalidatePath(`/${origCategory}`);
     revalidatePath(`/${originalSlug}`);
     if (newSlug !== originalSlug) {
+      const newCategory = newSlug.split('/')[0];
+      revalidatePath(`/${newCategory}`);
       revalidatePath(`/${newSlug}`);
     }
 
@@ -306,8 +312,11 @@ export async function deletePostAction(slug: string) {
   try {
     await query('DELETE FROM posts WHERE slug = $1', [slug]);
     
+    const category = slug.split('/')[0];
     revalidatePath('/admin');
     revalidatePath('/');
+    revalidatePath(`/${category}`);
+    revalidatePath(`/${slug}`);
   } catch (error) {
     console.error('Failed to delete post:', error);
     throw new Error('Database query failed.');
