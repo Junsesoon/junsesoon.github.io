@@ -3,11 +3,12 @@
 import { cookies, headers } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { signAdminToken, verifyAdminToken, getAdminTokenExp } from '@/utils/auth';
+import { query as tursoQuery } from '../infra/turso';
 
 // IP별 로그인 시도 횟수와 잠금 해제 시간을 기록하는 in-memory 저장소
 const loginAttempts = new Map<string, { attempts: number; lockUntil: number }>();
 
-export async function loginAction(password: string) {
+export async function loginAction(password: string, currentSessionId?: string) {
   const headerList = await headers();
   // Next.js에서 클라이언트 IP를 가져오는 표준적인 방법입니다.
   const ip = headerList.get('x-forwarded-for') || 'unknown';
@@ -48,6 +49,31 @@ export async function loginAction(password: string) {
     path: '/',
     maxAge: 60 * 60 * 24, // 쿠키 유효기간 1일
   });
+
+  // 소급 업데이트 로직 적용
+  if (currentSessionId && !currentSessionId.startsWith('admin_')) {
+    const adminSessionId = `admin_${currentSessionId}`;
+    try {
+      // 1. visitors_manage 업데이트 (유니크 충돌 방지를 위해 UPDATE OR IGNORE 사용)
+      await tursoQuery(
+        "UPDATE OR IGNORE visitors_manage SET session_id = ? WHERE session_id = ?",
+        [adminSessionId, currentSessionId]
+      );
+      // 만약 UPDATE OR IGNORE 로 인해 여전히 기존 UUID 데이터가 남아있다면 중복된 것이므로 삭제
+      await tursoQuery(
+        "DELETE FROM visitors_manage WHERE session_id = ?",
+        [currentSessionId]
+      );
+
+      // 2. views_manage 업데이트
+      await tursoQuery(
+        "UPDATE views_manage SET session_id = ? WHERE session_id = ?",
+        [adminSessionId, currentSessionId]
+      );
+    } catch (e) {
+      console.error('Failed to migrate admin session in Turso DB:', e);
+    }
+  }
 
   return { success: true };
 }

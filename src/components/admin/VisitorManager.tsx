@@ -9,6 +9,7 @@ export interface DBVisitor {
   session_id: string;
   visited_date: string;
   browser?: string;
+  is_admin?: boolean;
 }
 
 interface VisitorDetails extends DBVisitor {
@@ -16,6 +17,7 @@ interface VisitorDetails extends DBVisitor {
   browser: string;
   status: 'Allowed' | 'Blocked';
   reason?: string;
+  is_admin: boolean;
 }
 
 interface BlockRule {
@@ -96,7 +98,8 @@ export default function VisitorManager({ initialVisitors, totalVisitors, todayVi
         location: details.location,
         browser: v.browser || details.browser,
         status: isBlocked ? 'Blocked' as const : 'Allowed' as const,
-        reason: isBlocked ? (matchedRule?.reason || 'Administrator manual block') : undefined
+        reason: isBlocked ? (matchedRule?.reason || 'Administrator manual block') : undefined,
+        is_admin: v.is_admin ?? v.session_id.startsWith('admin_'),
       };
     });
   }, [initialVisitors, initialBlockRules]);
@@ -105,7 +108,7 @@ export default function VisitorManager({ initialVisitors, totalVisitors, todayVi
   const [visitors, setVisitors] = useState<VisitorDetails[]>(defaultMockVisitors);
   const [activeTab, setActiveTab] = useState<'logs' | 'rules'>('logs');
   const [searchQuery, setSearchQuery] = useState('');
-  const [statusFilter, setStatusFilter] = useState<'All' | 'Allowed' | 'Blocked'>('All');
+  const [viewerFilter, setViewerFilter] = useState<'All' | 'Admin' | 'Visitor'>('All');
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
 
@@ -270,12 +273,16 @@ export default function VisitorManager({ initialVisitors, totalVisitors, todayVi
         v.session_id.toLowerCase().includes(searchQuery.toLowerCase()) ||
         v.location.toLowerCase().includes(searchQuery.toLowerCase());
       
-      const matchesStatus = 
-        statusFilter === 'All' ? true : v.status === statusFilter;
+      const matchesViewer = 
+        viewerFilter === 'All'
+          ? true
+          : viewerFilter === 'Admin'
+          ? v.is_admin
+          : !v.is_admin;
 
-      return matchesSearch && matchesStatus;
+      return matchesSearch && matchesViewer;
     });
-  }, [visitors, searchQuery, statusFilter]);
+  }, [visitors, searchQuery, viewerFilter]);
 
   // 페이징 처리
   const totalPages = Math.ceil(filteredVisitors.length / itemsPerPage);
@@ -287,7 +294,7 @@ export default function VisitorManager({ initialVisitors, totalVisitors, todayVi
   // 필터 변경 시 첫 페이지로 리셋
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchQuery, statusFilter]);
+  }, [searchQuery, viewerFilter]);
 
   // 가장 비중이 높은 지역(Location) 계산
   const topLocationInfo = useMemo(() => {
@@ -578,12 +585,12 @@ export default function VisitorManager({ initialVisitors, totalVisitors, todayVi
           <div className="flex flex-col sm:flex-row gap-3 items-center w-full sm:w-auto pb-2 sm:pb-0 justify-end">
             {/* 필터 탭 */}
             <div className="flex gap-1 w-full sm:w-auto justify-end">
-              {(['All', 'Allowed', 'Blocked'] as const).map((filter) => (
+              {(['All', 'Admin', 'Visitor'] as const).map((filter) => (
                 <button
                   key={filter}
-                  onClick={() => setStatusFilter(filter)}
+                  onClick={() => setViewerFilter(filter)}
                   className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all duration-200 ${
-                    statusFilter === filter
+                    viewerFilter === filter
                       ? 'bg-indigo-600 text-white shadow-sm'
                       : 'bg-gray-50 text-gray-600 hover:bg-gray-100 border border-gray-200'
                   }`}
@@ -618,7 +625,7 @@ export default function VisitorManager({ initialVisitors, totalVisitors, todayVi
           {filteredVisitors.length === 0 ? (
             <div className="p-8 text-center text-gray-500 bg-white">
               <p className="text-base font-medium">No visitor logs match your filters.</p>
-              <button onClick={() => { setSearchQuery(''); setStatusFilter('All'); }} className="mt-2 text-sm text-indigo-600 hover:underline">
+              <button onClick={() => { setSearchQuery(''); setViewerFilter('All'); }} className="mt-2 text-sm text-indigo-600 hover:underline">
                 Reset search & filters
               </button>
             </div>
@@ -634,7 +641,7 @@ export default function VisitorManager({ initialVisitors, totalVisitors, todayVi
                     <th scope="col" className="px-1 py-3 text-center text-[10px] font-bold text-gray-400 uppercase tracking-wider align-middle min-w-[120px] whitespace-nowrap">Date</th>
                     <th scope="col" className="px-1 py-3 text-center text-[10px] font-bold text-gray-400 uppercase tracking-wider align-middle">Client</th>
                     <th scope="col" className="px-1 py-3 text-center text-[10px] font-bold text-gray-400 uppercase tracking-wider align-middle">Device</th>
-                    <th scope="col" className="px-1 py-3 text-center text-[10px] font-bold text-gray-400 uppercase tracking-wider align-middle w-24">Status</th>
+                    <th scope="col" className="px-1 py-3 text-center text-[10px] font-bold text-gray-400 uppercase tracking-wider align-middle w-24">Viewer</th>
                     <th scope="col" className="px-1 py-3 text-center text-[10px] font-bold text-gray-400 uppercase tracking-wider align-middle">Actions</th>
                   </tr>
                 </thead>
@@ -678,17 +685,17 @@ export default function VisitorManager({ initialVisitors, totalVisitors, todayVi
                           {device}
                         </td>
                         <td className="px-1 py-3 text-center">
-                          <span
-                            className={`inline-flex items-center gap-1.5 rounded-full border px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider ${
-                              visitor.status === 'Allowed'
-                                ? 'bg-emerald-50 border-emerald-200 text-emerald-600'
-                                : 'bg-rose-50 border-rose-200 text-rose-600'
-                            }`}
-                            title={visitor.reason}
-                          >
-                            <span className={`h-1.5 w-1.5 rounded-full ${visitor.status === 'Allowed' ? 'bg-emerald-500' : 'bg-rose-500'}`} />
-                            {visitor.status}
-                          </span>
+                          {visitor.is_admin ? (
+                            <span className="inline-flex items-center gap-1.5 rounded-full border border-violet-200 bg-violet-50 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-violet-600">
+                              <span className="h-1.5 w-1.5 rounded-full bg-violet-500"></span>
+                              Admin
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-slate-50 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-slate-600">
+                              <span className="h-1.5 w-1.5 rounded-full bg-slate-400"></span>
+                              Visitor
+                            </span>
+                          )}
                         </td>
                         <td className="px-1 py-3 text-center">
                           <div className="flex justify-center gap-2">

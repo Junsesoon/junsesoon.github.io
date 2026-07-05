@@ -15,9 +15,13 @@ export default function LoginPage() {
     setError('');
 
     try {
-      const result = await loginAction(password);
+      const sid = typeof window !== 'undefined' ? localStorage.getItem('blog_session_id') || undefined : undefined;
+      const result = await loginAction(password, sid);
       
       if (result.success) {
+        if (sid && !sid.startsWith('admin_')) {
+          localStorage.setItem('blog_session_id', `admin_${sid}`);
+        }
         router.push('/admin');
       } else {
         setError(result.message || '로그인에 실패했습니다.');

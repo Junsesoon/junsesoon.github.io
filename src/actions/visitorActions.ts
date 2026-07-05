@@ -47,12 +47,14 @@ export async function getVisitorDashboardData(): Promise<VisitorDashboardData> {
         const parsed = parseUserAgent(String(row.user_agent));
         browserInfo = `${parsed.browser} / ${parsed.device}`;
       }
+      const sessionId = String(row.session_id);
       return {
         visitor_id: Number(row.visitor_id),
         ip_address: String(row.ip_address),
-        session_id: String(row.session_id),
+        session_id: sessionId,
         visited_date: String(row.visited_date),
         browser: browserInfo,
+        is_admin: sessionId.startsWith('admin_'),
       };
     });
 
