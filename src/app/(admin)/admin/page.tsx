@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { DEFAULT_CONTACT_EMAIL } from '@/constants';
 import { query as neonQuery } from '../../../infra/neon';
 import { query as tursoQuery } from '../../../infra/turso';
-import { logoutAction } from '../../../actions/actions';
+import { logoutAction } from '@/actions/adminActions';
 import PostListClient from '../../../components/admin/PostListClient';
 import AdminClock from '../../../components/admin/AdminClock';
 import BackButton from '../../../components/admin/BackButton';

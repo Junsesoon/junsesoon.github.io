@@ -4,7 +4,7 @@ import AboutManager from '@/components/admin/AboutManager';
 import { getAllPosts } from '@/utils/posts';
 import { getTimelineItemsAction } from '@/actions/timelineActions';
 import AdminClock from '@/components/admin/AdminClock';
-import { logoutAction } from '@/actions/actions';
+import { logoutAction } from '@/actions/adminActions';
 import BackButton from '@/components/admin/BackButton';
 import AdminSidebar from '@/components/admin/AdminSidebar';
 

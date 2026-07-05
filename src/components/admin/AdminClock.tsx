@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
+import { checkAdminAuthAction } from '@/actions/actions';
 
 interface AdminClockProps {
   title?: string;
@@ -11,8 +12,7 @@ export default function AdminClock({ title = 'Overview' }: AdminClockProps) {
   const [exp, setExp] = useState<number | null>(null);
 
   const fetchAuthExp = useCallback(() => {
-    fetch(`/api/auth?t=${Date.now()}`, { cache: 'no-store' })
-      .then((res) => res.json())
+    checkAdminAuthAction()
       .then((data) => {
         if (data.exp) {
           setExp(data.exp);

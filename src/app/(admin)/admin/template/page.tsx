@@ -3,7 +3,7 @@ import Link from 'next/link';
 import TemplateManager, { TemplatesState } from '@/components/admin/TemplateManager';
 import { query } from '../../../../infra/neon';
 import AdminClock from '../../../../components/admin/AdminClock';
-import { logoutAction } from '../../../../actions/actions';
+import { logoutAction } from '@/actions/adminActions';
 import BackButton from '@/components/admin/BackButton';
 import AdminSidebar from '@/components/admin/AdminSidebar';
 

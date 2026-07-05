@@ -4,6 +4,7 @@ import Link from 'next/link';
 import React, { useState, useEffect } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { PORTFOLIO_MENU, BLOG_MENU, PORTFOLIO2_MENU, ENABLE_MODE_TOGGLE } from '@/constants';
+import { checkAdminAuthAction } from '@/actions/actions';
 
 interface GNBProps {
   isAdmin?: boolean;
@@ -31,11 +32,8 @@ const GNBContent: React.FC<GNBProps> = ({ isAdmin: initialIsAdmin }) => {
 
     const checkAdminStatus = async () => {
       try {
-        const res = await fetch('/api/auth');
-        if (res.ok) {
-          const data = await res.json();
-          setIsAdmin(data.isAdmin);
-        }
+        const data = await checkAdminAuthAction();
+        setIsAdmin(data.isAdmin);
       } catch (error) {
         console.error('Failed to fetch admin status in GNB:', error);
       }

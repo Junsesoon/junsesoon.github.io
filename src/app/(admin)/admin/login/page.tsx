@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { loginAction } from '../../../../actions/actions';
+import { loginAction } from '@/actions/actions';
 
 export default function LoginPage() {
   const [password, setPassword] = useState('');

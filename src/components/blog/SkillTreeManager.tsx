@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { addSkillTreeDomainAction, getSkillTreeDomainsAction, deleteSkillTreeDomainAction, updateSkillTreeDomainAction, updateSkillTreeDomainOrdersAction, getSkillTreeCardsAction } from '../../actions/skillTreeActions';
 import { createPostAction, updatePostAction, deletePostAction } from '../../actions/postActions';
 import AdminClock from '../admin/AdminClock';
-import { logoutAction } from '../../actions/actions';
+import { logoutAction } from '@/actions/adminActions';
 import BackButton from '../admin/BackButton';
 import AdminSidebar from '../admin/AdminSidebar';
 
